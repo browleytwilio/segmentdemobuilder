@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, ensureProfile } from "@/lib/supabase/server";
 import type { PlaybookSummary, PlaybookRow, Tag, DemoConfig, PlaybookVisibility } from "@/lib/compiler/types";
 
 // ---------------------------------------------------------------------------
@@ -175,6 +175,7 @@ export async function createTag(
   const { userId } = await auth();
   if (!userId) return { error: "Not authenticated" };
 
+  await ensureProfile(userId);
   const trimmed = name.trim();
   if (!trimmed || trimmed.length > 30) {
     return { error: "Tag name must be 1-30 characters" };
@@ -264,6 +265,7 @@ export async function clonePlaybook(
   const { userId } = await auth();
   if (!userId) return { error: "Not authenticated" };
 
+  await ensureProfile(userId);
   const supabase = await createClient();
 
   // Fetch source playbook — allow own playbooks or completed (shared/public) ones

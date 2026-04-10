@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, ensureProfile } from "@/lib/supabase/server";
 import type { DemoArchitecture } from "@/lib/stores/builder-store";
 import type { DemoConfig, PlaybookTemplateRow } from "@/lib/compiler/types";
 import { revalidatePath } from "next/cache";
@@ -18,6 +18,7 @@ export async function createPlaybook(input: CreatePlaybookInput) {
     return { error: "Not authenticated" };
   }
 
+  await ensureProfile(userId);
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("playbooks")
@@ -110,6 +111,7 @@ export async function createPlaybookFromTemplate(
   const { userId } = await auth();
   if (!userId) return { error: "Not authenticated" };
 
+  await ensureProfile(userId);
   const supabase = await createClient();
 
   const { data: template, error: fetchError } = await supabase

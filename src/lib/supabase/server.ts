@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 export async function createClient() {
@@ -33,4 +33,25 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+}
+
+/**
+ * Upserts the current user's profile row before any write that references
+ * profiles.id via a FK. Handles the race condition where the Clerk webhook
+ * hasn't fired yet when the user creates their first playbook or tag.
+ */
+export async function ensureProfile(userId: string): Promise<void> {
+  const user = await currentUser();
+  const email =
+    user?.emailAddresses.find((e) => e.id === user.primaryEmailAddressId)
+      ?.emailAddress ?? "";
+
+  const admin = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  await admin
+    .from("profiles")
+    .upsert({ id: userId, email }, { onConflict: "id", ignoreDuplicates: false });
 }
