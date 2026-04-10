@@ -89,12 +89,18 @@ export async function POST(req: Request) {
     case "user.updated": {
       const clerkId = event.data.id;
       const email = getPrimaryEmail(event.data);
-      if (email) {
-        await supabaseAdmin
-          .from("profiles")
-          .update({ email })
-          .eq("id", clerkId);
+      if (!email) break;
+
+      // Re-validate domain — user may have changed to a non-Twilio address
+      if (!email.endsWith("@twilio.com")) {
+        const clerk = await clerkClient();
+        await clerk.users.deleteUser(clerkId);
+        await supabaseAdmin.from("profiles").delete().eq("id", clerkId);
+        console.warn(`Account deleted: email updated to non-Twilio address (${email})`);
+        break;
       }
+
+      await supabaseAdmin.from("profiles").update({ email }).eq("id", clerkId);
       break;
     }
 

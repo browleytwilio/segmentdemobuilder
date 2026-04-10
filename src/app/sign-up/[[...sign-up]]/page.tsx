@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useSignUp } from "@clerk/nextjs/legacy";
+import { useSignUp } from "@clerk/nextjs";
 import { trackEvent } from "@/lib/analytics/events";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +37,12 @@ export default function SignUpPage() {
     if (!isLoaded || !signUp) return;
     setLoading(true);
     clearMessages();
+
+    if (!pendingVerification && !email.endsWith("@twilio.com")) {
+      setError("DemoBuilder is available to Twilio employees only. Please use your @twilio.com email.");
+      setLoading(false);
+      return;
+    }
 
     try {
       if (!pendingVerification) {
