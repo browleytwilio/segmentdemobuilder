@@ -44,9 +44,9 @@ export function FAQSection({
         )}
       </div>
       <Accordion className="space-y-4">
-        {items.map((item, i) => (
+        {items.map((item) => (
           <AccordionItem
-            key={i}
+            key={item.question}
             className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-6"
           >
             <AccordionTrigger className="text-left text-sm font-medium hover:no-underline">

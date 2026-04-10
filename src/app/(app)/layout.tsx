@@ -1,4 +1,5 @@
 import { AppNavbar } from "@/components/app-navbar";
+import { CopilotWrapper } from "@/components/ai/copilot-wrapper";
 
 export default function AppLayout({
   children,
@@ -9,6 +10,7 @@ export default function AppLayout({
     <>
       <AppNavbar />
       <main className="flex-1">{children}</main>
+      <CopilotWrapper />
     </>
   );
 }

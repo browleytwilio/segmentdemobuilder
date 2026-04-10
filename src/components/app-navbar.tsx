@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { NavLink } from "./nav-link";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
+import { LogoMark } from "./logo";
 
 export async function AppNavbar() {
   const supabase = await createClient();
@@ -17,9 +18,9 @@ export async function AppNavbar() {
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
         <Link
           href="/dashboard"
-          className="font-semibold tracking-tight whitespace-nowrap"
+          className="text-foreground hover:opacity-75 transition-opacity"
         >
-          Segment Demo Builder
+          <LogoMark size={24} />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">

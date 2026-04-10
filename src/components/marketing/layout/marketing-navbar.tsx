@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LogoMark } from "@/components/logo";
 import { navLinks, isNavGroup } from "@/lib/marketing/data/nav-links";
 import { cn } from "@/lib/utils";
 
@@ -30,13 +31,8 @@ export function MarketingNavbar() {
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-8">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-marketing-blue to-marketing-purple">
-            <span className="text-sm font-bold text-white">S</span>
-          </div>
-          <span className="text-lg font-semibold text-foreground">
-            DemoBuilder
-          </span>
+        <Link href="/" className="flex items-center text-foreground hover:opacity-80 transition-opacity">
+          <LogoMark size={26} />
         </Link>
 
         {/* Desktop Nav */}
@@ -91,16 +87,20 @@ export function MarketingNavbar() {
 
         {/* Desktop CTA */}
         <div className="hidden items-center gap-3 lg:flex">
-          <Button variant="ghost" size="sm" render={<Link href="/login" />}>
+          <Button variant="ghost" size="sm" render={<Link href="/login" />} className="text-muted-foreground hover:text-foreground">
             Sign In
           </Button>
-          <Button
-            size="sm"
-            render={<Link href="/login" />}
-            className="bg-gradient-to-r from-marketing-blue to-marketing-purple text-white hover:opacity-90"
-          >
-            Get Started
-          </Button>
+          <div className="group relative">
+            <div className="animate-glow-pulse absolute -inset-0.5 rounded-lg bg-gradient-to-r from-marketing-blue to-marketing-purple opacity-50 blur-sm" />
+            <Button
+              size="sm"
+              render={<Link href="/login" />}
+              className="relative overflow-hidden bg-gradient-to-r from-marketing-blue to-marketing-purple text-white hover:opacity-95"
+            >
+              <span className="relative z-10">Get Started</span>
+              <span className="animate-shimmer-sweep pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+            </Button>
+          </div>
         </div>
 
         {/* Mobile menu button */}

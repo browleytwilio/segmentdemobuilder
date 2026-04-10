@@ -7,10 +7,12 @@ export default async function AdminConfigPage() {
     getActivePromptTemplates(),
   ]);
 
-  if (featuresResult.error) {
+  if (featuresResult.error || templatesResult.error) {
     return (
       <div className="text-sm text-destructive">
-        Failed to load features: {featuresResult.error}
+        {featuresResult.error
+          ? `Failed to load features: ${featuresResult.error}`
+          : `Failed to load templates: ${templatesResult.error}`}
       </div>
     );
   }

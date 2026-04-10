@@ -5,10 +5,11 @@ interface GradientHeadingProps {
   as?: "h1" | "h2" | "h3";
   className?: string;
   gradient?: "default" | "blue" | "purple";
+  animated?: boolean;
 }
 
 const gradients = {
-  default: "from-white via-white/80 to-white/50",
+  default: "from-white via-white/90 to-white/50",
   blue: "from-marketing-blue via-white to-marketing-cyan",
   purple: "from-marketing-purple via-white to-marketing-blue",
 };
@@ -18,12 +19,14 @@ export function GradientHeading({
   as: Tag = "h2",
   className,
   gradient = "default",
+  animated = false,
 }: GradientHeadingProps) {
   return (
     <Tag
       className={cn(
-        "bg-gradient-to-r bg-clip-text text-transparent",
+        "bg-gradient-to-br bg-clip-text text-transparent",
         gradients[gradient],
+        animated && "animate-gradient-shift bg-[length:200%_200%]",
         Tag === "h1" && "text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl",
         Tag === "h2" && "text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl",
         Tag === "h3" && "text-2xl font-semibold tracking-tight sm:text-3xl",

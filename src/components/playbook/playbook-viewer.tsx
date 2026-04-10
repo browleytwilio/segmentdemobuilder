@@ -15,6 +15,7 @@ import {
 import { StepStepper } from "./step-stepper";
 import { PromptCard } from "./prompt-card";
 import { DemoScriptView } from "./demo-script-view";
+import { AIScriptGenerator } from "./ai-script-generator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import {
@@ -244,7 +245,17 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
           {/* SE Demo Script Tab */}
           <TabsContent value="script">
             <div className="mt-6 space-y-6">
-              <DemoScriptView markdown={demoScript} />
+              <AIScriptGenerator playbook={playbook} />
+              <div className="relative">
+                <div className="absolute inset-x-0 top-0 flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="h-px flex-1 bg-border" />
+                  <span>Static Script</span>
+                  <div className="h-px flex-1 bg-border" />
+                </div>
+                <div className="pt-6">
+                  <DemoScriptView markdown={demoScript} />
+                </div>
+              </div>
               <div className="print:hidden">
                 <Button
                   variant="outline"
@@ -252,7 +263,7 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
                   onClick={handleExportScript}
                 >
                   <DownloadIcon className="size-4" />
-                  Export Demo Script as Markdown
+                  Export Static Script as Markdown
                 </Button>
               </div>
             </div>

@@ -22,7 +22,10 @@ export async function GET(request: Request) {
       });
       return response;
     }
+
+    const errorParam = encodeURIComponent(error.message || "code-exchange-failed");
+    return NextResponse.redirect(new URL(`/login?error=${errorParam}`, origin));
   }
 
-  return NextResponse.redirect(new URL("/login?error=auth-code-error", origin));
+  return NextResponse.redirect(new URL("/login?error=missing-auth-code", origin));
 }

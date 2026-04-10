@@ -47,13 +47,27 @@ export interface SegmentPageProperties {
 // Discriminated event map — every trackEvent() call is compile-time checked
 // ---------------------------------------------------------------------------
 export interface SegmentEventMap {
-  // Auth
+  // Auth — success
   "Signed Up": { method: "email" };
-  "Signed In": { method: "email" };
-  "Magic Link Requested": Record<string, never>;
+  "Signed In": {
+    method: "email" | "magic_link" | "oauth";
+    provider?: string;
+  };
+  "Magic Link Requested": { email_domain: string };
   "OAuth Started": { provider: string };
   "Auth Callback Completed": { method: "oauth" };
-  "Signed Out": Record<string, never>;
+  "Signed Out": { method: "manual" };
+
+  // Auth — failure
+  "Sign Up Failed": { method: "email"; error: string };
+  "Sign In Failed": {
+    method: "email" | "magic_link" | "oauth";
+    error: string;
+    provider?: string;
+  };
+  "Magic Link Failed": { error: string };
+  "OAuth Failed": { provider: string; error: string };
+  "Auth Callback Failed": { error: string };
 
   // Landing & Navigation
   "CTA Clicked": { cta: string; location: string };
@@ -150,4 +164,13 @@ export interface SegmentEventMap {
   "Feature Created": { industry: string; slug: string };
   "Feature Toggled": { feature_id: string; is_active: boolean };
   "Industry Filter Changed": { industry: string };
+
+  // AI Features
+  "AI Chat Sent": { message_length: number; has_playbook_context: boolean };
+  "AI Chat Response Received": { response_time_ms: number };
+  "AI Script Generated": { playbook_id: string; industry: string; persona: string };
+  "AI Enrichment Completed": { playbook_id: string; prompt_count: number };
+  "AI Scenarios Recommended": { industry: string; persona: string; count: number };
+  "NL Builder Used": { description_length: number };
+  "AI Template Refined": { template_id: string };
 }

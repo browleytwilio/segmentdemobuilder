@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { footerLinks } from "@/lib/marketing/data/nav-links";
+import { LogoMark } from "@/components/logo";
 
 const columns = [
   { title: "Product", links: footerLinks.product },
@@ -34,13 +35,8 @@ export function MarketingFooter() {
           ))}
         </div>
         <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-white/[0.06] pt-8 sm:flex-row">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-marketing-blue to-marketing-purple">
-              <span className="text-xs font-bold text-white">S</span>
-            </div>
-            <span className="text-sm font-semibold text-foreground">
-              DemoBuilder
-            </span>
+          <div className="flex items-center gap-2.5 text-foreground/70">
+            <LogoMark size={20} />
           </div>
           <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} Segment Demo Builder. Built by Blake Rowley.

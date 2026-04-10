@@ -10,21 +10,25 @@ const steps = [
     icon: UserCircle,
     title: "Define Context",
     description: "Enter your prospect's name, industry, and target persona. The engine tailors every output to their world.",
+    color: "marketing-blue",
   },
   {
     icon: Layers,
     title: "Choose Architecture",
     description: "Toggle SE Sidebar, seeded profiles, Profile API, and more. Only build what your demo needs.",
+    color: "marketing-purple",
   },
   {
     icon: Target,
     title: "Select Scenarios",
     description: "Pick from industry-tailored personalization scenarios — each mapped to real CDP capabilities.",
+    color: "marketing-cyan",
   },
   {
     icon: Zap,
     title: "Generate Playbook",
     description: "AI compiles your choices into step-by-step build prompts and a complete SE demo script.",
+    color: "marketing-green",
   },
 ];
 
@@ -52,7 +56,9 @@ export function HomeHowItWorks() {
 
       <div className="relative mx-auto max-w-4xl">
         {/* Connecting line */}
-        <div className="absolute left-8 top-0 hidden h-full w-px bg-gradient-to-b from-marketing-blue/40 via-marketing-purple/40 to-transparent lg:left-1/2 lg:block" />
+        <div className="absolute left-8 top-8 hidden h-[calc(100%-2rem)] w-px lg:left-1/2 lg:block">
+          <div className="h-full w-full bg-gradient-to-b from-marketing-blue/40 via-marketing-purple/30 to-transparent" />
+        </div>
 
         <div className="space-y-12 lg:space-y-16">
           {steps.map((step, i) => (
@@ -67,26 +73,37 @@ export function HomeHowItWorks() {
               }`}
             >
               <div className={`flex-1 ${i % 2 === 0 ? "lg:text-right" : "lg:text-left"}`}>
-                <div
-                  className={`inline-flex items-center gap-3 ${
-                    i % 2 === 0 ? "lg:flex-row-reverse" : ""
-                  }`}
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                  className="group inline-block rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-sm transition-all duration-300 hover:border-white/[0.15] hover:bg-white/[0.05]"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03]">
-                    <step.icon className="h-5 w-5 text-marketing-blue" />
+                  <div
+                    className={`inline-flex items-center gap-3 ${
+                      i % 2 === 0 ? "lg:flex-row-reverse" : ""
+                    }`}
+                  >
+                    <div className={`relative flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.10] bg-white/[0.04] transition-all duration-300 group-hover:border-${step.color}/20 group-hover:bg-${step.color}/[0.08]`}>
+                      <step.icon className={`h-5 w-5 text-${step.color}`} />
+                    </div>
+                    <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/40">
+                      Step {i + 1}
+                    </span>
                   </div>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/50">
-                    Step {i + 1}
-                  </span>
-                </div>
-                <h3 className="mt-4 text-xl font-semibold text-foreground">
-                  {step.title}
-                </h3>
-                <p className="mt-2 text-muted-foreground">{step.description}</p>
+                  <h3 className="mt-4 text-xl font-semibold text-foreground">
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {step.description}
+                  </p>
+                </motion.div>
               </div>
 
-              {/* Center dot */}
-              <div className="hidden h-4 w-4 shrink-0 rounded-full border-2 border-marketing-blue bg-background lg:mt-4 lg:block" />
+              {/* Center node */}
+              <div className="relative hidden lg:mt-10 lg:block lg:shrink-0">
+                <div className="animate-glow-pulse absolute -inset-1.5 rounded-full bg-marketing-blue/20 blur-sm" />
+                <div className="relative h-4 w-4 rounded-full border-2 border-marketing-blue bg-background" />
+              </div>
 
               <div className="hidden flex-1 lg:block" />
             </motion.div>

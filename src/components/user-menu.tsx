@@ -23,7 +23,7 @@ export function UserMenu({ email }: UserMenuProps) {
   const initial = email.charAt(0).toUpperCase();
 
   async function handleLogout() {
-    trackEvent("Signed Out", {});
+    trackEvent("Signed Out", { method: "manual" });
     resetAnalytics();
     const supabase = createClient();
     await supabase.auth.signOut();

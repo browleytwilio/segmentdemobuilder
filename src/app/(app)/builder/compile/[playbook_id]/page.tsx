@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangleIcon } from "lucide-react";
 import { trackEvent } from "@/lib/analytics/events";
 
-type CompilePhase = "loading" | "compiling" | "saving" | "redirecting" | "error";
+type CompilePhase = "loading" | "compiling" | "enriching" | "saving" | "redirecting" | "error";
 
 export default function CompilePage({
   params,
@@ -75,7 +75,31 @@ export default function CompilePage({
           keys: store.keys,
           versions,
         };
-        const variantA = compilePromptsWithTemplates(input, dbTemplates);
+        let variantA = compilePromptsWithTemplates(input, dbTemplates);
+
+        // 3b. AI Enrichment (best-effort — falls back to original on failure)
+        setTrackedPhase("enriching");
+        try {
+          const enrichRes = await fetch("/api/ai/enrich", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              prompts: variantA,
+              context: {
+                persona: store.persona,
+                industry: store.industry,
+                customerName: store.customerName,
+                architecture: store.architecture,
+              },
+            }),
+          });
+          if (enrichRes.ok) {
+            const { enrichedPrompts } = await enrichRes.json();
+            variantA = enrichedPrompts;
+          }
+        } catch {
+          // AI enrichment is best-effort — continue with original prompts
+        }
 
         // 4. Sanitize to Variant B (placeholders)
         setTrackedPhase("saving");
@@ -89,8 +113,14 @@ export default function CompilePage({
         });
 
         if (!patchRes.ok) {
-          const data = await patchRes.json();
-          throw new Error(data.error || "Failed to save playbook");
+          let errorMsg = "Failed to save playbook";
+          try {
+            const data = await patchRes.json();
+            errorMsg = data.error || errorMsg;
+          } catch {
+            // Response wasn't JSON — use default message
+          }
+          throw new Error(errorMsg);
         }
 
         // 6. Redirect to playbook viewer
@@ -135,6 +165,7 @@ export default function CompilePage({
   const labels: Record<string, string> = {
     loading: "Fetching dependency versions...",
     compiling: "Compiling prompts...",
+    enriching: "Enhancing prompts with AI...",
     saving: "Saving playbook...",
     redirecting: "Opening playbook...",
   };

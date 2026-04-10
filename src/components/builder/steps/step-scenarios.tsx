@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { trackEvent } from "@/lib/analytics/events";
+import { ScenarioRecommendations } from "@/components/builder/scenario-recommendations";
 
 interface DemoFeature {
   id: string;
@@ -27,8 +28,15 @@ interface StepScenariosProps {
 }
 
 export function StepScenarios({ onNext, onBack }: StepScenariosProps) {
-  const { industry, selectedScenarios, updateContext, updateArchitecture } =
-    useBuilderStore();
+  const {
+    industry,
+    customerName,
+    persona,
+    architecture,
+    selectedScenarios,
+    updateContext,
+    updateArchitecture,
+  } = useBuilderStore();
 
   const [features, setFeatures] = useState<DemoFeature[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,6 +116,20 @@ export function StepScenarios({ onNext, onBack }: StepScenariosProps) {
           control={control}
           render={({ field }) => (
             <div className="space-y-3">
+              <ScenarioRecommendations
+                customerName={customerName}
+                industry={industry}
+                persona={persona}
+                architecture={architecture}
+                features={features}
+                selectedIds={field.value}
+                onToggle={(featureId, checked) => {
+                  const next = checked
+                    ? [...field.value, featureId]
+                    : field.value.filter((v) => v !== featureId);
+                  field.onChange(next);
+                }}
+              />
               {features.map((feature) => {
                 const isChecked = field.value.includes(feature.id);
                 return (

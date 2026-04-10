@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { trackEvent } from "@/lib/analytics/events";
+import { AITemplateAssistant } from "@/components/admin/ai-template-assistant";
 
 interface PromptTemplate {
   id: string;
@@ -292,6 +293,15 @@ export function PromptEditor({
                 ))}
               </div>
             </div>
+
+            {/* AI Template Assistant */}
+            {!isCodeManaged && (
+              <AITemplateAssistant
+                templateId={selected.id}
+                templateContent={editorContent}
+                onAccept={(refined) => setEditorContent(refined)}
+              />
+            )}
           </>
         ) : (
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
