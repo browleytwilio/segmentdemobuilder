@@ -1,138 +1,16 @@
-import type { ComputedTraitDefinition } from "../api";
-
 /**
- * 27 computed traits organized by purpose.
- * These enrich every user profile with aggregated usage metrics.
+ * 27 computed trait definitions for Segment Unify.
+ *
+ * The Segment Public API uses a string-based query language for definitions.
+ * Note: Creating computed traits may require elevated token permissions
+ * (Engage Admin). If the API returns 403, these definitions can be
+ * created manually in the Segment UI (Unify > Computed Traits).
  */
 
-// ---------------------------------------------------------------------------
-// Helpers — DRY builders for the three main patterns
-// ---------------------------------------------------------------------------
-
-function eventCount(
-  name: string,
-  description: string,
-  eventName: string
-): ComputedTraitDefinition {
-  return {
-    name,
-    description,
-    enabled: true,
-    definition: {
-      type: "USERS",
-      query: {
-        type: "EVENT_PROPERTY",
-        event: { name: eventName },
-        aggregation: "count",
-      },
-    },
-  };
-}
-
-function multiEventCount(
-  name: string,
-  description: string,
-  eventNames: string[]
-): ComputedTraitDefinition {
-  return {
-    name,
-    description,
-    enabled: true,
-    definition: {
-      type: "USERS",
-      query: {
-        type: "OR",
-        children: eventNames.map((e) => ({
-          type: "EVENT_PROPERTY",
-          event: { name: e },
-          aggregation: "count",
-        })),
-      },
-    },
-  };
-}
-
-function eventOccurred(
-  name: string,
-  description: string,
-  eventName: string
-): ComputedTraitDefinition {
-  return {
-    name,
-    description,
-    enabled: true,
-    definition: {
-      type: "USERS",
-      query: {
-        type: "EVENT",
-        operator: "at_least_once",
-        event: { name: eventName },
-      },
-    },
-  };
-}
-
-function multiEventOccurred(
-  name: string,
-  description: string,
-  eventNames: string[]
-): ComputedTraitDefinition {
-  return {
-    name,
-    description,
-    enabled: true,
-    definition: {
-      type: "USERS",
-      query: {
-        type: "OR",
-        children: eventNames.map((e) => ({
-          type: "EVENT",
-          operator: "at_least_once",
-          event: { name: e },
-        })),
-      },
-    },
-  };
-}
-
-function lastEventTimestamp(
-  name: string,
-  description: string,
-  eventName: string
-): ComputedTraitDefinition {
-  return {
-    name,
-    description,
-    enabled: true,
-    definition: {
-      type: "USERS",
-      query: {
-        type: "EVENT_PROPERTY",
-        event: { name: eventName },
-        aggregation: "last_timestamp",
-      },
-    },
-  };
-}
-
-function firstEventTimestamp(
-  name: string,
-  description: string,
-  eventName: string
-): ComputedTraitDefinition {
-  return {
-    name,
-    description,
-    enabled: true,
-    definition: {
-      type: "USERS",
-      query: {
-        type: "EVENT_PROPERTY",
-        event: { name: eventName },
-        aggregation: "first_timestamp",
-      },
-    },
-  };
+export interface ComputedTraitDefinition {
+  name: string;
+  description: string;
+  query: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -140,56 +18,56 @@ function firstEventTimestamp(
 // ---------------------------------------------------------------------------
 
 const volumeMetrics: ComputedTraitDefinition[] = [
-  eventCount(
-    "total_playbooks_created",
-    "Lifetime count of playbooks created by this user",
-    "Playbook Created"
-  ),
-  eventCount(
-    "total_compilations",
-    "Lifetime count of successful playbook compilations",
-    "Compilation Completed"
-  ),
-  eventCount(
-    "total_compilations_failed",
-    "Lifetime count of failed playbook compilations",
-    "Compilation Failed"
-  ),
-  eventCount(
-    "total_prompts_copied",
-    "Lifetime count of prompts copied to clipboard",
-    "Prompt Copied"
-  ),
-  multiEventCount(
-    "total_exports",
-    "Total exports (prompts + demo scripts)",
-    ["Prompts Exported", "Demo Script Exported"]
-  ),
-  multiEventCount(
-    "total_shares",
-    "Total sharing actions (link copies + visibility changes)",
-    ["Share Link Copied", "Playbook Visibility Changed"]
-  ),
-  eventCount(
-    "total_comments_added",
-    "Lifetime count of comments posted on playbooks",
-    "Comment Added"
-  ),
-  multiEventCount(
-    "total_clones",
-    "Total playbook clones and forks",
-    ["Playbook Cloned", "Shared Playbook Forked"]
-  ),
-  eventCount(
-    "total_steps_completed",
-    "Total prompt steps marked as complete",
-    "Step Marked Complete"
-  ),
-  multiEventCount(
-    "total_ai_interactions",
-    "Total AI feature interactions (chat, script gen, NL builder, enrichment)",
-    ["AI Chat Sent", "AI Script Generated", "NL Builder Used", "AI Enrichment Completed"]
-  ),
+  {
+    name: "total_playbooks_created",
+    description: "Lifetime count of playbooks created by this user",
+    query: 'event("Playbook Created").count()',
+  },
+  {
+    name: "total_compilations",
+    description: "Lifetime count of successful playbook compilations",
+    query: 'event("Compilation Completed").count()',
+  },
+  {
+    name: "total_compilations_failed",
+    description: "Lifetime count of failed playbook compilations",
+    query: 'event("Compilation Failed").count()',
+  },
+  {
+    name: "total_prompts_copied",
+    description: "Lifetime count of prompts copied to clipboard",
+    query: 'event("Prompt Copied").count()',
+  },
+  {
+    name: "total_exports",
+    description: "Total exports (prompts + demo scripts)",
+    query: 'event("Prompts Exported").count() + event("Demo Script Exported").count()',
+  },
+  {
+    name: "total_shares",
+    description: "Total sharing actions (link copies + visibility changes)",
+    query: 'event("Share Link Copied").count() + event("Playbook Visibility Changed").count()',
+  },
+  {
+    name: "total_comments_added",
+    description: "Lifetime count of comments posted on playbooks",
+    query: 'event("Comment Added").count()',
+  },
+  {
+    name: "total_clones",
+    description: "Total playbook clones and forks",
+    query: 'event("Playbook Cloned").count() + event("Shared Playbook Forked").count()',
+  },
+  {
+    name: "total_steps_completed",
+    description: "Total prompt steps marked as complete",
+    query: 'event("Step Marked Complete").count()',
+  },
+  {
+    name: "total_ai_interactions",
+    description: "Total AI feature interactions (chat, script gen, NL builder, enrichment)",
+    query: 'event("AI Chat Sent").count() + event("AI Script Generated").count() + event("NL Builder Used").count() + event("AI Enrichment Completed").count()',
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -197,76 +75,76 @@ const volumeMetrics: ComputedTraitDefinition[] = [
 // ---------------------------------------------------------------------------
 
 const adoptionFlags: ComputedTraitDefinition[] = [
-  eventOccurred(
-    "has_created_playbook",
-    "Whether this user has ever created a playbook",
-    "Playbook Created"
-  ),
-  eventOccurred(
-    "has_completed_playbook",
-    "Whether this user has ever completed a compilation",
-    "Compilation Completed"
-  ),
-  eventOccurred(
-    "has_used_ai_chat",
-    "Whether this user has ever used the AI Copilot chat",
-    "AI Chat Sent"
-  ),
-  eventOccurred(
-    "has_used_ai_script",
-    "Whether this user has ever generated an AI demo script",
-    "AI Script Generated"
-  ),
-  eventOccurred(
-    "has_used_ai_enrichment",
-    "Whether this user has ever triggered AI prompt enrichment",
-    "AI Enrichment Completed"
-  ),
-  eventOccurred(
-    "has_used_nl_builder",
-    "Whether this user has ever used the natural language builder",
-    "NL Builder Used"
-  ),
-  eventOccurred(
-    "has_used_templates",
-    "Whether this user has ever created a playbook from a template",
-    "Template Used"
-  ),
-  eventOccurred(
-    "has_shared_playbook",
-    "Whether this user has ever changed playbook visibility",
-    "Playbook Visibility Changed"
-  ),
-  eventOccurred(
-    "has_added_comments",
-    "Whether this user has ever commented on a playbook",
-    "Comment Added"
-  ),
-  eventOccurred(
-    "has_cloned_playbook",
-    "Whether this user has ever cloned or forked a playbook",
-    "Playbook Cloned"
-  ),
-  multiEventOccurred(
-    "has_used_tags",
-    "Whether this user has ever created or applied tags",
-    ["Tag Created", "Tag Applied"]
-  ),
-  eventOccurred(
-    "has_used_search",
-    "Whether this user has ever used dashboard search",
-    "Dashboard Searched"
-  ),
-  eventOccurred(
-    "has_used_favorites",
-    "Whether this user has ever favorited a playbook",
-    "Playbook Favorited"
-  ),
-  eventOccurred(
-    "has_viewed_shared_playbooks",
-    "Whether this user has ever viewed the shared playbooks tab",
-    "Shared Playbooks Viewed"
-  ),
+  {
+    name: "has_created_playbook",
+    description: "Whether this user has ever created a playbook",
+    query: 'event("Playbook Created").count() > 0',
+  },
+  {
+    name: "has_completed_playbook",
+    description: "Whether this user has ever completed a compilation",
+    query: 'event("Compilation Completed").count() > 0',
+  },
+  {
+    name: "has_used_ai_chat",
+    description: "Whether this user has ever used the AI Copilot chat",
+    query: 'event("AI Chat Sent").count() > 0',
+  },
+  {
+    name: "has_used_ai_script",
+    description: "Whether this user has ever generated an AI demo script",
+    query: 'event("AI Script Generated").count() > 0',
+  },
+  {
+    name: "has_used_ai_enrichment",
+    description: "Whether this user has ever triggered AI prompt enrichment",
+    query: 'event("AI Enrichment Completed").count() > 0',
+  },
+  {
+    name: "has_used_nl_builder",
+    description: "Whether this user has ever used the natural language builder",
+    query: 'event("NL Builder Used").count() > 0',
+  },
+  {
+    name: "has_used_templates",
+    description: "Whether this user has ever created a playbook from a template",
+    query: 'event("Template Used").count() > 0',
+  },
+  {
+    name: "has_shared_playbook",
+    description: "Whether this user has ever changed playbook visibility",
+    query: 'event("Playbook Visibility Changed").count() > 0',
+  },
+  {
+    name: "has_added_comments",
+    description: "Whether this user has ever commented on a playbook",
+    query: 'event("Comment Added").count() > 0',
+  },
+  {
+    name: "has_cloned_playbook",
+    description: "Whether this user has ever cloned or forked a playbook",
+    query: 'event("Playbook Cloned").count() > 0',
+  },
+  {
+    name: "has_used_tags",
+    description: "Whether this user has ever created or applied tags",
+    query: 'event("Tag Created").count() + event("Tag Applied").count() > 0',
+  },
+  {
+    name: "has_used_search",
+    description: "Whether this user has ever used dashboard search",
+    query: 'event("Dashboard Searched").count() > 0',
+  },
+  {
+    name: "has_used_favorites",
+    description: "Whether this user has ever favorited a playbook",
+    query: 'event("Playbook Favorited").count() > 0',
+  },
+  {
+    name: "has_viewed_shared_playbooks",
+    description: "Whether this user has ever viewed the shared playbooks tab",
+    query: 'event("Shared Playbooks Viewed").count() > 0',
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -274,21 +152,21 @@ const adoptionFlags: ComputedTraitDefinition[] = [
 // ---------------------------------------------------------------------------
 
 const recencyTimestamps: ComputedTraitDefinition[] = [
-  lastEventTimestamp(
-    "last_active_at",
-    "Timestamp of the user's most recent tracked event",
-    "Dashboard Viewed"
-  ),
-  lastEventTimestamp(
-    "last_playbook_created_at",
-    "Timestamp of user's most recent playbook creation",
-    "Playbook Created"
-  ),
-  firstEventTimestamp(
-    "first_playbook_created_at",
-    "Timestamp of user's first ever playbook creation",
-    "Playbook Created"
-  ),
+  {
+    name: "last_active_at",
+    description: "Timestamp of the user's most recent dashboard view",
+    query: 'event("Dashboard Viewed").last_timestamp()',
+  },
+  {
+    name: "last_playbook_created_at",
+    description: "Timestamp of user's most recent playbook creation",
+    query: 'event("Playbook Created").last_timestamp()',
+  },
+  {
+    name: "first_playbook_created_at",
+    description: "Timestamp of user's first ever playbook creation",
+    query: 'event("Playbook Created").first_timestamp()',
+  },
 ];
 
 // ---------------------------------------------------------------------------

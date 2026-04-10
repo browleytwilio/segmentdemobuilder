@@ -5,10 +5,12 @@ import { HomeStats } from "./home-stats";
 import { HomeTestimonials } from "./home-testimonials";
 import { CTASection } from "@/components/marketing/sections/cta-section";
 import { DataFlowVisualizer } from "@/components/marketing/sections/data-flow-visualizer";
+import { ScrollGradient } from "@/components/marketing/sections/scroll-gradient";
 
 export default function MarketingHomePage() {
   return (
     <>
+      <ScrollGradient />
       <HomeHero />
       <HomeFeatures />
       <DataFlowVisualizer />

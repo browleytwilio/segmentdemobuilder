@@ -38,18 +38,19 @@ export interface AudienceSummary {
   status: string;
 }
 
-export interface ComputedTraitDefinition {
+export interface CreateComputedTraitPayload {
   name: string;
   description: string;
-  definition: Record<string, unknown>;
   enabled: boolean;
+  definition: { query: string };
 }
 
-export interface AudienceDefinition {
+export interface CreateAudiencePayload {
   name: string;
   description: string;
-  definition: Record<string, unknown>;
   enabled: boolean;
+  audienceType: "USERS";
+  definition: { query: string };
 }
 
 export interface ProvisionResult {
@@ -96,17 +97,17 @@ export async function listComputedTraits(): Promise<ComputedTraitSummary[]> {
 }
 
 export async function createComputedTrait(
-  def: ComputedTraitDefinition
+  payload: CreateComputedTraitPayload,
 ): Promise<{ id: string }> {
   const res = await fetch(`${BASE_URL}/spaces/${SPACE_ID}/computed-traits`, {
     method: "POST",
     headers: headers(),
-    body: JSON.stringify({ computedTrait: def }),
+    body: JSON.stringify(payload),
   });
 
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`POST computed-trait "${def.name}" failed (${res.status}): ${body}`);
+    throw new Error(`POST computed-trait "${payload.name}" failed (${res.status}): ${body}`);
   }
 
   const json = await res.json();
@@ -139,17 +140,17 @@ export async function listAudiences(): Promise<AudienceSummary[]> {
 }
 
 export async function createAudience(
-  def: AudienceDefinition
+  payload: CreateAudiencePayload,
 ): Promise<{ id: string }> {
   const res = await fetch(`${BASE_URL}/spaces/${SPACE_ID}/audiences`, {
     method: "POST",
     headers: headers(),
-    body: JSON.stringify({ audience: def }),
+    body: JSON.stringify(payload),
   });
 
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`POST audience "${def.name}" failed (${res.status}): ${body}`);
+    throw new Error(`POST audience "${payload.name}" failed (${res.status}): ${body}`);
   }
 
   const json = await res.json();

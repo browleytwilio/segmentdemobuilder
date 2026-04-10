@@ -51,8 +51,8 @@ export function EventTicker({ className }: { className?: string }) {
       href="/how-it-works"
       onClick={() => trackEvent("CTA Clicked", { cta: "Event Ticker", location: "event_ticker" })}
       className={cn(
-        "group/ticker relative block overflow-hidden border-b border-white/[0.05] bg-white/[0.02]",
-        "hidden sm:block",
+        "group/ticker block overflow-hidden border-b border-white/[0.05] bg-background/80 backdrop-blur-xl",
+        "hidden sm:fixed sm:top-16 sm:left-0 sm:right-0 sm:z-40",
         className
       )}
     >

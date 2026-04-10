@@ -167,7 +167,7 @@ export function HomeHero() {
               </div>
 
               {/* Compilation terminal */}
-              <div className="relative p-4 overflow-hidden">
+              <div className="relative p-6 overflow-hidden">
                 {/* Scan line */}
                 <div className="animate-scan-line pointer-events-none absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-marketing-blue/40 to-transparent" />
                 <TerminalAnimation />

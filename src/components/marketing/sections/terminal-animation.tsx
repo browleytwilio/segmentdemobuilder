@@ -175,11 +175,11 @@ export function TerminalAnimation() {
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Phase indicators */}
-      <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1 px-1">
+      <div className="mb-4 flex flex-wrap gap-x-6 gap-y-2 px-2">
         {phases.map((phase, i) => (
           <div
             key={phase.label}
-            className="flex items-center gap-1.5 text-[11px]"
+            className="flex items-center gap-1.5 text-xs"
           >
             <AnimatePresence mode="wait">
               {completedPhases.includes(i) ? (
@@ -220,7 +220,7 @@ export function TerminalAnimation() {
       {/* Terminal output */}
       <div
         ref={scrollRef}
-        className="h-[160px] overflow-y-auto overflow-x-hidden rounded-lg bg-black/40 p-3 font-mono text-[11px] leading-[1.7] scrollbar-thin"
+        className="h-[300px] overflow-y-auto overflow-x-hidden rounded-lg bg-black/40 p-5 font-mono text-[13px] leading-relaxed scrollbar-thin"
       >
         {visibleLines.map((line, i) => (
           <div key={i} className={lineColor(line)}>

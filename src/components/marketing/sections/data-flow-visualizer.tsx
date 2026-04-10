@@ -32,6 +32,17 @@ import {
 } from "@/lib/marketing/data/data-flow-events";
 
 /* ------------------------------------------------------------------ */
+/* Color map (CSS custom properties — dynamic Tailwind classes unsafe) */
+/* ------------------------------------------------------------------ */
+
+const colorVars: Record<string, string> = {
+  "marketing-blue":   "var(--marketing-blue)",
+  "marketing-purple": "var(--marketing-purple)",
+  "marketing-green":  "var(--marketing-green)",
+  "marketing-cyan":   "var(--marketing-cyan)",
+};
+
+/* ------------------------------------------------------------------ */
 /* Icon resolver                                                       */
 /* ------------------------------------------------------------------ */
 
@@ -152,7 +163,8 @@ function destPath(
 }
 
 function getNodeY(index: number, count: number, height: number): number {
-  const pad = 40;
+  // 28px column py-padding + 20px (half of h-10 node) = 48px to first node centre
+  const pad = 48;
   const space = (height - pad * 2) / Math.max(count - 1, 1);
   return pad + index * space;
 }
@@ -233,8 +245,8 @@ export function DataFlowVisualizer() {
   const flow = industryFlows[activeIndustry];
 
   // SVG dimensions
-  const SVG_W = 600;
-  const SVG_H = 220;
+  const SVG_W = 700;
+  const SVG_H = 360;
 
   // Build path refs
   const sourcePathRefs = useRef<(SVGPathElement | null)[]>([]);
@@ -308,10 +320,8 @@ export function DataFlowVisualizer() {
                   className="flex items-center gap-1.5 rounded-full border border-white/[0.06] bg-white/[0.03] px-3 py-1 text-[11px] text-white/50"
                 >
                   <span
-                    className={cn(
-                      "h-1.5 w-1.5 rounded-full",
-                      `bg-${ev.color}`
-                    )}
+                    className="h-1.5 w-1.5 rounded-full shrink-0"
+                    style={{ backgroundColor: colorVars[ev.color] ?? "white" }}
                   />
                   {ev.label}
                 </motion.span>
@@ -321,12 +331,12 @@ export function DataFlowVisualizer() {
 
           {/* Desktop: full SVG flow */}
           <div className="hidden sm:block">
-            <div className="relative mx-auto" style={{ maxWidth: SVG_W + 200 }}>
+            <div className="relative mx-auto" style={{ maxWidth: SVG_W + 260 }}>
               {/* Source nodes */}
               <NodeColumn nodes={flow.sources} side="left" height={SVG_H} />
 
               {/* SVG canvas */}
-              <div className="mx-[100px]">
+              <div className="mx-[130px]">
                 <svg
                   ref={svgRef}
                   viewBox={`0 0 ${SVG_W} ${SVG_H}`}
@@ -340,7 +350,7 @@ export function DataFlowVisualizer() {
                       ref={(el) => { sourcePathRefs.current[i] = el; }}
                       d={d}
                       fill="none"
-                      stroke="rgba(255,255,255,0.06)"
+                      stroke="rgba(255,255,255,0.10)"
                       strokeWidth={1.5}
                     />
                   ))}
@@ -351,7 +361,7 @@ export function DataFlowVisualizer() {
                       ref={(el) => { destPathRefs.current[i] = el; }}
                       d={d}
                       fill="none"
-                      stroke="rgba(255,255,255,0.06)"
+                      stroke="rgba(255,255,255,0.10)"
                       strokeWidth={1.5}
                     />
                   ))}
@@ -360,15 +370,23 @@ export function DataFlowVisualizer() {
                   <circle
                     cx={SVG_W / 2}
                     cy={SVG_H / 2}
-                    r={24}
+                    r={38}
                     fill="rgba(255,255,255,0.03)"
-                    stroke="rgba(255,255,255,0.1)"
+                    stroke="rgba(255,255,255,0.12)"
+                    strokeWidth={1.5}
+                  />
+                  <circle
+                    cx={SVG_W / 2}
+                    cy={SVG_H / 2}
+                    r={26}
+                    fill="rgba(255,255,255,0.015)"
+                    stroke="rgba(255,255,255,0.06)"
                     strokeWidth={1}
                   />
                   <circle
                     cx={SVG_W / 2}
                     cy={SVG_H / 2}
-                    r={14}
+                    r={18}
                     fill="url(#hubGradient)"
                     className={reduced ? "" : "animate-glow-pulse"}
                   />
@@ -403,11 +421,11 @@ export function DataFlowVisualizer() {
                             key={p.id}
                             cx={pt.x}
                             cy={pt.y}
-                            r={3}
-                            className={`fill-${flow.events[evIndex].color}`}
+                            r={3.5}
+                            style={{ fill: colorVars[flow.events[evIndex].color] ?? "white" }}
                             opacity={
-                              0.8 -
-                              Math.abs(p.progress - 0.5) * 0.6
+                              0.9 -
+                              Math.abs(p.progress - 0.5) * 0.5
                             }
                           />
                         );
@@ -419,7 +437,10 @@ export function DataFlowVisualizer() {
                     y={SVG_H / 2 + 1}
                     textAnchor="middle"
                     dominantBaseline="central"
-                    className="fill-white/70 text-[9px] font-bold tracking-wider"
+                    fontSize="11"
+                    fontWeight="700"
+                    letterSpacing="0.08em"
+                    fill="rgba(255,255,255,0.75)"
                   >
                     CDP
                   </text>

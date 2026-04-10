@@ -18,6 +18,10 @@ import { ALL_AUDIENCES } from "@/lib/segment/definitions/audiences";
  *
  * Skips resources that already exist (matched by name).
  * Returns a summary of created / skipped / failed resources.
+ *
+ * Note: Computed traits may return 403 if the API token lacks
+ * Engage Admin permissions — these are logged as failed with
+ * a hint to create them via the Segment UI instead.
  */
 export async function POST() {
   // Auth: require super_admin
@@ -40,7 +44,7 @@ export async function POST() {
   if (!process.env.SEGMENT_SPACE_ID) {
     return Response.json(
       { error: "SEGMENT_SPACE_ID not configured" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -54,33 +58,63 @@ export async function POST() {
     const traits = await listComputedTraits();
     existingTraits = new Map(traits.map((t) => [t.name, t.id]));
   } catch (err) {
-    return Response.json(
-      { error: `Failed to list computed traits: ${err}` },
-      { status: 502 }
-    );
+    // If listing fails with 403, skip all computed traits gracefully
+    const msg = String(err);
+    if (msg.includes("403")) {
+      for (const def of ALL_COMPUTED_TRAITS) {
+        results.push({
+          name: def.name,
+          type: "computed_trait",
+          status: "failed",
+          error: "403 Forbidden — token lacks Engage Admin permissions. Create via Segment UI.",
+        });
+      }
+    } else {
+      return Response.json(
+        { error: `Failed to list computed traits: ${err}` },
+        { status: 502 },
+      );
+    }
+    existingTraits = new Map();
   }
 
-  for (const def of ALL_COMPUTED_TRAITS) {
-    if (existingTraits.has(def.name)) {
-      results.push({
-        name: def.name,
-        type: "computed_trait",
-        status: "skipped",
-        id: existingTraits.get(def.name),
-      });
-      continue;
-    }
+  // Only attempt creation if listing succeeded
+  if (results.filter((r) => r.type === "computed_trait").length === 0) {
+    for (const def of ALL_COMPUTED_TRAITS) {
+      if (existingTraits.has(def.name)) {
+        results.push({
+          name: def.name,
+          type: "computed_trait",
+          status: "skipped",
+          id: existingTraits.get(def.name),
+        });
+        continue;
+      }
 
-    try {
-      const { id } = await createComputedTrait(def);
-      results.push({ name: def.name, type: "computed_trait", status: "created", id });
-    } catch (err) {
-      results.push({
-        name: def.name,
-        type: "computed_trait",
-        status: "failed",
-        error: String(err),
-      });
+      try {
+        const { id } = await createComputedTrait({
+          name: def.name,
+          description: def.description,
+          enabled: true,
+          definition: { query: def.query },
+        });
+        results.push({
+          name: def.name,
+          type: "computed_trait",
+          status: "created",
+          id,
+        });
+      } catch (err) {
+        const msg = String(err);
+        results.push({
+          name: def.name,
+          type: "computed_trait",
+          status: "failed",
+          error: msg.includes("403")
+            ? "403 Forbidden — create via Segment UI (Unify > Computed Traits)"
+            : msg,
+        });
+      }
     }
   }
 
@@ -94,7 +128,7 @@ export async function POST() {
   } catch (err) {
     return Response.json(
       { error: `Failed to list audiences: ${err}` },
-      { status: 502 }
+      { status: 502 },
     );
   }
 
@@ -111,7 +145,12 @@ export async function POST() {
 
     try {
       const { id } = await createAudience(def);
-      results.push({ name: def.name, type: "audience", status: "created", id });
+      results.push({
+        name: def.name,
+        type: "audience",
+        status: "created",
+        id,
+      });
     } catch (err) {
       results.push({
         name: def.name,
