@@ -172,22 +172,34 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold">
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold tracking-tight">
               {playbook.customer_name}
             </h1>
-            <p className="text-sm text-muted-foreground">
-              {playbook.industry} Playbook
-            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                {playbook.industry}
+              </span>
+              <span className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium ${
+                playbook.status === "completed"
+                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                  : "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+              }`}>
+                {playbook.status === "completed" ? "Completed" : "Draft"}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {prompts.length} step{prompts.length !== 1 ? "s" : ""}
+              </span>
+            </div>
           </div>
-          <div className="flex gap-2 print:hidden">
+          <div className="flex gap-1.5 print:hidden">
             <Button variant="outline" size="sm" onClick={handleShare}>
               <ShareIcon className="size-3.5" />
-              Share
+              <span className="hidden sm:inline">Share</span>
             </Button>
             <Button variant="outline" size="sm" onClick={handlePrint}>
               <PrinterIcon className="size-3.5" />
-              PDF
+              <span className="hidden sm:inline">PDF</span>
             </Button>
           </div>
         </div>

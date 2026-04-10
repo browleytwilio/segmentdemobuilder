@@ -57,6 +57,7 @@ export interface SegmentEventMap {
   "Magic Link Requested": { email_domain: string };
   "OAuth Started": { provider: string };
   "Signed Out": { method: "manual" };
+  "Profile Updated": { field: string };
 
   // Auth — failure
   "Sign Up Failed": { method: "email"; error: string };
@@ -206,4 +207,11 @@ export interface SegmentEventMap {
   "Admin Playbook Visibility Changed": { playbook_id: string; visibility: string; owner_email: string };
   "Admin Playbooks Filtered": { filter_type: "industry" | "status" | "q"; filter_value: string };
   "Admin Playbook Opened": { playbook_id: string; industry: string; owner_email: string };
+
+  // UX Interactions
+  "Mobile Nav Toggled": { action: "open" | "close" };
+  "Quick Action Used": { action: string; playbook_id: string };
+  "Playbook Card Hovered": { playbook_id: string; duration_ms: number };
+  "Builder Mode Selected": { mode: "wizard" | "describe" | "templates" };
+  "Admin Tab Navigated": { tab: string };
 }

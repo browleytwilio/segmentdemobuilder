@@ -62,7 +62,7 @@ export function CTASection({
         <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
           {description}
         </p>
-        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <div className="mt-8 flex flex-col items-stretch justify-center gap-3 px-4 sm:flex-row sm:items-center sm:gap-4 sm:px-0">
           <div className="group relative">
             <div className="animate-glow-pulse absolute -inset-0.5 rounded-xl bg-gradient-to-r from-marketing-blue to-marketing-purple opacity-60 blur-sm" />
             <Button
@@ -74,7 +74,7 @@ export function CTASection({
                   location: "cta_section",
                 })
               }
-              className="relative overflow-hidden bg-gradient-to-r from-marketing-blue to-marketing-purple text-white hover:opacity-95"
+              className="relative w-full overflow-hidden bg-gradient-to-r from-marketing-blue to-marketing-purple text-white hover:opacity-95 sm:w-auto"
             >
               <span className="relative z-10 flex items-center gap-2">
                 {primaryCta.label}
@@ -94,7 +94,7 @@ export function CTASection({
                   location: "cta_section",
                 })
               }
-              className="border-white/[0.12] bg-white/[0.03] backdrop-blur-sm hover:bg-white/[0.06] hover:border-white/20"
+              className="w-full border-white/[0.12] bg-white/[0.03] backdrop-blur-sm hover:bg-white/[0.06] hover:border-white/20 sm:w-auto"
             >
               {secondaryCta.label}
             </Button>

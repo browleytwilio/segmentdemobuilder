@@ -1,12 +1,9 @@
 import { Suspense } from "react";
-import Link from "next/link";
 import { getPlaybooks, getSharedPlaybooks, getTags } from "./actions";
 import { DashboardGrid } from "./dashboard-grid";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { DashboardFilters } from "@/components/dashboard/dashboard-filters";
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
-import { PageHeader } from "@/components/page-header";
-import { Button } from "@/components/ui/button";
 import { BookOpenIcon } from "lucide-react";
 import { NewPlaybookButton } from "./new-playbook-button";
 import type { PlaybookFilters } from "./actions";
@@ -48,41 +45,55 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   );
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 space-y-6">
-      <PageHeader
-        title="Dashboard"
-        description="Manage your demo playbooks"
-        action={<NewPlaybookButton location="header" />}
-      />
+    <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
+      {/* Header */}
+      <div className="flex items-end justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">
+            {playbooks.length > 0
+              ? `${playbooks.length} playbook${playbooks.length !== 1 ? "s" : ""}`
+              : "Manage your demo playbooks"}
+          </p>
+        </div>
+        <NewPlaybookButton location="header" />
+      </div>
 
+      {/* Stats */}
       {activeTab === "mine" && <DashboardStats playbooks={playbooks} />}
 
+      {/* Tabs + Filters */}
       <Suspense>
-        <div className="flex flex-wrap items-center gap-4">
-          <DashboardTabs activeTab={activeTab} />
-          <div className="flex-1">
-            <DashboardFilters />
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <DashboardTabs activeTab={activeTab} />
+            <div className="flex-1 min-w-0">
+              <DashboardFilters />
+            </div>
           </div>
         </div>
       </Suspense>
 
+      {/* Content */}
       {playbooks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border py-16 text-center space-y-3">
-          <BookOpenIcon className="size-10 text-muted-foreground/50" />
-          <div>
-            <p className="font-medium">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed py-20 text-center space-y-4">
+          <div className="rounded-full bg-muted p-4">
+            <BookOpenIcon className="size-8 text-muted-foreground/60" />
+          </div>
+          <div className="space-y-1.5 max-w-sm">
+            <p className="font-semibold text-lg">
               {isFiltered
-                ? "No playbooks match your filters"
+                ? "No matching playbooks"
                 : activeTab === "shared"
                   ? "No shared playbooks yet"
-                  : "No playbooks yet"}
+                  : "Create your first playbook"}
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {isFiltered
-                ? "Try adjusting your filters or search query."
+                ? "Try adjusting your filters or search query to find what you're looking for."
                 : activeTab === "shared"
-                  ? "When colleagues share their playbooks, they'll appear here."
-                  : "Create your first playbook to get started."}
+                  ? "When colleagues share their playbooks, they'll appear here for you to view and clone."
+                  : "Get started by creating a new demo playbook. Use the wizard, describe with AI, or pick a template."}
             </p>
           </div>
           {!isFiltered && activeTab === "mine" && (

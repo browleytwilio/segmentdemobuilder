@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 import { trackEvent } from "@/lib/analytics/events";
+import { UserIcon, UsersIcon } from "lucide-react";
 
 interface DashboardTabsProps {
   activeTab: "mine" | "shared";
@@ -27,30 +28,28 @@ export function DashboardTabs({ activeTab }: DashboardTabsProps) {
     [router, searchParams]
   );
 
+  const tabs = [
+    { key: "mine" as const, label: "My Playbooks", icon: UserIcon },
+    { key: "shared" as const, label: "Shared", icon: UsersIcon },
+  ];
+
   return (
-    <div className="flex rounded-lg border border-white/[0.08] bg-white/[0.02] p-1 w-fit">
-      <button
-        type="button"
-        onClick={() => switchTab("mine")}
-        className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
-          activeTab === "mine"
-            ? "bg-primary text-primary-foreground"
-            : "text-muted-foreground hover:text-foreground"
-        }`}
-      >
-        My Playbooks
-      </button>
-      <button
-        type="button"
-        onClick={() => switchTab("shared")}
-        className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
-          activeTab === "shared"
-            ? "bg-primary text-primary-foreground"
-            : "text-muted-foreground hover:text-foreground"
-        }`}
-      >
-        Shared
-      </button>
+    <div className="flex rounded-lg border bg-muted/50 p-0.5 w-fit">
+      {tabs.map(({ key, label, icon: Icon }) => (
+        <button
+          key={key}
+          type="button"
+          onClick={() => switchTab(key)}
+          className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+            activeTab === key
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Icon className="size-3.5" />
+          {label}
+        </button>
+      ))}
     </div>
   );
 }

@@ -64,17 +64,33 @@ export function PromptCard({
   return (
     <div ref={cardRef} id={`step-${prompt.stepNumber}`}>
       <Card
-        className={isComplete ? "border-green-500/30 bg-green-500/5" : ""}
+        className={isComplete ? "border-emerald-500/30 bg-emerald-500/5" : ""}
       >
         <CardHeader>
           <div className="flex items-start justify-between gap-2">
-            <div>
-              <CardTitle className="text-base">
-                Step {prompt.stepNumber}: {prompt.title}
-              </CardTitle>
-              <CardDescription className="mt-1">
-                {prompt.expectedOutput}
-              </CardDescription>
+            <div className="flex items-start gap-3">
+              {/* Step number badge */}
+              <div
+                className={`flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-bold ${
+                  isComplete
+                    ? "border-emerald-500 bg-emerald-500 text-white"
+                    : "border-primary/30 bg-primary/5 text-primary"
+                }`}
+              >
+                {isComplete ? (
+                  <CheckIcon className="size-4" />
+                ) : (
+                  prompt.stepNumber
+                )}
+              </div>
+              <div>
+                <CardTitle className="text-base leading-snug">
+                  {prompt.title}
+                </CardTitle>
+                <CardDescription className="mt-0.5 text-xs">
+                  {prompt.expectedOutput}
+                </CardDescription>
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -82,7 +98,7 @@ export function PromptCard({
         <CardContent className="space-y-4">
           {/* Prompt block */}
           <div className="relative">
-            <pre className="max-h-[32rem] overflow-auto rounded-lg bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-200 whitespace-pre-wrap dark:bg-zinc-900">
+            <pre className="max-h-[32rem] overflow-auto rounded-xl bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-200 whitespace-pre-wrap dark:bg-zinc-900 border border-zinc-800">
               {hasPlaceholders
                 ? highlightPlaceholders(prompt.promptText)
                 : prompt.promptText}
@@ -105,9 +121,11 @@ export function PromptCard({
           </div>
 
           {/* Expected Output */}
-          <div className="rounded-lg border bg-muted/30 p-4">
-            <h4 className="text-sm font-medium mb-1">Expected Output</h4>
-            <p className="text-xs text-muted-foreground">
+          <div className="rounded-xl border bg-muted/30 p-4">
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+              Expected Output
+            </h4>
+            <p className="text-sm text-foreground/80 leading-relaxed">
               {prompt.expectedOutput}
             </p>
           </div>
@@ -117,7 +135,7 @@ export function PromptCard({
             if (val) trackEvent("Troubleshooting Expanded", { playbook_id: playbookId, step_number: prompt.stepNumber });
           }}>
             <AccordionItem value="troubleshoot">
-              <AccordionTrigger>
+              <AccordionTrigger className="text-sm">
                 Troubleshooting — What if the AI agent failed?
               </AccordionTrigger>
               <AccordionContent>
@@ -126,7 +144,7 @@ export function PromptCard({
                     <p className="font-medium">
                       Did the AI agent fail on a peer dependency?
                     </p>
-                    <pre className="mt-1 rounded bg-muted p-2 text-xs">
+                    <pre className="mt-1 rounded-lg bg-muted p-2.5 text-xs">
                       Stop. Please run the installation again using
                       --legacy-peer-deps and ensure you are using the exact
                       version numbers provided.
@@ -136,7 +154,7 @@ export function PromptCard({
                     <p className="font-medium">
                       Did the AI agent skip a step or take a shortcut?
                     </p>
-                    <pre className="mt-1 rounded bg-muted p-2 text-xs">
+                    <pre className="mt-1 rounded-lg bg-muted p-2.5 text-xs">
                       Stop. Please revert the last change and follow the
                       instructions exactly as written. Do not modify, skip, or
                       optimize any step.
@@ -146,7 +164,7 @@ export function PromptCard({
                     <p className="font-medium">
                       Did the AI agent produce a TypeScript error?
                     </p>
-                    <pre className="mt-1 rounded bg-muted p-2 text-xs">
+                    <pre className="mt-1 rounded-lg bg-muted p-2.5 text-xs">
                       Stop. Run `npm run build` and fix any TypeScript errors
                       before proceeding. Show me the full error output.
                     </pre>
@@ -171,9 +189,10 @@ export function PromptCard({
             </Button>
           )}
           {isComplete && (
-            <p className="text-center text-sm text-green-600 font-medium">
+            <div className="flex items-center justify-center gap-1.5 py-2 text-sm text-emerald-600 dark:text-emerald-400 font-medium">
+              <CheckIcon className="size-4" />
               Step completed
-            </p>
+            </div>
           )}
         </CardContent>
       </Card>

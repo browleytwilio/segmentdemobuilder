@@ -27,7 +27,7 @@ export function GradientHeading({
         "bg-gradient-to-br bg-clip-text text-transparent",
         gradients[gradient],
         animated && "animate-gradient-shift bg-[length:200%_200%]",
-        Tag === "h1" && "text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl",
+        Tag === "h1" && "text-4xl font-bold tracking-tight sm:text-5xl lg:text-7xl",
         Tag === "h2" && "text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl",
         Tag === "h3" && "text-2xl font-semibold tracking-tight sm:text-3xl",
         className

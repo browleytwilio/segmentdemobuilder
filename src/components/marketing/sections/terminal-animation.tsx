@@ -220,7 +220,7 @@ export function TerminalAnimation() {
       {/* Terminal output */}
       <div
         ref={scrollRef}
-        className="h-[300px] overflow-y-auto overflow-x-hidden rounded-lg bg-black/40 p-5 font-mono text-[13px] leading-relaxed scrollbar-thin"
+        className="h-[200px] sm:h-[300px] overflow-y-auto overflow-x-hidden rounded-lg bg-black/40 p-4 sm:p-5 font-mono text-[12px] sm:text-[13px] leading-relaxed scrollbar-thin"
       >
         {visibleLines.map((line, i) => (
           <div key={i} className={lineColor(line)}>

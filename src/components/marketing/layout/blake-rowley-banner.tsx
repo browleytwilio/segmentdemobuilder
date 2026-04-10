@@ -15,7 +15,7 @@ export function BlakeRowleyBanner() {
           animate={{ opacity: 1, height: "auto" }}
           exit={{ opacity: 0, height: 0 }}
           transition={{ duration: 0.3 }}
-          className="relative mt-16 sm:mt-[5.75rem] overflow-hidden border-b border-white/[0.06] bg-gradient-to-r from-marketing-blue/10 via-marketing-purple/10 to-marketing-blue/10"
+          className="relative overflow-hidden border-b border-white/[0.06] bg-gradient-to-r from-marketing-blue/10 via-marketing-purple/10 to-marketing-blue/10"
         >
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-2.5 lg:px-8">
             <div className="flex items-center gap-3 text-sm">

@@ -9,17 +9,36 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  UsersIcon,
+  BookOpenIcon,
+  TrendingUpIcon,
+  ActivityIcon,
+} from "lucide-react";
 
 interface Props {
   data: AnalyticsStats | null;
   error: string | null;
 }
 
-function StatCard({ label, value }: { label: string; value: string | number }) {
+function StatCard({
+  label,
+  value,
+  icon: Icon,
+  accent,
+}: {
+  label: string;
+  value: string | number;
+  icon?: React.ComponentType<{ className?: string }>;
+  accent?: string;
+}) {
   return (
-    <div className="rounded-xl border bg-card p-5">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="mt-1 text-3xl font-bold tabular-nums">{value}</p>
+    <div className="rounded-xl border bg-card p-5 space-y-2">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        {Icon && <Icon className={`size-4 ${accent ?? "text-muted-foreground/50"}`} />}
+      </div>
+      <p className="text-3xl font-bold tabular-nums tracking-tight">{value}</p>
     </div>
   );
 }
@@ -52,18 +71,18 @@ export function AnalyticsDashboard({ data, error }: Props) {
   return (
     <div className="space-y-8">
       {/* Overview Cards */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatCard label="Total Users" value={data.total_users} />
-        <StatCard label="Total Playbooks" value={data.total_playbooks} />
-        <StatCard label="New This Week" value={data.playbooks_this_week} />
-        <StatCard label="Active This Month" value={data.active_users_this_month} />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatCard label="Total Users" value={data.total_users} icon={UsersIcon} accent="text-blue-500/70" />
+        <StatCard label="Total Playbooks" value={data.total_playbooks} icon={BookOpenIcon} accent="text-violet-500/70" />
+        <StatCard label="New This Week" value={data.playbooks_this_week} icon={TrendingUpIcon} accent="text-emerald-500/70" />
+        <StatCard label="Active This Month" value={data.active_users_this_month} icon={ActivityIcon} accent="text-orange-500/70" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Industry Breakdown */}
         <div className="rounded-xl border">
           <div className="border-b px-4 py-3">
-            <h2 className="font-semibold text-sm">Playbooks by Industry</h2>
+            <h2 className="font-semibold text-sm tracking-tight">Playbooks by Industry</h2>
           </div>
           {industries.length === 0 ? (
             <p className="px-4 py-6 text-sm text-muted-foreground">No data yet.</p>
@@ -104,7 +123,7 @@ export function AnalyticsDashboard({ data, error }: Props) {
         {/* Status Breakdown */}
         <div className="rounded-xl border">
           <div className="border-b px-4 py-3">
-            <h2 className="font-semibold text-sm">Playbooks by Status</h2>
+            <h2 className="font-semibold text-sm tracking-tight">Playbooks by Status</h2>
           </div>
           {statuses.length === 0 ? (
             <p className="px-4 py-6 text-sm text-muted-foreground">No data yet.</p>
@@ -145,7 +164,7 @@ export function AnalyticsDashboard({ data, error }: Props) {
         {/* Top Scenarios */}
         <div className="rounded-xl border">
           <div className="border-b px-4 py-3">
-            <h2 className="font-semibold text-sm">Top Scenarios Used</h2>
+            <h2 className="font-semibold text-sm tracking-tight">Top Scenarios Used</h2>
           </div>
           {data.top_scenarios.length === 0 ? (
             <p className="px-4 py-6 text-sm text-muted-foreground">No scenario data yet.</p>
@@ -172,7 +191,7 @@ export function AnalyticsDashboard({ data, error }: Props) {
         {/* Recent Signups */}
         <div className="rounded-xl border">
           <div className="border-b px-4 py-3">
-            <h2 className="font-semibold text-sm">Recent Signups</h2>
+            <h2 className="font-semibold text-sm tracking-tight">Recent Signups</h2>
           </div>
           {data.recent_signups.length === 0 ? (
             <p className="px-4 py-6 text-sm text-muted-foreground">No users yet.</p>

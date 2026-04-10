@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOutIcon, LayoutDashboardIcon, ShieldIcon } from "lucide-react";
+import { LogOutIcon, LayoutDashboardIcon, ShieldIcon, UserIcon } from "lucide-react";
 
 interface UserMenuProps {
   email: string;
@@ -52,6 +52,10 @@ export function UserMenu({ email, isAdmin }: UserMenuProps) {
         <DropdownMenuItem onClick={() => router.push("/dashboard")}>
           <LayoutDashboardIcon className="size-4" />
           Dashboard
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push("/profile")}>
+          <UserIcon className="size-4" />
+          Profile
         </DropdownMenuItem>
         {isAdmin && (
           <>

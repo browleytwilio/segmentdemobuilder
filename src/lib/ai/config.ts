@@ -1,6 +1,6 @@
-import { gateway } from "@ai-sdk/gateway";
+import { openai } from "@ai-sdk/openai";
 
 export const MODELS = {
-  chat: gateway("openai/gpt-5.4"),
-  fast: gateway("openai/gpt-5.4-nano"),
+  chat: openai("gpt-5.4"),
+  fast: openai("gpt-5.4-nano"),
 } as const;

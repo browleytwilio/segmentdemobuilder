@@ -37,7 +37,7 @@ export function HomeHero() {
   return (
     <section
       ref={containerRef}
-      className="relative overflow-hidden pt-32 pb-20 lg:pt-44 lg:pb-36"
+      className="relative overflow-hidden pt-12 pb-16 sm:pt-16 lg:pt-24 lg:pb-32"
     >
       {/* Aurora background */}
       <div className="pointer-events-none absolute inset-0">
@@ -106,7 +106,7 @@ export function HomeHero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+            className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:gap-4"
           >
             {/* Primary CTA with shimmer */}
             <div className="group relative">
@@ -120,9 +120,9 @@ export function HomeHero() {
                     location: "hero",
                   })
                 }
-                className="relative bg-gradient-to-r from-marketing-blue to-marketing-purple text-white hover:opacity-95 overflow-hidden"
+                className="relative w-full bg-gradient-to-r from-marketing-blue to-marketing-purple text-white hover:opacity-95 overflow-hidden"
               >
-                <span className="relative z-10 flex items-center gap-2">
+                <span className="relative z-10 flex items-center justify-center gap-2">
                   Get Started Free
                   <ArrowRight className="h-4 w-4" />
                 </span>
@@ -130,7 +130,7 @@ export function HomeHero() {
                 <span className="animate-shimmer-sweep pointer-events-none absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
               </Button>
             </div>
-            <Button size="lg" variant="outline" render={<Link href="/how-it-works" />} onClick={() => trackEvent("CTA Clicked", { cta: "See How It Works", location: "hero" })} className="border-white/[0.12] bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/20 backdrop-blur-sm">
+            <Button size="lg" variant="outline" render={<Link href="/how-it-works" />} onClick={() => trackEvent("CTA Clicked", { cta: "See How It Works", location: "hero" })} className="w-full sm:w-auto border-white/[0.12] bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/20 backdrop-blur-sm">
               <Play className="mr-2 h-4 w-4" />
               See How It Works
             </Button>
@@ -142,7 +142,7 @@ export function HomeHero() {
           initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="mx-auto mt-20 max-w-5xl"
+          className="mx-auto mt-12 sm:mt-16 max-w-5xl"
         >
           {/* Glow halo behind mockup */}
           <div className="animate-glow-pulse pointer-events-none absolute left-1/2 -translate-x-1/2 h-40 w-3/4 rounded-full bg-marketing-blue/20 blur-3xl" />

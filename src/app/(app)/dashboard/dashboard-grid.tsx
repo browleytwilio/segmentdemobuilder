@@ -6,14 +6,6 @@ import { toast } from "sonner";
 import { deletePlaybook, toggleFavorite, clonePlaybook } from "./actions";
 import type { PlaybookSummary, Tag } from "@/lib/compiler/types";
 import { TagManager } from "@/components/dashboard/tag-manager";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,16 +16,48 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CopyIcon, StarIcon, TrashIcon } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  CopyIcon,
+  StarIcon,
+  TrashIcon,
+  MoreHorizontalIcon,
+  ExternalLinkIcon,
+  ClockIcon,
+  BuildingIcon,
+} from "lucide-react";
 import { trackEvent } from "@/lib/analytics/events";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
-    year: "numeric",
   });
 }
+
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return formatDate(iso);
+}
+
+const INDUSTRY_COLORS: Record<string, string> = {
+  "E-commerce/Retail": "bg-blue-500/10 text-blue-700 dark:text-blue-400",
+  "B2B SaaS": "bg-violet-500/10 text-violet-700 dark:text-violet-400",
+  "FinTech": "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+  "Media & Entertainment": "bg-orange-500/10 text-orange-700 dark:text-orange-400",
+};
 
 export function DashboardGrid({
   playbooks,
@@ -89,123 +113,172 @@ export function DashboardGrid({
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {playbooks.map((pb) => (
-          <Card key={pb.id} className="flex flex-col">
-            <CardHeader className="flex-1">
-              <div className="flex items-start justify-between gap-2">
-                <CardTitle className="text-base">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {playbooks.map((pb) => {
+          const industryColor =
+            INDUSTRY_COLORS[pb.industry] ??
+            "bg-muted text-muted-foreground";
+
+          return (
+            <Link
+              key={pb.id}
+              href={`/playbooks/${pb.id}`}
+              onClick={() =>
+                trackEvent("Playbook Opened", {
+                  playbook_id: pb.id,
+                  industry: pb.industry,
+                  status: pb.status,
+                })
+              }
+              className="group relative flex flex-col rounded-xl border bg-card transition-all hover:shadow-md hover:border-primary/20 focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {/* Status strip */}
+              <div
+                className={`absolute top-0 left-0 right-0 h-0.5 rounded-t-xl ${
+                  pb.status === "completed"
+                    ? "bg-emerald-500"
+                    : "bg-amber-400"
+                }`}
+              />
+
+              <div className="flex flex-col flex-1 p-4 pt-3.5">
+                {/* Top row: industry badge + actions */}
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[0.65rem] font-medium ${industryColor}`}
+                  >
+                    <BuildingIcon className="size-2.5" />
+                    {pb.industry}
+                  </span>
+
+                  <div className="flex items-center gap-0.5" onClick={(e) => e.preventDefault()}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleToggleFavorite(pb);
+                      }}
+                      disabled={togglingFav === pb.id}
+                      className="rounded-md p-1 text-muted-foreground transition-colors hover:text-yellow-500"
+                    >
+                      <StarIcon
+                        className={`size-3.5 ${
+                          pb.is_favorite ? "fill-yellow-500 text-yellow-500" : ""
+                        }`}
+                      />
+                    </button>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={
+                          <button
+                            type="button"
+                            onClick={(e) => e.preventDefault()}
+                            className="rounded-md p-1 text-muted-foreground transition-colors hover:text-foreground opacity-0 group-hover:opacity-100 focus:opacity-100"
+                          />
+                        }
+                      >
+                        <MoreHorizontalIcon className="size-3.5" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-40">
+                        <DropdownMenuItem
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            setCloning(pb.id);
+                            const result = await clonePlaybook(pb.id);
+                            if (result.error) {
+                              toast.error(result.error);
+                            } else {
+                              trackEvent("Playbook Cloned", {
+                                source_playbook_id: pb.id,
+                                new_playbook_id: result.id ?? "",
+                                source: "dashboard",
+                              });
+                              toast.success("Playbook cloned");
+                            }
+                            setCloning(null);
+                          }}
+                          disabled={cloning === pb.id}
+                        >
+                          <CopyIcon className="size-3.5" />
+                          Clone
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setTargetId(pb.id);
+                            setDialogOpen(true);
+                          }}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <TrashIcon className="size-3.5" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+
+                {/* Title */}
+                <h3 className="font-semibold text-sm leading-snug group-hover:text-primary transition-colors">
                   {pb.customer_name || "Untitled"}
-                </CardTitle>
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => handleToggleFavorite(pb)}
-                    disabled={togglingFav === pb.id}
-                    className="rounded p-0.5 text-muted-foreground transition-colors hover:text-yellow-500"
-                  >
-                    <StarIcon
-                      className={`size-4 ${
-                        pb.is_favorite
-                          ? "fill-yellow-500 text-yellow-500"
-                          : ""
-                      }`}
+                </h3>
+
+                {/* Shared by */}
+                {isSharedView && pb.user_email && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    by {pb.user_email.split("@")[0]}
+                  </p>
+                )}
+
+                {/* Tags */}
+                {pb.tags && pb.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2.5">
+                    {pb.tags.map((tag) => (
+                      <span
+                        key={tag.id}
+                        className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[0.6rem] font-medium bg-secondary text-secondary-foreground"
+                      >
+                        <span
+                          className="size-1.5 rounded-full"
+                          style={{
+                            backgroundColor: `var(--color-${tag.color}, ${tag.color})`,
+                          }}
+                        />
+                        {tag.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Spacer */}
+                <div className="flex-1" />
+
+                {/* Footer metadata */}
+                <div className="flex items-center justify-between mt-3 pt-3 border-t">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <ClockIcon className="size-3" />
+                    <span className="text-[0.7rem]">{timeAgo(pb.updated_at)}</span>
+                  </div>
+                  <div className="flex items-center gap-1" onClick={(e) => e.preventDefault()}>
+                    <TagManager
+                      playbookId={pb.id}
+                      appliedTags={pb.tags ?? []}
+                      allTags={allTags}
                     />
-                  </button>
-                  <Badge
-                    variant={pb.status === "completed" ? "default" : "outline"}
-                  >
-                    {pb.status}
-                  </Badge>
+                    <Badge
+                      variant={pb.status === "completed" ? "default" : "outline"}
+                      className="text-[0.6rem] px-1.5 py-0"
+                    >
+                      {pb.status === "completed" ? "Done" : "Draft"}
+                    </Badge>
+                  </div>
                 </div>
               </div>
-              <CardDescription>
-                {pb.industry}
-                {isSharedView && pb.user_email && (
-                  <span className="block text-xs text-muted-foreground/70 mt-0.5">
-                    by {pb.user_email.split("@")[0]}
-                  </span>
-                )}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p className="text-xs text-muted-foreground">
-                Updated {formatDate(pb.updated_at)}
-              </p>
-              {pb.tags && pb.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {pb.tags.map((tag) => (
-                    <span
-                      key={tag.id}
-                      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.65rem] font-medium bg-secondary text-secondary-foreground"
-                    >
-                      <span
-                        className="size-1.5 rounded-full"
-                        style={{
-                          backgroundColor: `var(--color-${tag.color}, ${tag.color})`,
-                        }}
-                      />
-                      {tag.name}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-            <CardFooter className="gap-2">
-              <Link
-                href={`/playbooks/${pb.id}`}
-                className="inline-flex h-7 flex-1 items-center justify-center rounded-lg bg-primary px-2.5 text-[0.8rem] font-medium text-primary-foreground"
-                onClick={() =>
-                  trackEvent("Playbook Opened", {
-                    playbook_id: pb.id,
-                    industry: pb.industry,
-                    status: pb.status,
-                  })
-                }
-              >
-                View
-              </Link>
-              <Button
-                size="sm"
-                variant="ghost"
-                disabled={cloning === pb.id}
-                onClick={async () => {
-                  setCloning(pb.id);
-                  const result = await clonePlaybook(pb.id);
-                  if (result.error) {
-                    toast.error(result.error);
-                  } else {
-                    trackEvent("Playbook Cloned", {
-                      source_playbook_id: pb.id,
-                      new_playbook_id: result.id ?? "",
-                      source: "dashboard",
-                    });
-                    toast.success("Playbook cloned");
-                  }
-                  setCloning(null);
-                }}
-              >
-                <CopyIcon className="size-4" />
-              </Button>
-              <TagManager
-                playbookId={pb.id}
-                appliedTags={pb.tags ?? []}
-                allTags={allTags}
-              />
-              <Button
-                size="sm"
-                variant="ghost"
-                disabled={deleting === pb.id}
-                onClick={() => {
-                  setTargetId(pb.id);
-                  setDialogOpen(true);
-                }}
-              >
-                <TrashIcon className="size-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
+            </Link>
+          );
+        })}
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

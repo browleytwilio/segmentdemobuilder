@@ -115,24 +115,28 @@ export function DashboardFilters() {
     });
   }
 
-  const hasFilters = q || industry !== "all" || status !== "all" || favorites;
+  const activeFilterCount =
+    (q ? 1 : 0) +
+    (industry !== "all" ? 1 : 0) +
+    (status !== "all" ? 1 : 0) +
+    (favorites ? 1 : 0);
 
   return (
     <div className="flex flex-wrap items-center gap-2">
       {/* Search */}
-      <div className="relative flex-1 min-w-[200px]">
+      <div className="relative flex-1 min-w-[180px]">
         <SearchIcon className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Search playbooks..."
           value={searchValue}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="pl-8 h-9"
+          className="pl-8 h-8 text-sm"
         />
       </div>
 
       {/* Industry */}
       <Select value={industry} onValueChange={handleIndustryChange}>
-        <SelectTrigger className="w-[170px] h-9">
+        <SelectTrigger className="w-[155px] h-8 text-xs">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -146,7 +150,7 @@ export function DashboardFilters() {
 
       {/* Status */}
       <Select value={status} onValueChange={handleStatusChange}>
-        <SelectTrigger className="w-[140px] h-9">
+        <SelectTrigger className="w-[120px] h-8 text-xs">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -158,43 +162,45 @@ export function DashboardFilters() {
         </SelectContent>
       </Select>
 
-      {/* Sort */}
-      <Select value={sortParam} onValueChange={handleSortChange}>
-        <SelectTrigger className="w-[170px] h-9">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {SORT_OPTIONS.map((s) => (
-            <SelectItem key={s.value} value={s.value}>
-              {s.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {/* Sort — hidden on small screens */}
+      <div className="hidden sm:block">
+        <Select value={sortParam} onValueChange={handleSortChange}>
+          <SelectTrigger className="w-[155px] h-8 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SORT_OPTIONS.map((s) => (
+              <SelectItem key={s.value} value={s.value}>
+                {s.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* Favorites toggle */}
       <Button
         variant={favorites ? "default" : "outline"}
-        size="sm"
-        className="h-9 gap-1.5"
+        size="xs"
+        className="h-8 gap-1.5 px-2.5"
         onClick={handleFavoritesToggle}
       >
         <StarIcon
-          className={`size-3.5 ${favorites ? "fill-current" : ""}`}
+          className={`size-3 ${favorites ? "fill-current" : ""}`}
         />
-        Favorites
+        <span className="hidden sm:inline">Favorites</span>
       </Button>
 
       {/* Clear filters */}
-      {hasFilters && (
+      {activeFilterCount > 0 && (
         <Button
           variant="ghost"
-          size="sm"
-          className="h-9 gap-1"
+          size="xs"
+          className="h-8 gap-1 text-muted-foreground"
           onClick={() => router.push("/dashboard")}
         >
-          <XIcon className="size-3.5" />
-          Clear
+          <XIcon className="size-3" />
+          Clear{activeFilterCount > 1 ? ` (${activeFilterCount})` : ""}
         </Button>
       )}
     </div>

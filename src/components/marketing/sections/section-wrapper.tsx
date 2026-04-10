@@ -14,7 +14,7 @@ export function SectionWrapper({
   background = "default",
 }: SectionWrapperProps) {
   return (
-    <section id={id} className={cn("relative py-24 lg:py-32", className)}>
+    <section id={id} className={cn("relative py-14 sm:py-20 lg:py-28", className)}>
       {background === "dots" && (
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.035]"

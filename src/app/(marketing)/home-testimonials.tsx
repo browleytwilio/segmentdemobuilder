@@ -14,7 +14,7 @@ export function HomeTestimonials() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="mb-16 text-center"
+        className="mb-10 sm:mb-16 text-center"
       >
         <p className="mb-4 text-sm font-medium uppercase tracking-wider text-marketing-green">
           From the SE Org

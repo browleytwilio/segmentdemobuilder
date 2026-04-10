@@ -1,8 +1,26 @@
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@/lib/supabase/server";
-import { PageHeader } from "@/components/page-header";
 import { AdminNavLink } from "./admin-nav-link";
+import {
+  UsersIcon,
+  FileTextIcon,
+  SettingsIcon,
+  BarChart3Icon,
+  BookOpenIcon,
+  ScrollTextIcon,
+  ActivityIcon,
+} from "lucide-react";
+
+const ADMIN_TABS = [
+  { href: "/admin/users", label: "Users", icon: UsersIcon },
+  { href: "/admin/prompts", label: "Prompts", icon: FileTextIcon },
+  { href: "/admin/config", label: "Config", icon: SettingsIcon },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart3Icon },
+  { href: "/admin/playbooks", label: "Playbooks", icon: BookOpenIcon },
+  { href: "/admin/audit", label: "Audit Log", icon: ScrollTextIcon },
+  { href: "/admin/segment", label: "Segment", icon: ActivityIcon },
+];
 
 export default async function AdminLayout({
   children,
@@ -23,16 +41,23 @@ export default async function AdminLayout({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
-      <PageHeader title="Admin" />
-      <nav className="flex gap-1 border-b flex-wrap">
-        <AdminNavLink href="/admin/users">Users</AdminNavLink>
-        <AdminNavLink href="/admin/prompts">Prompts</AdminNavLink>
-        <AdminNavLink href="/admin/config">Config</AdminNavLink>
-        <AdminNavLink href="/admin/analytics">Analytics</AdminNavLink>
-        <AdminNavLink href="/admin/playbooks">Playbooks</AdminNavLink>
-        <AdminNavLink href="/admin/audit">Audit Log</AdminNavLink>
-        <AdminNavLink href="/admin/segment">Segment</AdminNavLink>
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Admin Panel</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Manage users, templates, and platform configuration
+        </p>
+      </div>
+
+      {/* Tab navigation with icons */}
+      <nav className="flex gap-0.5 border-b flex-wrap overflow-x-auto scrollbar-none -mb-px">
+        {ADMIN_TABS.map(({ href, label, icon: Icon }) => (
+          <AdminNavLink key={href} href={href} icon={<Icon className="size-3.5" />}>
+            {label}
+          </AdminNavLink>
+        ))}
       </nav>
+
       <div>{children}</div>
     </div>
   );

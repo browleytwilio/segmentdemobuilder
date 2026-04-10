@@ -40,7 +40,7 @@ export function HomeHowItWorks() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="mb-16 text-center"
+        className="mb-10 sm:mb-16 text-center"
       >
         <p className="mb-4 text-sm font-medium uppercase tracking-wider text-marketing-purple">
           How It Works
@@ -59,7 +59,7 @@ export function HomeHowItWorks() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="mx-auto mb-16 max-w-2xl"
+        className="mx-auto mb-10 sm:mb-16 max-w-2xl"
       >
         <div className="rounded-2xl border border-marketing-purple/20 bg-marketing-purple/[0.05] p-5">
           <div className="mb-2 flex items-center gap-2">

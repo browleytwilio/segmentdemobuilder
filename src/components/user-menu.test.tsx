@@ -41,6 +41,8 @@ vi.mock("@/components/ui/dropdown-menu", () => ({
 vi.mock("lucide-react", () => ({
   LogOutIcon: () => null,
   LayoutDashboardIcon: () => null,
+  ShieldIcon: () => null,
+  UserIcon: () => null,
 }));
 
 // ── Imports ────────────────────────────────────────────────────────
