@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
 import { AdminNavLink } from "./admin-nav-link";
@@ -8,17 +9,14 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { userId } = await auth();
+  if (!userId) notFound();
+
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) notFound();
-
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
-    .eq("id", user.id)
+    .eq("id", userId)
     .single();
 
   if (profile?.role !== "super_admin") notFound();

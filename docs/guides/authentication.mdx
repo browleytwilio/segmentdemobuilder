@@ -1,12 +1,12 @@
 ---
 title: Authentication
-description: Login methods — email/password, magic link, and OAuth.
+description: Login methods — email/password and email verification code.
 icon: right-to-bracket
 ---
 
 # Authentication
 
-The Segment Demo Builder uses Supabase Auth for authentication, supporting three login methods: email/password, magic link, and OAuth (Google/GitHub).
+The Segment Demo Builder uses [Clerk](https://clerk.com) for authentication, supporting two login methods: email/password and email verification code. Access is restricted to `@twilio.com` email addresses.
 
 ## Login Methods
 
@@ -14,61 +14,66 @@ The Segment Demo Builder uses Supabase Auth for authentication, supporting three
   <Tab title="Email & Password">
     The standard email/password flow:
 
-    1. Enter your email and password on the login page
-    2. Click **Sign In** (or **Sign Up** for new accounts)
-    3. Supabase validates credentials and establishes a session
-    4. You're redirected to the Dashboard
-
-    Password requirements are managed by Supabase's default configuration.
+    1. Navigate to `/sign-in`
+    2. Enter your `@twilio.com` email and password
+    3. Click **Sign In** (or switch to **Sign Up** for new accounts)
+    4. Clerk validates credentials and establishes a session
+    5. You're redirected to the Dashboard
   </Tab>
 
-  <Tab title="Magic Link">
-    Passwordless login via email:
+  <Tab title="Email Verification Code">
+    Passwordless login via a one-time code:
 
-    1. Enter your email on the login page
-    2. Click **Send Magic Link**
-    3. Check your inbox for the login email
-    4. Click the link — it authenticates you and redirects to the Dashboard
+    1. Navigate to `/sign-in` and click **Use email code**
+    2. Enter your `@twilio.com` email address
+    3. Check your inbox for a 6-digit verification code
+    4. Enter the code on the verification screen
+    5. Clerk establishes a session and redirects you to the Dashboard
 
-    Magic links expire after the default Supabase TTL. Only one active link per email address.
-  </Tab>
-
-  <Tab title="Google OAuth">
-    Social login with Google:
-
-    1. Click the **Google** button on the login page
-    2. You're redirected to Google's consent screen
-    3. Authorize the application
-    4. Google redirects back to `/auth/callback` with an authorization code
-    5. The callback handler exchanges the code for a session
-    6. You're redirected to the Dashboard
-  </Tab>
-
-  <Tab title="GitHub OAuth">
-    Social login with GitHub:
-
-    1. Click the **GitHub** button on the login page
-    2. You're redirected to GitHub's authorization page
-    3. Authorize the application
-    4. GitHub redirects back to `/auth/callback` with an authorization code
-    5. The callback handler exchanges the code for a session
-    6. You're redirected to the Dashboard
+    Verification codes expire after a short TTL. Request a new code if yours expires.
   </Tab>
 </Tabs>
 
+## Domain Restriction
+
+<Warning>
+  Only `@twilio.com` email addresses are allowed. Non-Twilio signups are automatically rejected — the Clerk webhook deletes the user from Clerk and no Supabase profile is created.
+</Warning>
+
+Domain restriction is enforced at two levels:
+
+1. **Proxy** (`proxy.ts`) — `clerkMiddleware()` can reject requests before they reach the app
+2. **Webhook** (`/api/webhooks/clerk`) — On `user.created`, the handler checks the email domain. Non-Twilio users are deleted from Clerk server-side
+
 ## Session Management
 
-- Sessions are managed via Supabase's cookie-based session middleware (`@supabase/ssr`)
-- Session tokens are refreshed automatically
-- Signing out calls `supabase.auth.signOut()` and `analytics.reset()`, then redirects to the login page
+- Sessions are managed entirely by Clerk via `@clerk/nextjs`
+- Clerk issues JWT tokens that are automatically refreshed
+- Server-side code accesses the current user via `auth()` from `@clerk/nextjs/server`
+- Client-side code uses Clerk's React hooks (`useUser`, `useClerk`, etc.)
 
-## Auto-Profile Creation
+## Clerk-Supabase JWT Bridge
 
-When a new user signs up (any method), a database trigger automatically:
+Supabase is used as the database with Row Level Security (RLS) enabled. To make RLS work with Clerk authentication:
 
-1. Creates a `profiles` row with the user's `id` and `email`
-2. Sets the default role to `user`
-3. If the email is the prime admin email, a second trigger promotes the role to `super_admin`
+1. Clerk is configured with a `supabase` JWT template
+2. Server-side code calls `getToken({ template: "supabase" })` to obtain a Clerk-signed JWT
+3. This JWT is passed to the Supabase client, where `auth.uid()` resolves to the Clerk user ID
+4. RLS policies evaluate against this ID as usual
+
+See [Row Level Security](/security/row-level-security) for details on how policies use `auth.uid()`.
+
+## Profile Sync via Webhook
+
+When a new user signs up through Clerk, a webhook at `/api/webhooks/clerk` handles profile creation in Supabase:
+
+1. Clerk fires a `user.created` event
+2. The webhook verifies the Svix signature
+3. It checks the email domain (`@twilio.com` required)
+4. It either migrates an existing profile (updating the ID to the Clerk user ID) or inserts a new `profiles` row
+5. The `promote_prime_admin` database trigger fires on INSERT, promoting the prime admin email if matched
+
+See [POST /api/webhooks/clerk](/reference/api/webhooks-clerk) for the full API reference.
 
 ## Protected Routes
 
@@ -79,4 +84,15 @@ All routes under the `(app)` route group require authentication:
 - `/playbooks/[playbook_id]`
 - `/admin/*` (additionally requires `super_admin` role)
 
-Unauthenticated users are redirected to `/login`. The `/share/[playbook_id]` route is the only app route that works without authentication.
+Unauthenticated users are redirected to `/sign-in`. The `/share/[playbook_id]` route is the only app route that works without authentication.
+
+Route protection is handled by `clerkMiddleware()` in `proxy.ts`, which calls `auth.protect()` on non-public routes.
+
+## Sign-Out
+
+The sign-out process:
+
+1. Fires a `Signed Out` analytics event
+2. Calls `analytics.reset()` — generates a new anonymous ID and clears Segment identity
+3. Calls `signOut()` via Clerk's `useClerk()` hook — clears the Clerk session
+4. Redirects to `/sign-in`

@@ -1,8 +1,10 @@
 "use server";
 
+import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@/lib/supabase/server";
 import type { DemoArchitecture } from "@/lib/stores/builder-store";
-import type { DemoConfig } from "@/lib/compiler/types";
+import type { DemoConfig, PlaybookTemplateRow } from "@/lib/compiler/types";
+import { revalidatePath } from "next/cache";
 
 interface CreatePlaybookInput {
   customer_name: string;
@@ -11,19 +13,16 @@ interface CreatePlaybookInput {
 }
 
 export async function createPlaybook(input: CreatePlaybookInput) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const { userId } = await auth();
+  if (!userId) {
     return { error: "Not authenticated" };
   }
 
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("playbooks")
     .insert({
-      user_id: user.id,
+      user_id: userId,
       customer_name: input.customer_name,
       industry: input.industry,
       status: "draft" as const,
@@ -87,4 +86,61 @@ export async function fetchScenarioTemplates(featureIds: string[]) {
 
   const invalidIds = featureIds.filter((id) => !validIds.has(id));
   return { templates, invalidIds };
+}
+
+// ---------------------------------------------------------------------------
+// Templates
+// ---------------------------------------------------------------------------
+
+export async function getPlaybookTemplates(): Promise<PlaybookTemplateRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("playbook_templates")
+    .select("*")
+    .eq("is_active", true)
+    .order("display_order");
+
+  if (error || !data) return [];
+  return data as PlaybookTemplateRow[];
+}
+
+export async function createPlaybookFromTemplate(
+  templateId: string
+): Promise<{ id?: string; error?: string }> {
+  const { userId } = await auth();
+  if (!userId) return { error: "Not authenticated" };
+
+  const supabase = await createClient();
+
+  const { data: template, error: fetchError } = await supabase
+    .from("playbook_templates")
+    .select("name, industry, persona, demo_config")
+    .eq("id", templateId)
+    .eq("is_active", true)
+    .single();
+
+  if (fetchError || !template) return { error: "Template not found" };
+
+  const demoConfig = template.demo_config as DemoConfig;
+  // Ensure persona from template is in the config
+  if (!demoConfig.persona) {
+    demoConfig.persona = template.persona;
+  }
+
+  const { data, error } = await supabase
+    .from("playbooks")
+    .insert({
+      user_id: userId,
+      customer_name: "",
+      industry: template.industry,
+      status: "draft" as const,
+      demo_config: demoConfig,
+    })
+    .select("id")
+    .single();
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard");
+  return { id: data.id };
 }

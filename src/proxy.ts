@@ -1,38 +1,51 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { createClient } from "@/lib/supabase/proxy";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-const protectedPrefixes = ["/builder", "/dashboard", "/playbooks", "/admin"];
+const isPublicRoute = createRouteMatcher([
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/api/webhooks(.*)",
+  "/share(.*)",
+  "/unauthorized",
+]);
 
-export async function proxy(request: NextRequest) {
-  const { supabase, response } = createClient(request);
+export const proxy = clerkMiddleware(async (auth, req) => {
+  const { pathname } = req.nextUrl;
 
-  let user = null;
-  try {
-    const { data } = await supabase.auth.getUser();
-    user = data.user;
-  } catch {
-    // Auth check failed — treat as unauthenticated
+  // Backward compat: redirect /login to /sign-in
+  if (pathname === "/login") {
+    return NextResponse.redirect(new URL("/sign-in", req.url));
   }
 
-  const { pathname } = request.nextUrl;
-
-  // Redirect unauthenticated users away from protected routes
-  const isProtected = protectedPrefixes.some((prefix) =>
-    pathname.startsWith(prefix)
-  );
-  if (isProtected && !user) {
-    const loginUrl = new URL("/login", request.url);
-    return NextResponse.redirect(loginUrl);
+  if (isPublicRoute(req)) {
+    // Redirect authenticated users away from auth pages
+    const { userId } = await auth();
+    if (
+      userId &&
+      (pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up"))
+    ) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    return;
   }
 
-  // Redirect authenticated users away from login and marketing homepage
-  if ((pathname === "/login" || pathname === "/") && user) {
-    const dashboardUrl = new URL("/dashboard", request.url);
-    return NextResponse.redirect(dashboardUrl);
+  // Redirect root to dashboard for authenticated users
+  if (pathname === "/") {
+    const { userId } = await auth();
+    if (userId) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
   }
 
-  return response();
-}
+  // Protect all non-public routes
+  const { userId, sessionClaims } = await auth.protect();
+
+  // Belt-and-suspenders: reject non-Twilio emails even if webhook hasn't fired yet
+  const email = sessionClaims?.email as string | undefined;
+  if (email && !email.endsWith("@twilio.com")) {
+    return NextResponse.redirect(new URL("/unauthorized", req.url));
+  }
+});
 
 export const config = {
   matcher: [

@@ -1,0 +1,83 @@
+---
+title: "AI Enrich"
+description: "Parallel prompt enrichment endpoint that enhances compiled prompts with AI."
+icon: "wand-magic-sparkles"
+api: "POST /api/ai/enrich"
+---
+
+Non-streaming endpoint that enhances compiled prompts with industry-specific detail. See [AI Prompt Enrichment](/concepts/ai-enrichment) for the concept overview.
+
+## Request
+
+```json
+{
+  "prompts": [
+    {
+      "stepNumber": 1,
+      "title": "Project Setup",
+      "promptText": "Create a Next.js application for Acme Corp..."
+    },
+    {
+      "stepNumber": 2,
+      "title": "Segment Integration",
+      "promptText": "Install and configure Segment analytics..."
+    }
+  ],
+  "context": {
+    "persona": "CTO / Engineering",
+    "industry": "FinTech",
+    "customerName": "Acme Corp",
+    "architecture": {
+      "enableProfileAPI": true
+    }
+  }
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `prompts` | `CompiledPrompt[]` | Yes | Array of compiled prompts to enrich |
+| `prompts[].stepNumber` | `number` | Yes | Step order |
+| `prompts[].title` | `string` | Yes | Step title |
+| `prompts[].promptText` | `string` | Yes | The prompt content to enrich |
+| `context.persona` | `string` | Yes | Target persona |
+| `context.industry` | `string` | Yes | Target industry |
+| `context.customerName` | `string` | Yes | Prospect company name |
+| `context.architecture` | `object` | Yes | Architecture flags |
+
+## Response
+
+```json
+{
+  "enrichedPrompts": [
+    {
+      "stepNumber": 1,
+      "title": "Project Setup",
+      "promptText": "Create a Next.js application for Acme Corp, a leading digital bank..."
+    }
+  ]
+}
+```
+
+## Behavior
+
+- All prompts are enriched **in parallel** using `Promise.allSettled`
+- If any individual prompt fails enrichment, the **original prompt** is returned for that step
+- The outer request only fails if an unexpected error occurs before enrichment begins
+
+## Configuration
+
+| Setting | Value |
+|---------|-------|
+| Model | `fast` (gpt-5.4-nano) |
+| Max duration | 120s |
+| Rate limit | 10 req/min per user |
+
+## Errors
+
+| Status | Description |
+|--------|-------------|
+| 400 | Invalid request body |
+| 401 | Not authenticated |
+| 429 | Rate limit exceeded |
+| 502 | Enrichment failed entirely |

@@ -73,6 +73,16 @@ export function MarketingNavbar() {
                   )}
                 </AnimatePresence>
               </div>
+            ) : item.href.startsWith("http") ? (
+              <a
+                key={item.href}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {item.label}
+              </a>
             ) : (
               <Link
                 key={item.href}
@@ -87,14 +97,14 @@ export function MarketingNavbar() {
 
         {/* Desktop CTA */}
         <div className="hidden items-center gap-3 lg:flex">
-          <Button variant="ghost" size="sm" render={<Link href="/login" />} className="text-muted-foreground hover:text-foreground">
+          <Button variant="ghost" size="sm" render={<Link href="/sign-in" />} className="text-muted-foreground hover:text-foreground">
             Sign In
           </Button>
           <div className="group relative">
             <div className="animate-glow-pulse absolute -inset-0.5 rounded-lg bg-gradient-to-r from-marketing-blue to-marketing-purple opacity-50 blur-sm" />
             <Button
               size="sm"
-              render={<Link href="/login" />}
+              render={<Link href="/sign-in" />}
               className="relative overflow-hidden bg-gradient-to-r from-marketing-blue to-marketing-purple text-white hover:opacity-95"
             >
               <span className="relative z-10">Get Started</span>
@@ -140,6 +150,17 @@ export function MarketingNavbar() {
                       </Link>
                     ))}
                   </div>
+                ) : item.href.startsWith("http") ? (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-white/[0.05] hover:text-foreground"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {item.label}
+                  </a>
                 ) : (
                   <Link
                     key={item.href}
@@ -152,13 +173,13 @@ export function MarketingNavbar() {
                 )
               )}
               <div className="flex gap-3 pt-4">
-                <Button variant="outline" size="sm" className="flex-1" render={<Link href="/login" />}>
+                <Button variant="outline" size="sm" className="flex-1" render={<Link href="/sign-in" />}>
                   Sign In
                 </Button>
                 <Button
                   size="sm"
                   className="flex-1 bg-gradient-to-r from-marketing-blue to-marketing-purple text-white"
-                  render={<Link href="/login" />}
+                  render={<Link href="/sign-in" />}
                 >
                   Get Started
                 </Button>

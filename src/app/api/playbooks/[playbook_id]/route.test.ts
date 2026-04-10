@@ -2,11 +2,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   createMockSupabaseClient,
-  withAuthenticatedUser,
   withQueryResult,
 } from "@/__test-utils__/mocks/supabase";
 
 const { client: mockClient, queryBuilder } = createMockSupabaseClient();
+
+let mockClerkUserId: string | null = null;
+
+vi.mock("@clerk/nextjs/server", () => ({
+  auth: vi.fn(() => Promise.resolve({ userId: mockClerkUserId })),
+}));
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(() => Promise.resolve(mockClient)),
@@ -34,11 +39,7 @@ function callPATCH(request: Request) {
 describe("PATCH /api/playbooks/[playbook_id]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Default: not authenticated
-    mockClient.auth.getUser.mockResolvedValue({
-      data: { user: null },
-      error: null,
-    });
+    mockClerkUserId = null;
   });
 
   it("returns 401 when not authenticated", async () => {
@@ -52,7 +53,7 @@ describe("PATCH /api/playbooks/[playbook_id]", () => {
   });
 
   it("returns 400 when body is invalid JSON", async () => {
-    withAuthenticatedUser(mockClient);
+    mockClerkUserId = "user_123";
 
     const request = new Request(
       `http://localhost/api/playbooks/${TEST_PLAYBOOK_ID}`,
@@ -71,7 +72,7 @@ describe("PATCH /api/playbooks/[playbook_id]", () => {
   });
 
   it("returns 400 when generated_prompts is not an array", async () => {
-    withAuthenticatedUser(mockClient);
+    mockClerkUserId = "user_123";
 
     const response = await callPATCH(
       makeRequest({ generated_prompts: "not-an-array" })
@@ -83,7 +84,7 @@ describe("PATCH /api/playbooks/[playbook_id]", () => {
   });
 
   it("returns { success: true } on success", async () => {
-    withAuthenticatedUser(mockClient);
+    mockClerkUserId = "user_123";
     withQueryResult(queryBuilder, null, null);
 
     const response = await callPATCH(
@@ -95,7 +96,7 @@ describe("PATCH /api/playbooks/[playbook_id]", () => {
   });
 
   it("calls update with status 'completed'", async () => {
-    withAuthenticatedUser(mockClient);
+    mockClerkUserId = "user_123";
     withQueryResult(queryBuilder, null, null);
 
     await callPATCH(makeRequest({ generated_prompts: ["p1"] }));
@@ -107,17 +108,17 @@ describe("PATCH /api/playbooks/[playbook_id]", () => {
   });
 
   it("calls .eq with playbook_id and user_id", async () => {
-    const user = withAuthenticatedUser(mockClient);
+    mockClerkUserId = "user_123";
     withQueryResult(queryBuilder, null, null);
 
     await callPATCH(makeRequest({ generated_prompts: ["p1"] }));
 
     expect(queryBuilder.eq).toHaveBeenCalledWith("id", TEST_PLAYBOOK_ID);
-    expect(queryBuilder.eq).toHaveBeenCalledWith("user_id", user.id);
+    expect(queryBuilder.eq).toHaveBeenCalledWith("user_id", "user_123");
   });
 
   it("returns 500 on database error", async () => {
-    withAuthenticatedUser(mockClient);
+    mockClerkUserId = "user_123";
     withQueryResult(queryBuilder, null, { message: "DB error" });
 
     const response = await callPATCH(
@@ -130,7 +131,7 @@ describe("PATCH /api/playbooks/[playbook_id]", () => {
   });
 
   it("returns 200 status on success", async () => {
-    withAuthenticatedUser(mockClient);
+    mockClerkUserId = "user_123";
     withQueryResult(queryBuilder, null, null);
 
     const response = await callPATCH(

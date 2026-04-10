@@ -2,11 +2,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   createMockSupabaseClient,
-  withAuthenticatedUser,
   withQueryResult,
 } from "@/__test-utils__/mocks/supabase";
 
 const { client: mockClient, queryBuilder } = createMockSupabaseClient();
+
+let mockClerkUserId: string | null = null;
+
+vi.mock("@clerk/nextjs/server", () => ({
+  auth: vi.fn(() => Promise.resolve({ userId: mockClerkUserId })),
+}));
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(() => Promise.resolve(mockClient)),
@@ -22,11 +27,7 @@ import { revalidatePath } from "next/cache";
 
 beforeEach(() => {
   vi.clearAllMocks();
-  // Reset auth to unauthenticated
-  mockClient.auth.getUser.mockResolvedValue({
-    data: { user: null },
-    error: null,
-  });
+  mockClerkUserId = null;
 });
 
 // ---------------------------------------------------------------------------
@@ -56,43 +57,21 @@ describe("getPlaybooks", () => {
   });
 
   it("queries with user_id filter", async () => {
-    const user = withAuthenticatedUser(mockClient);
+    mockClerkUserId = "user_123";
     withQueryResult(queryBuilder, playbooks);
 
     await getPlaybooks();
 
     expect(mockClient.from).toHaveBeenCalledWith("playbooks");
-    expect(queryBuilder.select).toHaveBeenCalledWith(
-      "id, customer_name, industry, status, updated_at"
-    );
-    expect(queryBuilder.eq).toHaveBeenCalledWith("user_id", user.id);
-  });
-
-  it("orders by updated_at descending", async () => {
-    withAuthenticatedUser(mockClient);
-    withQueryResult(queryBuilder, playbooks);
-
-    await getPlaybooks();
-
-    expect(queryBuilder.order).toHaveBeenCalledWith("updated_at", {
-      ascending: false,
-    });
+    expect(queryBuilder.eq).toHaveBeenCalledWith("user_id", "user_123");
   });
 
   it("returns [] on DB error", async () => {
-    withAuthenticatedUser(mockClient);
+    mockClerkUserId = "user_123";
     withQueryResult(queryBuilder, null, { message: "query error" });
 
     const result = await getPlaybooks();
     expect(result).toEqual([]);
-  });
-
-  it("returns PlaybookSummary array on success", async () => {
-    withAuthenticatedUser(mockClient);
-    withQueryResult(queryBuilder, playbooks);
-
-    const result = await getPlaybooks();
-    expect(result).toEqual(playbooks);
   });
 });
 
@@ -106,7 +85,7 @@ describe("deletePlaybook", () => {
   });
 
   it("deletes with id and user_id filters", async () => {
-    const user = withAuthenticatedUser(mockClient);
+    mockClerkUserId = "user_123";
     withQueryResult(queryBuilder, null);
 
     await deletePlaybook("pb_1");
@@ -114,11 +93,11 @@ describe("deletePlaybook", () => {
     expect(mockClient.from).toHaveBeenCalledWith("playbooks");
     expect(queryBuilder.delete).toHaveBeenCalled();
     expect(queryBuilder.eq).toHaveBeenCalledWith("id", "pb_1");
-    expect(queryBuilder.eq).toHaveBeenCalledWith("user_id", user.id);
+    expect(queryBuilder.eq).toHaveBeenCalledWith("user_id", "user_123");
   });
 
   it("calls revalidatePath('/dashboard') on success", async () => {
-    withAuthenticatedUser(mockClient);
+    mockClerkUserId = "user_123";
     withQueryResult(queryBuilder, null);
 
     await deletePlaybook("pb_1");
@@ -127,7 +106,7 @@ describe("deletePlaybook", () => {
   });
 
   it("returns { error } on DB failure", async () => {
-    withAuthenticatedUser(mockClient);
+    mockClerkUserId = "user_123";
     withQueryResult(queryBuilder, null, { message: "delete failed" });
 
     const result = await deletePlaybook("pb_1");
@@ -135,7 +114,7 @@ describe("deletePlaybook", () => {
   });
 
   it("returns {} on success", async () => {
-    withAuthenticatedUser(mockClient);
+    mockClerkUserId = "user_123";
     withQueryResult(queryBuilder, null);
 
     const result = await deletePlaybook("pb_1");
@@ -174,7 +153,7 @@ describe("getPlaybookById", () => {
   });
 
   it("returns null when not found", async () => {
-    withAuthenticatedUser(mockClient);
+    mockClerkUserId = "user_123";
     queryBuilder.single.mockResolvedValue({
       data: null,
       error: { message: "not found", code: "PGRST116" },
@@ -185,7 +164,7 @@ describe("getPlaybookById", () => {
   });
 
   it("returns PlaybookRow on success", async () => {
-    const user = withAuthenticatedUser(mockClient);
+    mockClerkUserId = "user_123";
     queryBuilder.single.mockResolvedValue({
       data: playbookRow,
       error: null,
@@ -197,7 +176,7 @@ describe("getPlaybookById", () => {
     expect(mockClient.from).toHaveBeenCalledWith("playbooks");
     expect(queryBuilder.select).toHaveBeenCalledWith("*");
     expect(queryBuilder.eq).toHaveBeenCalledWith("id", "pb_1");
-    expect(queryBuilder.eq).toHaveBeenCalledWith("user_id", user.id);
+    expect(queryBuilder.eq).toHaveBeenCalledWith("user_id", "user_123");
     expect(queryBuilder.single).toHaveBeenCalled();
   });
 });

@@ -1,18 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
-import type { User } from "@supabase/supabase-js";
+import { auth } from "@clerk/nextjs/server";
 
-export async function requireAuthForAI(): Promise<{
-  user: User;
-  error: null;
-} | {
-  user: null;
-  error: string;
-}> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return { user: null, error: "Not authenticated" };
-  return { user, error: null };
+export async function requireAuthForAI(): Promise<
+  | { userId: string; error: null }
+  | { userId: null; error: string }
+> {
+  const { userId } = await auth();
+  if (!userId) return { userId: null, error: "Not authenticated" };
+  return { userId, error: null };
 }

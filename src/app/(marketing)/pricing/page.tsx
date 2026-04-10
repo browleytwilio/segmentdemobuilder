@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { PricingContent } from "./pricing-content";
 
 export const metadata: Metadata = {
-  title: "Pricing | Segment Demo Builder",
+  title: "Access | Segment Demo Builder",
   description:
-    "Free Starter plan with 5 playbooks. Pro plan for SE teams. Enterprise for custom deployments. Start building demos today.",
+    "Free for every Twilio SE. Sign in with your @twilio.com account for full access to all features — no tiers, no limits.",
 };
 
 export default function PricingPage() {

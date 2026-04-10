@@ -21,6 +21,7 @@ vi.mock("lucide-react", () => ({
   BookOpenIcon: () => null,
   PencilLineIcon: () => null,
   CircleCheckIcon: () => null,
+  StarIcon: () => null,
 }));
 
 // ── Imports ────────────────────────────────────────────────────────
@@ -37,6 +38,7 @@ const playbooks: PlaybookSummary[] = [
     industry: "B2B SaaS",
     status: "draft",
     updated_at: "2026-01-01",
+    is_favorite: false,
   },
   {
     id: "2",
@@ -44,6 +46,7 @@ const playbooks: PlaybookSummary[] = [
     industry: "FinTech",
     status: "completed",
     updated_at: "2026-01-02",
+    is_favorite: true,
   },
   {
     id: "3",
@@ -51,6 +54,7 @@ const playbooks: PlaybookSummary[] = [
     industry: "B2B SaaS",
     status: "draft",
     updated_at: "2026-01-03",
+    is_favorite: false,
   },
 ];
 
@@ -75,8 +79,14 @@ describe("DashboardStats", () => {
 
   it("renders completed count", () => {
     render(<DashboardStats playbooks={playbooks} />);
-    expect(screen.getByText("1")).toBeInTheDocument();
     expect(screen.getByText("Completed")).toBeInTheDocument();
+    // "1" appears for both Completed and Favorites — check both labels exist
+    expect(screen.getAllByText("1")).toHaveLength(2);
+  });
+
+  it("renders favorites count", () => {
+    render(<DashboardStats playbooks={playbooks} />);
+    expect(screen.getByText("Favorites")).toBeInTheDocument();
   });
 
   it('fires "Dashboard Viewed" analytics event once on mount', () => {

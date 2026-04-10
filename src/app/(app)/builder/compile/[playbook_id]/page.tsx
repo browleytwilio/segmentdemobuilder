@@ -96,6 +96,10 @@ export default function CompilePage({
           if (enrichRes.ok) {
             const { enrichedPrompts } = await enrichRes.json();
             variantA = enrichedPrompts;
+            trackEvent("AI Enrichment Completed", {
+              playbook_id,
+              prompt_count: enrichedPrompts.length,
+            });
           }
         } catch {
           toast.info("AI enrichment skipped — using standard prompts");

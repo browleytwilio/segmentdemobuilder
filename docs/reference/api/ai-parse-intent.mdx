@@ -1,0 +1,68 @@
+---
+title: "AI Parse Intent"
+description: "Structured output endpoint that converts natural language descriptions into playbook configuration."
+icon: "pen-nib"
+api: "POST /api/ai/parse-intent"
+---
+
+Non-streaming endpoint powering the [Natural Language Builder](/guides/nl-builder). Parses a plain-text description into a structured playbook configuration.
+
+## Request
+
+```json
+{
+  "description": "I need a fintech demo for a CTO focused on PII compliance and risk scoring. The customer is Acme Bank."
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `description` | `string` | Yes | Plain-text demo description (1-2000 chars) |
+
+## Response
+
+```json
+{
+  "customerName": "Acme Bank",
+  "industry": "FinTech",
+  "persona": "CTO / Engineering",
+  "architecture": {
+    "enableSESidebar": true,
+    "enableSeededProfiles": false,
+    "enableProfileAPI": true,
+    "enableIntentPredictions": false,
+    "enableSecondPagePers": false
+  },
+  "suggestedScenarios": ["real-time-risk-scoring", "pii-compliance-workflows"]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `customerName` | `string` | Extracted customer name |
+| `industry` | `enum` | One of: `E-commerce / Retail`, `B2B SaaS`, `FinTech`, `Media & Entertainment` |
+| `persona` | `enum` | One of: `CMO`, `CTO / Engineering`, `Product Manager`, `Data Team` |
+| `architecture` | `DemoArchitecture` | Inferred architecture flags |
+| `suggestedScenarios` | `string[]` | Scenario slugs matching the description |
+
+## Schema Enforcement
+
+The response is generated using `Output.object()` with a strict Zod schema. The `industry` and `persona` fields are constrained to the exact enum values supported by the builder wizard, ensuring the parsed output can be directly applied to the Zustand store.
+
+## Configuration
+
+| Setting | Value |
+|---------|-------|
+| Model | `fast` (gpt-5.4-nano) |
+| Output | Structured (Zod schema via `Output.object()`) |
+| Max duration | 30s |
+| Rate limit | 10 req/min per user |
+
+## Errors
+
+| Status | Description |
+|--------|-------------|
+| 400 | Invalid request body (empty or >2000 chars) |
+| 401 | Not authenticated |
+| 429 | Rate limit exceeded |
+| 502 | Could not parse description |

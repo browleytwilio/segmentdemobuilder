@@ -1,0 +1,53 @@
+---
+title: "Natural Language Builder"
+description: "Describe your demo in plain English and let AI configure the playbook for you."
+icon: "pen-nib"
+---
+
+The Natural Language Builder is an alternative to the step-by-step wizard. Describe what you need in a sentence or two, and AI will extract the customer name, industry, persona, architecture flags, and suggested scenarios.
+
+## How to Use
+
+1. Navigate to **New Playbook** from the navbar
+2. Click the **Describe with AI** tab
+3. Type a description of your demo needs, for example:
+
+> I need a fintech demo for a CTO focused on PII compliance and risk scoring. The customer is Acme Bank.
+
+4. Click **Configure Playbook**
+5. The AI parses your description and pre-fills the wizard
+6. You're switched to the **Step-by-Step** wizard at Step 3 (Scenarios) with context already configured
+
+## What Gets Extracted
+
+| Field | Example Input | Extracted Value |
+|-------|--------------|-----------------|
+| Customer name | "The customer is Acme Bank" | Acme Bank |
+| Industry | "fintech demo" | FinTech |
+| Persona | "for a CTO" | CTO / Engineering |
+| Architecture | "PII compliance" | `enableProfileAPI: true` |
+| Scenarios | "risk scoring" | Suggested scenario slugs |
+
+## Tips for Best Results
+
+<Tip>
+Be specific about the industry and persona. The AI maps these to the fixed set of options in the builder (E-commerce, B2B SaaS, FinTech, Media & Entertainment; CMO, CTO, Product Manager, Data Team).
+</Tip>
+
+- Mention the **customer name** explicitly
+- Name the **industry** or describe it clearly
+- Specify the **role** of the person you're demoing to
+- Describe the **use cases** or features you want to highlight
+
+## After Parsing
+
+The builder switches to the wizard view at Step 3 with:
+- **Step 1** (Context) pre-filled with customer name, industry, and persona
+- **Step 2** (Architecture) pre-filled with relevant architecture flags
+- **Step 3** (Scenarios) ready for you to review and adjust
+
+You can still edit any field before proceeding to credentials and compilation.
+
+## Error Handling
+
+If the AI can't parse your description (too vague, missing industry, etc.), you'll see an error message suggesting you be more specific. You can also click **Use step-by-step wizard instead** to switch to the manual flow.

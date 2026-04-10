@@ -7,6 +7,7 @@ import { useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { HeroBadge } from "@/components/marketing/sections/hero-badge";
 import { GradientHeading } from "@/components/marketing/sections/gradient-heading";
+import { trackEvent } from "@/lib/analytics/events";
 
 export function HomeHero() {
   const containerRef = useRef<HTMLElement>(null);
@@ -77,7 +78,7 @@ export function HomeHero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <HeroBadge>Now in Public Beta</HeroBadge>
+            <HeroBadge>Built for Twilio SEs</HeroBadge>
           </motion.div>
 
           <motion.div
@@ -97,9 +98,7 @@ export function HomeHero() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mt-6 text-lg leading-relaxed text-muted-foreground sm:text-xl"
           >
-            AI-powered playbook generation for Sales Engineers.
-            Create personalized, industry-tailored CDP demo guides
-            with exact code, architecture patterns, and demo scripts.
+            Describe your next Segment demo in plain English, or step through the guided wizard — AI handles the architecture, code, and demo script. Your on-demand Segment Copilot is always one click away.
           </motion.p>
 
           <motion.div
@@ -113,7 +112,13 @@ export function HomeHero() {
               <div className="animate-glow-pulse absolute -inset-0.5 rounded-xl bg-gradient-to-r from-marketing-blue to-marketing-purple opacity-60 blur-sm" />
               <Button
                 size="lg"
-                render={<Link href="/login" />}
+                render={<Link href="/sign-in" />}
+                onClick={() =>
+                  trackEvent("CTA Clicked", {
+                    cta: "Get Started Free",
+                    location: "hero",
+                  })
+                }
                 className="relative bg-gradient-to-r from-marketing-blue to-marketing-purple text-white hover:opacity-95 overflow-hidden"
               >
                 <span className="relative z-10 flex items-center gap-2">
@@ -124,7 +129,7 @@ export function HomeHero() {
                 <span className="animate-shimmer-sweep pointer-events-none absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
               </Button>
             </div>
-            <Button size="lg" variant="outline" render={<Link href="/how-it-works" />} className="border-white/[0.12] bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/20 backdrop-blur-sm">
+            <Button size="lg" variant="outline" render={<Link href="/how-it-works" />} onClick={() => trackEvent("CTA Clicked", { cta: "See How It Works", location: "hero" })} className="border-white/[0.12] bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/20 backdrop-blur-sm">
               <Play className="mr-2 h-4 w-4" />
               See How It Works
             </Button>

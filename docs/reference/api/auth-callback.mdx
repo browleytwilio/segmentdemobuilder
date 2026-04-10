@@ -1,21 +1,31 @@
 ---
-title: GET /auth/callback
-description: OAuth authorization code exchange handler.
+title: "DEPRECATED: GET /auth/callback"
+description: OAuth authorization code exchange handler (no longer active).
 icon: code
 tag: GET
 ---
 
-# GET /auth/callback
+# DEPRECATED: GET /auth/callback
 
-Handles the OAuth callback after a user authenticates with Google or GitHub. Exchanges the authorization code for a Supabase session and redirects to the dashboard.
+<Warning>
+  This route no longer exists. Authentication is now handled by Clerk. The `/auth/callback` OAuth exchange has been replaced by Clerk's built-in auth flow. See [Authentication](/guides/authentication) for the current auth architecture.
+</Warning>
 
-## Request
+The following documents the previous behavior for historical reference.
+
+---
+
+## Previous Behavior
+
+Handled the OAuth callback after a user authenticated with Google or GitHub. Exchanged the authorization code for a Supabase session and redirected to the dashboard.
+
+### Request
 
 ```bash
 GET /auth/callback?code={authorization_code}
 ```
 
-**Authentication:** Not required (this endpoint establishes the session)
+**Authentication:** Not required (this endpoint established the session)
 
 **Query Parameters:**
 
@@ -23,28 +33,21 @@ GET /auth/callback?code={authorization_code}
 |-----------|------|----------|-------------|
 | `code` | string | Yes | Authorization code from the OAuth provider |
 
-## Flow
+### Flow
 
-1. Extracts the `code` query parameter
-2. Calls `supabase.auth.exchangeCodeForSession(code)` to establish a session
-3. Sets a short-lived cookie `x-analytics-identify` (30-second TTL) to trigger client-side `analytics.identify()` after the redirect
-4. Redirects to `/dashboard`
+1. Extracted the `code` query parameter
+2. Called `supabase.auth.exchangeCodeForSession(code)` to establish a session
+3. Set a short-lived cookie `x-analytics-identify` (30-second TTL) to trigger client-side `analytics.identify()` after the redirect
+4. Redirected to `/dashboard`
 
-## Error Handling
+### Error Handling
 
-If the `code` parameter is missing or the exchange fails:
+If the `code` parameter was missing or the exchange failed:
 
 ```
-302 Redirect → /login?error=auth-code-error
+302 Redirect -> /login?error=auth-code-error
 ```
 
-The login page displays an error message when the `error` query parameter is present.
+### Replacement
 
-## Analytics Cookie
-
-The `x-analytics-identify` cookie exists solely to bridge the server-side OAuth redirect with client-side analytics identification. The `AnalyticsProvider` component checks for this cookie on mount:
-
-1. If the cookie exists, it calls `analytics.identify()` with the user's ID and traits
-2. The cookie is then deleted (it has a 30-second TTL as a safety net)
-
-This ensures the user is properly identified in Segment after OAuth login, even though the actual auth exchange happens server-side.
+Authentication is now handled by Clerk at `/sign-in` and `/sign-up`. Profile creation is handled by the [Clerk webhook](/reference/api/webhooks-clerk). Analytics identification is handled directly in the `AnalyticsProvider` component using Clerk's user data.

@@ -37,7 +37,7 @@ export async function POST(req: Request) {
   }
 
   if (aiGenerateRatelimit) {
-    const { success } = await aiGenerateRatelimit.limit(auth.user!.id);
+    const { success } = await aiGenerateRatelimit.limit(auth.userId!);
     if (!success) {
       return Response.json({ error: "Too many requests" }, { status: 429 });
     }
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
       prompt: body.data.description,
       output: Output.object({ schema: intentSchema }),
       providerOptions: {
-        gateway: { user: auth.user!.id, tags: ["parse-intent"] },
+        gateway: { user: auth.userId!, tags: ["parse-intent"] },
       },
     });
 

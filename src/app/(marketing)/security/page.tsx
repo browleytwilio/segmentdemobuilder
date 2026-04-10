@@ -133,7 +133,7 @@ export default function SecurityPage() {
         heading="Security questions?"
         description="Our team is happy to walk you through our security architecture in detail."
         primaryCta={{ label: "Contact Us", href: "/contact" }}
-        secondaryCta={{ label: "Get Started Free", href: "/login" }}
+        secondaryCta={{ label: "Get Started Free", href: "/sign-in" }}
       />
     </>
   );

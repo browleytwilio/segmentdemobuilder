@@ -1,0 +1,56 @@
+---
+title: "AI Features Overview"
+description: "How AI enhances every stage of the demo building workflow — from natural language configuration to personalized script generation."
+icon: "sparkles"
+---
+
+The Segment Demo Builder integrates AI throughout the workflow to help SEs build more compelling, personalized demos faster. All AI features use the [Vercel AI Gateway](https://vercel.com/docs/ai-gateway) for model routing, observability, and cost tracking.
+
+## Feature Map
+
+| Feature | Where | What It Does |
+|---------|-------|-------------|
+| [AI Copilot Chat](/guides/ai-copilot) | Floating panel (all app pages) | Context-aware assistant with Segment knowledge |
+| [AI Demo Script](/guides/ai-demo-script) | Playbook viewer, Script tab | Generates persona-tailored presentation narratives |
+| [AI Prompt Enrichment](/concepts/ai-enrichment) | Compilation pipeline | Enhances compiled prompts with industry-specific detail |
+| [Smart Recommendations](/guides/ai-scenario-recommendations) | Builder wizard, Step 3 | Suggests optimal scenarios with reasoning |
+| [Natural Language Builder](/guides/nl-builder) | Builder page, "Describe with AI" tab | Converts plain English to playbook configuration |
+| [AI Template Assistant](/admin/ai-template-assistant) | Admin prompt editor | Helps admins refine prompt templates inline |
+
+## Architecture
+
+```
+Client Component
+  │
+  ├─ useChat() ──────────► POST /api/ai/chat          (streaming)
+  ├─ useChat() ──────────► POST /api/ai/demo-script    (streaming)
+  ├─ fetch() ────────────► POST /api/ai/enrich          (JSON)
+  ├─ fetch() ────────────► POST /api/ai/recommend-scenarios (JSON)
+  ├─ fetch() ────────────► POST /api/ai/parse-intent    (JSON)
+  └─ fetch() ────────────► POST /api/ai/refine-template (JSON)
+                                    │
+                                    ▼
+                           Vercel AI Gateway
+                           (OIDC auth, routing, cost tracking)
+                                    │
+                                    ▼
+                              OpenAI Models
+                           chat: gpt-5.4
+                           fast: gpt-5.4-nano
+```
+
+## Security
+
+- **Authentication**: Every AI endpoint requires a valid Supabase session
+- **Rate limiting**: Chat is limited to 30 req/min; generation endpoints to 10 req/min per user (via Upstash Redis)
+- **Input validation**: All request bodies are validated with Zod schemas before being sent to the model
+- **Cost attribution**: Every AI call includes `gateway.user` and `gateway.tags` for per-user spend tracking in the Vercel AI Gateway dashboard
+
+## Model Tiers
+
+| Tier | Model | Used By |
+|------|-------|---------|
+| `chat` | gpt-5.4 | Copilot Chat, Demo Script generation |
+| `fast` | gpt-5.4-nano | Enrichment, Recommendations, Intent parsing, Template refinement |
+
+The `fast` tier uses a smaller, cheaper model for structured output and simple generation tasks where latency and cost matter more than depth.

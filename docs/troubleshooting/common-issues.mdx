@@ -65,13 +65,14 @@ icon: circle-question
     **Solution:** Generate a new playbook to see the updated template. Existing playbooks cannot be re-compiled with new templates.
   </Accordion>
 
-  <Accordion title="OAuth login redirects to an error page">
-    **Cause:** The OAuth callback failed to exchange the authorization code for a session.
+  <Accordion title="Sign-in fails or account is immediately rejected">
+    **Cause:** The platform restricts access to `@twilio.com` email addresses. If you sign up with a non-Twilio email, the Clerk webhook automatically deletes your account.
 
     **Solution:**
-    1. Try again — the authorization code may have expired
-    2. Ensure the OAuth provider (Google/GitHub) is properly configured in your Supabase project
-    3. Check that the callback URL in your OAuth provider settings matches your deployment URL
+    1. Ensure you're using your `@twilio.com` email address
+    2. If you recently signed up and can't log in, your account may have been rejected — check with an admin
+    3. If you're getting a generic Clerk error, try clearing your browser cookies and signing in again
+    4. For persistent issues, verify that the Clerk webhook (`/api/webhooks/clerk`) is configured and receiving events
   </Accordion>
 
   <Accordion title="The SE Demo Script tab is empty">
@@ -87,8 +88,8 @@ icon: circle-question
   </Accordion>
 
   <Accordion title="Supabase Anon Key validation fails ('must start with eyJ')">
-    **Cause:** The Supabase Anon Key is a JWT token that always starts with `eyJ` (base64-encoded `{"alg":...}`). You may be pasting the wrong key.
+    **Cause:** This refers to the **demo project credentials** you enter in Builder Wizard Step 4 — the Supabase Anon Key for the demo app you're building (not the Demo Builder's own authentication). The key is a JWT that always starts with `eyJ` (base64-encoded `{"alg":...}`). You may be pasting the wrong key.
 
-    **Solution:** In Supabase, go to **Project Settings → API → Project API Keys → anon/public**. The key should be a long string starting with `eyJhbGciOi...`.
+    **Solution:** In your demo project's Supabase dashboard, go to **Project Settings → API → Project API Keys → anon/public**. The key should be a long string starting with `eyJhbGciOi...`.
   </Accordion>
 </AccordionGroup>

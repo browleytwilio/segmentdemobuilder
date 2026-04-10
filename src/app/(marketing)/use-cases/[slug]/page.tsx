@@ -53,7 +53,7 @@ export default async function UseCaseDetailPage({
           <div className="mt-8">
             <Button
               size="lg"
-              render={<Link href="/login" />}
+              render={<Link href="/sign-in" />}
               className="bg-gradient-to-r from-marketing-blue to-marketing-purple text-white hover:opacity-90"
             >
               Build a {uc.industry} Demo

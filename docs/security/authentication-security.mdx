@@ -6,77 +6,88 @@ icon: lock
 
 # Authentication Security
 
-The platform uses Supabase Auth for all authentication, with cookie-based session management and automatic profile provisioning.
+The platform uses Clerk for all authentication, with JWT-based session management, domain-restricted access, and webhook-driven profile provisioning.
 
 ## Auth Architecture
 
 ```mermaid
 flowchart TD
-    A[User visits protected route] --> B{Has session cookie?}
-    B -->|Yes| C[Verify session with Supabase]
-    B -->|No| D[Redirect to /login]
+    A[User visits protected route] --> B{Clerk session?}
+    B -->|Yes| C[proxy.ts: clerkMiddleware validates]
+    B -->|No| D[Redirect to /sign-in]
     C -->|Valid| E[Allow access]
-    C -->|Expired| F[Attempt token refresh]
-    F -->|Success| E
-    F -->|Failure| D
-    D --> G{Login method}
-    G -->|Email/Password| H[Supabase email auth]
-    G -->|Magic Link| I[Supabase magic link email]
-    G -->|OAuth| J[Redirect to provider]
-    J --> K[Provider consent screen]
-    K --> L[/auth/callback with code]
-    L --> M[Exchange code for session]
-    M --> N[Set session cookie + analytics cookie]
-    N --> O[Redirect to /dashboard]
-    H --> O
-    I --> O
+    C -->|Invalid/Expired| D
+    D --> F{Login method}
+    F -->|Email/Password| G[Clerk sign-in form]
+    F -->|Email Code| H[Clerk sends verification code]
+    G --> I{Domain check}
+    H --> I
+    I -->|@twilio.com| J[Clerk establishes session]
+    I -->|Other domain| K[Rejected by webhook]
+    J --> L[Redirect to /dashboard]
+    K --> M[User deleted from Clerk]
 ```
 
 ## Session Management
 
-Sessions use Supabase's `@supabase/ssr` cookie middleware:
+Sessions use Clerk's JWT-based authentication:
 
-- **Session tokens** are stored in HTTP-only cookies
-- **Automatic refresh** — The middleware refreshes expired access tokens using the refresh token
-- **Server-side validation** — Every server action and API route creates a Supabase server client that validates the session from cookies
+- **JWT tokens** are managed by `@clerk/nextjs` — no manual cookie handling
+- **Automatic refresh** — Clerk handles token rotation transparently
+- **Server-side validation** — Server actions and API routes call `auth()` from `@clerk/nextjs/server` to get the authenticated `userId`
 
-## OAuth Security
+## Clerk-Supabase JWT Bridge
 
-The OAuth flow uses Supabase's PKCE (Proof Key for Code Exchange) implementation:
+Supabase remains the database with RLS enabled. Clerk issues a custom JWT that Supabase trusts:
 
-1. The login page initiates OAuth via `supabase.auth.signInWithOAuth()`
-2. Supabase generates a PKCE challenge and redirects to the provider
-3. After consent, the provider redirects to `/auth/callback` with an authorization code
-4. The callback handler calls `supabase.auth.exchangeCodeForSession(code)`
-5. Supabase validates the PKCE verifier and exchanges the code for tokens
-6. A session cookie is set, plus a short-lived `x-analytics-identify` cookie (30-second TTL)
+1. A **Clerk JWT template** named `supabase` is configured with the Supabase JWT secret
+2. Server-side code calls `getToken({ template: "supabase" })` to get a short-lived JWT
+3. This JWT is passed when creating the Supabase client
+4. Supabase's `auth.uid()` function resolves to the Clerk user ID from the JWT
+5. All RLS policies evaluate against this ID — no policy changes were needed during migration
 
-The analytics cookie bridges the server-side redirect with client-side Segment identification.
+<Info>
+  The JWT bridge means Supabase never manages auth sessions directly. Clerk is the identity provider; Supabase only trusts the JWT for database access control.
+</Info>
 
-## Auto-Profile Provisioning
+## Domain Restriction
 
-When a user signs up via any method:
+Access is limited to `@twilio.com` email addresses, enforced at two levels:
 
-1. Supabase creates an `auth.users` row
-2. A trigger (`on_auth_user_created`) fires `handle_new_user()`
-3. This creates a `profiles` row with `id`, `email`, and `role = 'user'`
-4. A second trigger (`on_profile_created_promote_admin`) checks if the email matches the prime admin — if so, promotes to `super_admin`
+| Level | Where | What Happens |
+|-------|-------|-------------|
+| **Proxy** | `proxy.ts` | `clerkMiddleware()` runs on every request; non-public routes require `auth.protect()` |
+| **Webhook** | `/api/webhooks/clerk` | On `user.created`, non-Twilio emails trigger immediate deletion of the Clerk user |
 
-This ensures every authenticated user has a profile record, and the prime admin is always promoted.
+A non-Twilio user who somehow creates a Clerk account will be deleted before their profile is synced to Supabase — they will never have database access.
+
+## Profile Provisioning via Webhook
+
+When a user signs up through Clerk:
+
+1. Clerk fires a `user.created` webhook event
+2. The handler at `/api/webhooks/clerk` verifies the Svix signature
+3. Domain check: if the email is not `@twilio.com`, the Clerk user is deleted and no profile is created
+4. **Existing user migration**: If a `profiles` row with the same email exists (from the previous Supabase Auth era), the row's `id` is updated to the Clerk user ID. `ON UPDATE CASCADE` propagates to `playbooks.user_id`
+5. **New user**: A new `profiles` row is inserted with the Clerk user ID and email
+6. The `promote_prime_admin` database trigger fires on INSERT, auto-promoting the prime admin email to `super_admin`
+
+Email updates (`user.updated`) and deletions (`user.deleted`) are also handled — see [POST /api/webhooks/clerk](/reference/api/webhooks-clerk).
 
 ## Route Protection Layers
 
 | Layer | What It Protects | How |
 |-------|-----------------|-----|
-| **Layout middleware** | `(app)` route group | Checks for Supabase session; redirects to `/login` if absent |
-| **Server actions** | Admin operations | `requireAdmin()` verifies `super_admin` role before executing |
-| **RLS policies** | Database rows | PostgreSQL enforces access rules on every query |
-| **API routes** | REST endpoints | Create Supabase server client from cookies; reject if no session |
+| **proxy.ts** | All non-public routes | `clerkMiddleware()` with `auth.protect()` redirects unauthenticated users to `/sign-in` |
+| **Server actions** | Admin operations | `requireAdmin()` verifies `super_admin` role via Supabase query |
+| **AI auth helper** | AI API routes | `requireAuthForAI()` calls Clerk's `auth()` to verify `userId` exists |
+| **RLS policies** | Database rows | PostgreSQL enforces access rules using `auth.uid()` from the Clerk JWT |
 
 ## Sign-Out
 
 The sign-out process:
 
-1. Calls `supabase.auth.signOut()` — clears the session cookie
-2. Calls `analytics.reset()` — generates new anonymous ID, clears Segment identity
-3. Redirects to `/login`
+1. Fires a `Signed Out` analytics event
+2. Calls `analytics.reset()` — generates a new anonymous ID, clears Segment identity
+3. Calls `signOut()` via Clerk's `useClerk()` hook — invalidates the Clerk session
+4. Redirects to `/sign-in`

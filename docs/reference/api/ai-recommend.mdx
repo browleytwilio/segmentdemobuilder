@@ -1,0 +1,78 @@
+---
+title: "AI Recommend Scenarios"
+description: "Structured output endpoint that suggests optimal demo scenarios with reasoning."
+icon: "lightbulb"
+api: "POST /api/ai/recommend-scenarios"
+---
+
+Non-streaming endpoint powering [Smart Scenario Recommendations](/guides/ai-scenario-recommendations). Returns structured JSON with scenario suggestions, reasoning, and impact scores.
+
+## Request
+
+```json
+{
+  "customerName": "Acme Corp",
+  "industry": "FinTech",
+  "persona": "CTO / Engineering",
+  "architecture": {
+    "enableSESidebar": true,
+    "enableProfileAPI": true,
+    "enableSeededProfiles": false,
+    "enableIntentPredictions": false,
+    "enableSecondPagePers": false
+  }
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `customerName` | `string` | Yes | Prospect company name (max 200 chars) |
+| `industry` | `string` | Yes | Target industry (max 100 chars) |
+| `persona` | `string` | Yes | Target persona (max 100 chars) |
+| `architecture` | `Record<string, boolean>` | Yes | Enabled architecture features |
+
+## Response
+
+```json
+{
+  "recommendations": [
+    {
+      "scenarioSlug": "real-time-risk-scoring",
+      "reasoning": "CTOs in FinTech prioritize real-time decisioning. This scenario demonstrates Profile API lookups for risk assessment.",
+      "impactScore": 9
+    },
+    {
+      "scenarioSlug": "pii-compliance-workflows",
+      "reasoning": "Regulatory compliance is a top concern. Shows Protocols governance and consent management.",
+      "impactScore": 8
+    }
+  ],
+  "summary": "Focus on technical architecture and compliance — the two pillars a FinTech CTO evaluates."
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `recommendations` | `array` | Ordered list of scenario suggestions |
+| `recommendations[].scenarioSlug` | `string` | Matches a `demo_features.slug` in the database |
+| `recommendations[].reasoning` | `string` | Why this scenario fits the prospect |
+| `recommendations[].impactScore` | `number` | 1-10 expected demo impact |
+| `summary` | `string` | High-level recommendation strategy |
+
+## Configuration
+
+| Setting | Value |
+|---------|-------|
+| Model | `fast` (gpt-5.4-nano) |
+| Output | Structured (Zod schema via `Output.object()`) |
+| Max duration | 30s |
+| Rate limit | 10 req/min per user |
+
+## Errors
+
+| Status | Description |
+|--------|-------------|
+| 400 | Invalid request body |
+| 401 | Not authenticated |
+| 429 | Rate limit exceeded |
+| 502 | Failed to generate recommendations |

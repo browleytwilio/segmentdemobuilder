@@ -1,0 +1,61 @@
+---
+title: "AI Prompt Enrichment"
+description: "How AI enhances compiled prompts with industry-specific detail and persona-appropriate depth during compilation."
+icon: "wand-magic-sparkles"
+---
+
+AI Prompt Enrichment is a step in the [compilation pipeline](/concepts/compilation) that enhances your prompts after template substitution but before key sanitization. It adds industry-specific detail, adjusts technical depth to the persona, and improves the overall quality of the generated prompts.
+
+## Where It Fits
+
+```
+Template Selection
+      │
+      ▼
+Variable Substitution  ({{CUSTOMER_NAME}} → "Acme Corp")
+      │
+      ▼
+ AI Enrichment         ← You are here
+      │
+      ▼
+Key Sanitization       (real keys → YOUR_* placeholders)
+      │
+      ▼
+Save to Database
+```
+
+## How It Works
+
+1. After compilation produces the initial prompts, the compile page sends them to `POST /api/ai/enrich`
+2. The enrichment endpoint processes **all prompts in parallel** using `Promise.allSettled`
+3. Each prompt is individually enhanced by the `fast` model tier with a system prompt that includes:
+   - The target persona (CMO, CTO, etc.)
+   - The target industry
+   - Guidelines on appropriate depth and terminology
+4. If any individual prompt fails enrichment, the original prompt is kept (graceful fallback)
+
+## What Changes
+
+| Aspect | Before Enrichment | After Enrichment |
+|--------|-------------------|------------------|
+| Industry references | Generic | Specific (e.g., "financial transactions" for FinTech) |
+| Technical depth | Uniform | Persona-adapted (deeper for CTO, outcome-focused for CMO) |
+| Code comments | Minimal | Contextual explanations matching persona knowledge |
+| Variable names | Generic | Industry-appropriate (e.g., `riskScore` for FinTech) |
+
+## Best-Effort Design
+
+Enrichment is designed to be **best-effort**:
+
+- If the AI service is unavailable, compilation continues with original prompts
+- A toast notification (`"AI enrichment skipped — using standard prompts"`) appears if enrichment fails
+- Individual prompt failures don't block other prompts from being enriched
+- The compilation phase indicator shows **"Enhancing prompts with AI..."** during enrichment
+
+<Info>
+Enrichment adds 3-8 seconds to compilation time. The progress indicator keeps you informed of the current phase.
+</Info>
+
+## Disabling Enrichment
+
+There is no explicit toggle to disable enrichment. If the AI Gateway is unreachable or rate-limited, enrichment is automatically skipped. The resulting prompts are identical to what you'd get without AI features.

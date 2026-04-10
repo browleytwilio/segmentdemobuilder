@@ -2,11 +2,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   createMockSupabaseClient,
-  withAuthenticatedUser,
   withQueryResult,
 } from "@/__test-utils__/mocks/supabase";
 
 const { client: mockClient, queryBuilder } = createMockSupabaseClient();
+
+let mockClerkUserId: string | null = null;
+
+vi.mock("@clerk/nextjs/server", () => ({
+  auth: vi.fn(() => Promise.resolve({ userId: mockClerkUserId })),
+}));
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(() => Promise.resolve(mockClient)),
@@ -33,34 +38,27 @@ import { revalidatePath } from "next/cache";
 
 beforeEach(() => {
   vi.clearAllMocks();
-  // Reset auth to unauthenticated
-  mockClient.auth.getUser.mockResolvedValue({
-    data: { user: null },
-    error: null,
-  });
+  mockClerkUserId = null;
 });
 
 /**
- * Set up the mock client as an authenticated super_admin.
- * The first .single() call after auth resolves the profile role check.
+ * Set up the mock as an authenticated super_admin.
+ * The first .single() call resolves the profile role check in requireAdmin.
  */
-function setupAsAdmin(
-  user = { id: "admin_1", email: "admin@test.com" }
-) {
-  withAuthenticatedUser(mockClient, user);
-  // requireAdmin calls .from("profiles").select("role").eq("id", user.id).single()
+function setupAsAdmin(userId = "admin_1") {
+  mockClerkUserId = userId;
   queryBuilder.single.mockResolvedValueOnce({
     data: { role: "super_admin" },
     error: null,
   });
-  return user;
+  return userId;
 }
 
 /**
  * Set up as a regular (non-admin) authenticated user.
  */
-function setupAsNonAdmin() {
-  withAuthenticatedUser(mockClient, { id: "user_1", email: "user@test.com" });
+function setupAsNonAdmin(userId = "user_1") {
+  mockClerkUserId = userId;
   queryBuilder.single.mockResolvedValueOnce({
     data: { role: "user" },
     error: null,
@@ -265,7 +263,7 @@ describe("savePromptTemplate", () => {
   });
 
   it("archives current and inserts new version", async () => {
-    const user = setupAsAdmin();
+    const userId = setupAsAdmin();
     const currentTemplate = {
       id: "tpl_1",
       name: "Test Template",
@@ -294,7 +292,7 @@ describe("savePromptTemplate", () => {
       content: "new content",
       version: 4,
       is_active: true,
-      updated_by: user.id,
+      updated_by: userId,
     });
     expect(result).toEqual({ error: null, newVersion: 4 });
   });
@@ -331,7 +329,7 @@ describe("createPromptTemplate", () => {
   });
 
   it("inserts with version=1, is_active=true", async () => {
-    const user = setupAsAdmin();
+    const userId = setupAsAdmin();
     withQueryResult(queryBuilder, null);
 
     const result = await createPromptTemplate(
@@ -347,7 +345,7 @@ describe("createPromptTemplate", () => {
       content: "template content",
       version: 1,
       is_active: true,
-      updated_by: user.id,
+      updated_by: userId,
     });
     expect(result).toEqual({ error: null });
   });
@@ -400,8 +398,6 @@ describe("getDemoFeatures", () => {
     );
     expect(queryBuilder.order).toHaveBeenCalledWith("industry");
     expect(queryBuilder.order).toHaveBeenCalledWith("display_order");
-    // eq should only be called for the profile role check, not for industry
-    // (the admin check calls .eq("id", userId) on the profiles query)
     expect(result).toEqual({ data: features, error: null });
   });
 });

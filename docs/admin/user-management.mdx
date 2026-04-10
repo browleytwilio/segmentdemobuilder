@@ -24,6 +24,10 @@ The table displays the following columns:
 
 Data is fetched via the `admin_users_with_playbook_count()` RPC function, which joins `profiles` with `playbooks` to compute counts.
 
+<Info>
+  User profiles are synced from Clerk via a webhook. When a user signs up with Clerk, the `/api/webhooks/clerk` endpoint creates their `profiles` row in Supabase. Email and role data lives in Supabase; Clerk is the source of truth for authentication identity. See [POST /api/webhooks/clerk](/reference/api/webhooks-clerk) for details.
+</Info>
+
 ## Changing Roles
 
 <Steps>

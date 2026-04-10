@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   }
 
   if (aiGenerateRatelimit) {
-    const { success } = await aiGenerateRatelimit.limit(auth.user!.id);
+    const { success } = await aiGenerateRatelimit.limit(auth.userId!);
     if (!success) {
       return Response.json({ error: "Too many requests" }, { status: 429 });
     }
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       system: buildRefineTemplateSystemPrompt(),
       prompt: `## Current Template\n\n${body.data.templateContent}\n\n## Instruction\n\n${body.data.instruction}`,
       providerOptions: {
-        gateway: { user: auth.user!.id, tags: ["refine-template"] },
+        gateway: { user: auth.userId!, tags: ["refine-template"] },
       },
     });
 

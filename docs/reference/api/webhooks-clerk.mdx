@@ -1,0 +1,93 @@
+---
+title: POST /api/webhooks/clerk
+description: Clerk webhook handler for user lifecycle sync to Supabase.
+icon: code
+tag: POST
+---
+
+# POST /api/webhooks/clerk
+
+Handles Clerk webhook events to synchronize user lifecycle changes with the Supabase `profiles` table. This is the bridge between Clerk (authentication) and Supabase (database/RLS).
+
+## Request
+
+```bash
+POST /api/webhooks/clerk
+```
+
+**Authentication:** Svix signature verification via `CLERK_WEBHOOK_SECRET`
+
+**Required Headers:**
+
+| Header | Description |
+|--------|-------------|
+| `svix-id` | Unique message ID |
+| `svix-timestamp` | Unix timestamp of the event |
+| `svix-signature` | HMAC signature for verification |
+
+**Body:** Clerk `WebhookEvent` JSON payload
+
+## Handled Events
+
+### `user.created`
+
+Triggered when a new user signs up through Clerk.
+
+**Flow:**
+
+1. Extract the primary email from the event payload
+2. **Domain check** — if the email does not end with `@twilio.com`:
+   - Delete the Clerk user server-side via `clerkClient().users.deleteUser()`
+   - Return `{ rejected: "domain_not_allowed" }`
+   - No Supabase profile is created
+3. **Existing profile check** — query `profiles` for a row matching the email:
+   - **If found (migration path):** Update the profile's `id` from the old UUID to the Clerk user ID. `ON UPDATE CASCADE` on the foreign key propagates the change to `playbooks.user_id`
+   - **If not found (new user):** Insert a new `profiles` row with `{ id: clerkId, email }`
+4. The `promote_prime_admin` database trigger fires on INSERT, auto-promoting the prime admin email to `super_admin`
+
+### `user.updated`
+
+Triggered when a user's Clerk profile changes (e.g., email update).
+
+**Flow:**
+
+1. Extract the updated primary email
+2. Update the matching `profiles` row's `email` column
+
+### `user.deleted`
+
+Triggered when a user is deleted from Clerk.
+
+**Flow:**
+
+1. Delete the `profiles` row matching the Clerk user ID
+2. `ON DELETE CASCADE` on the foreign key automatically removes the user's `playbooks`
+
+## Responses
+
+| Status | Body | Condition |
+|--------|------|-----------|
+| `200` | `{ received: true }` | Event processed successfully |
+| `200` | `{ rejected: "domain_not_allowed" }` | Non-Twilio signup rejected |
+| `401` | `{ error: "Invalid signature" }` | Svix signature verification failed |
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `CLERK_WEBHOOK_SECRET` | Svix signing secret from the Clerk Dashboard webhook configuration |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL (used by the admin client) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key for admin-level database access (bypasses RLS) |
+
+<Warning>
+  The webhook uses a Supabase **service role** client (bypasses RLS) because it needs to insert/update/delete profiles on behalf of users who don't yet have a session. The `SUPABASE_SERVICE_ROLE_KEY` must never be exposed to the client.
+</Warning>
+
+## Setup
+
+To configure the Clerk webhook:
+
+1. In the Clerk Dashboard, go to **Webhooks**
+2. Create a new endpoint pointing to `https://your-domain.com/api/webhooks/clerk`
+3. Subscribe to events: `user.created`, `user.updated`, `user.deleted`
+4. Copy the **Signing Secret** and set it as `CLERK_WEBHOOK_SECRET` in your environment variables

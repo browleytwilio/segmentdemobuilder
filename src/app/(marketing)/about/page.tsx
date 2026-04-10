@@ -111,7 +111,7 @@ export default function AboutPage() {
       <CTASection
         heading="Join us in transforming SE enablement"
         description="Start building better demos today, or join our team to help build the future."
-        primaryCta={{ label: "Get Started", href: "/login" }}
+        primaryCta={{ label: "Get Started", href: "/sign-in" }}
         secondaryCta={{ label: "View Careers", href: "/careers" }}
       />
     </>

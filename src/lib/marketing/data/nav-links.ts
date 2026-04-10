@@ -28,6 +28,7 @@ export const navLinks: (NavLink | NavGroup)[] = [
       { label: "Media & Entertainment", href: "/use-cases/media" },
     ],
   },
+  { label: "Docs", href: "https://segment-demo-builder.mintlify.app" },
   {
     label: "Resources",
     links: [
@@ -62,7 +63,7 @@ export const footerLinks = {
     { label: "Contact", href: "/contact" },
   ],
   resources: [
-    { label: "Documentation", href: "/docs" },
+    { label: "Documentation", href: "https://segment-demo-builder.mintlify.app" },
     { label: "Use Cases", href: "/use-cases" },
     { label: "Security", href: "/security" },
   ],

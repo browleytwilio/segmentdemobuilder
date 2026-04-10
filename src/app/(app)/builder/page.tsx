@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { BuilderWizard } from "@/components/builder/builder-wizard";
+import { TemplatePicker } from "@/components/builder/template-picker";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ListOrderedIcon, SparklesIcon } from "lucide-react";
+import { ListOrderedIcon, SparklesIcon, LayoutTemplateIcon } from "lucide-react";
+import { getPlaybookTemplates } from "./actions";
+import type { PlaybookTemplateRow } from "@/lib/compiler/types";
 
 const NLBuilderEntry = dynamic(
   () => import("@/components/builder/nl-builder-entry").then((m) => m.NLBuilderEntry),
@@ -13,6 +16,11 @@ const NLBuilderEntry = dynamic(
 
 export default function BuilderPage() {
   const [activeTab, setActiveTab] = useState("wizard");
+  const [templates, setTemplates] = useState<PlaybookTemplateRow[]>([]);
+
+  useEffect(() => {
+    getPlaybookTemplates().then(setTemplates);
+  }, []);
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -26,6 +34,10 @@ export default function BuilderPage() {
             <SparklesIcon className="size-3.5" />
             Describe with AI
           </TabsTrigger>
+          <TabsTrigger value="templates" className="gap-1.5">
+            <LayoutTemplateIcon className="size-3.5" />
+            Templates
+          </TabsTrigger>
         </TabsList>
       </div>
 
@@ -35,6 +47,18 @@ export default function BuilderPage() {
 
       <TabsContent value="describe">
         <NLBuilderEntry onSwitchToWizard={() => setActiveTab("wizard")} />
+      </TabsContent>
+
+      <TabsContent value="templates">
+        <div className="mx-auto max-w-4xl px-4 py-6">
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold">Start from a Template</h2>
+            <p className="text-sm text-muted-foreground">
+              Choose a pre-configured demo template to get started quickly.
+            </p>
+          </div>
+          <TemplatePicker templates={templates} />
+        </div>
       </TabsContent>
     </Tabs>
   );

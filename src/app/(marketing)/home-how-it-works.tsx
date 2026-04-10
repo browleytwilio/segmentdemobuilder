@@ -46,12 +46,35 @@ export function HomeHowItWorks() {
           How It Works
         </p>
         <GradientHeading as="h2">
-          Four steps to a perfect demo
+          Build the perfect demo, your way
         </GradientHeading>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-          The guided wizard captures everything the prompt engine needs.
-          No coding required — just answers about your prospect.
+          Use the guided wizard for full control, or describe your demo in plain English and let AI fill in the rest. Either way, you get a complete playbook in minutes.
         </p>
+      </motion.div>
+
+      {/* NL Builder callout */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="mx-auto mb-16 max-w-2xl"
+      >
+        <div className="rounded-2xl border border-marketing-purple/20 bg-marketing-purple/[0.05] p-5">
+          <div className="mb-2 flex items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-widest text-marketing-purple">
+              Try the Natural Language Builder
+            </span>
+            <svg className="h-3.5 w-3.5 text-marketing-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+          </div>
+          <p className="text-sm italic text-muted-foreground">
+            &ldquo;I&apos;m demoing Segment for a FinTech CMO focused on real-time personalization and compliance.&rdquo;
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground/60">
+            AI extracts the context, selects architecture flags, and recommends scenarios — automatically.
+          </p>
+        </div>
       </motion.div>
 
       <div className="relative mx-auto max-w-4xl">

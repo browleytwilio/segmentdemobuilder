@@ -1,0 +1,55 @@
+---
+title: "AI Template Assistant"
+description: "Use AI to refine and improve prompt templates directly in the admin editor."
+icon: "sparkles"
+---
+
+<Snippet file="admin-only.mdx" />
+
+The AI Template Assistant is an inline tool in the **Prompt Template Editor** that helps admins refine templates using natural language instructions.
+
+## How to Use
+
+1. Navigate to **Admin > Prompts**
+2. Select a **scenario** template from the sidebar (foundation and architecture templates are code-managed and read-only)
+3. Below the Monaco editor, find the AI assistant bar with a sparkle icon
+4. Type an instruction describing what you want to change, for example:
+   - *"Add more detail for the FinTech industry"*
+   - *"Make the code comments more beginner-friendly"*
+   - *"Add a section about Protocols governance"*
+   - *"Simplify the Profile API setup steps"*
+5. Click **Refine**
+6. When the refined template is ready, click **Accept** to apply it to the editor, or **Dismiss** to discard
+
+## What the AI Knows
+
+The refinement prompt includes guidelines about:
+
+- Segment CDP features and terminology
+- Valid template variables (`{{CUSTOMER_NAME}}`, `{{SEGMENT_WRITE_KEY}}`, etc.)
+- The template structure expected by the compilation engine
+- Best practices for prompt engineering
+
+## Workflow
+
+```
+Type instruction → Click Refine → Review result → Accept or Dismiss
+                                                      │
+                                                      ▼
+                                              Editor updated → Save
+```
+
+<Warning>
+Accepting a refinement updates the editor content but does **not** auto-save. You must click **Save** to persist the changes (which creates a new template version).
+</Warning>
+
+## Tips
+
+- Be specific in your instructions — "add FinTech risk scoring examples" works better than "make it better"
+- The assistant preserves existing `{{VARIABLE}}` placeholders — it won't break template compilation
+- Use it iteratively: refine, review, refine again until the template is right
+- Invalid variables introduced by the AI will be caught by the save-time validation
+
+## Rate Limits
+
+Template refinement uses the `aiGenerate` rate limit: **10 requests per minute** per user.

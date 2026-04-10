@@ -1,0 +1,68 @@
+---
+title: "AI Demo Script"
+description: "Streaming endpoint that generates persona-tailored demo scripts."
+icon: "presentation-screen"
+api: "POST /api/ai/demo-script"
+---
+
+Streaming generation endpoint powering the [AI Demo Script](/guides/ai-demo-script) feature. Produces a persona-adapted presentation narrative for a completed playbook.
+
+## Request
+
+```json
+{
+  "messages": [
+    {
+      "role": "user",
+      "parts": [{ "type": "text", "text": "Generate a demo script for Acme Corp..." }]
+    }
+  ],
+  "playbook": {
+    "customerName": "Acme Corp",
+    "persona": "CTO / Engineering",
+    "industry": "FinTech",
+    "scenarioSlugs": {
+      "scenario-1-id": "real-time-risk-scoring",
+      "scenario-2-id": "pii-compliance"
+    },
+    "architecture": {
+      "enableSESidebar": true,
+      "enableProfileAPI": true,
+      "enableSeededProfiles": false,
+      "enableIntentPredictions": false,
+      "enableSecondPagePers": false
+    }
+  }
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `messages` | `UIMessage[]` | Yes | Conversation history (typically a single user message) |
+| `playbook` | `object` | Yes | Playbook context for script generation |
+| `playbook.customerName` | `string` | Yes | Prospect company name |
+| `playbook.persona` | `string` | Yes | Target persona role |
+| `playbook.industry` | `string` | Yes | Target industry |
+| `playbook.scenarioSlugs` | `Record<string, string>` | Yes | Map of scenario IDs to slugs |
+| `playbook.architecture` | `DemoArchitecture` | Yes | Architecture feature flags |
+
+## Response
+
+Returns a `UIMessageStreamResponse` (Server-Sent Events) containing the generated demo script in Markdown format.
+
+## Configuration
+
+| Setting | Value |
+|---------|-------|
+| Model | `chat` (gpt-5.4) |
+| Max duration | 60s |
+| Rate limit | 10 req/min per user |
+
+## Errors
+
+| Status | Description |
+|--------|-------------|
+| 400 | Invalid request body |
+| 401 | Not authenticated |
+| 429 | Rate limit exceeded |
+| 502 | AI service unavailable |

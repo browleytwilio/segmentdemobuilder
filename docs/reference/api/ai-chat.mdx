@@ -1,0 +1,69 @@
+---
+title: "AI Chat"
+description: "Streaming chat endpoint for the AI Copilot with Segment knowledge tool."
+icon: "message-bot"
+api: "POST /api/ai/chat"
+---
+
+Streaming chat endpoint powering the [AI Copilot](/guides/ai-copilot). Supports multi-turn conversation with an optional Segment knowledge retrieval tool.
+
+## Request
+
+```json
+{
+  "messages": [
+    {
+      "role": "user",
+      "parts": [{ "type": "text", "text": "What is identity resolution?" }]
+    }
+  ],
+  "context": {
+    "customerName": "Acme Corp",
+    "industry": "FinTech",
+    "persona": "CTO / Engineering",
+    "architecture": {
+      "enableProfileAPI": true,
+      "enableSeededProfiles": false
+    },
+    "selectedScenarios": ["real-time-risk-scoring"]
+  }
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `messages` | `UIMessage[]` | Yes | Conversation history in AI SDK UIMessage format |
+| `context` | `object` | No | Current playbook context for grounded answers |
+| `context.customerName` | `string` | No | Prospect company name |
+| `context.industry` | `string` | No | Target industry |
+| `context.persona` | `string` | No | Target persona role |
+| `context.architecture` | `Record<string, boolean>` | No | Enabled architecture flags |
+| `context.selectedScenarios` | `string[]` | No | Selected scenario IDs |
+
+## Response
+
+Returns a `UIMessageStreamResponse` (Server-Sent Events). The stream includes text chunks and optional tool invocations for the Segment knowledge lookup.
+
+## Tools
+
+| Tool | Description |
+|------|-------------|
+| `segmentKnowledge` | Looks up Segment CDP concepts (identity resolution, Unify, Protocols, etc.) from a built-in knowledge base |
+
+## Configuration
+
+| Setting | Value |
+|---------|-------|
+| Model | `chat` (gpt-5.4) |
+| Max steps | 3 (tool use rounds) |
+| Max duration | 60s |
+| Rate limit | 30 req/min per user |
+
+## Errors
+
+| Status | Description |
+|--------|-------------|
+| 400 | Invalid request body |
+| 401 | Not authenticated |
+| 429 | Rate limit exceeded |
+| 502 | AI service unavailable |

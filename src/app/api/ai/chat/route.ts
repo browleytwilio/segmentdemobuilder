@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   }
 
   if (aiChatRatelimit) {
-    const { success } = await aiChatRatelimit.limit(auth.user!.id);
+    const { success } = await aiChatRatelimit.limit(auth.userId!);
     if (!success) {
       return Response.json({ error: "Too many requests" }, { status: 429 });
     }
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
       tools: { segmentKnowledge: segmentKnowledgeTool },
       stopWhen: stepCountIs(3),
       providerOptions: {
-        gateway: { user: auth.user!.id, tags: ["chat"] },
+        gateway: { user: auth.userId!, tags: ["chat"] },
       },
     });
 

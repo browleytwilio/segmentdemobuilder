@@ -27,7 +27,7 @@ export async function POST(req: Request) {
   }
 
   if (aiGenerateRatelimit) {
-    const { success } = await aiGenerateRatelimit.limit(auth.user!.id);
+    const { success } = await aiGenerateRatelimit.limit(auth.userId!);
     if (!success) {
       return Response.json({ error: "Too many requests" }, { status: 429 });
     }
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
       system: buildScriptSystemPrompt(playbook),
       messages: await convertToModelMessages(messages),
       providerOptions: {
-        gateway: { user: auth.user!.id, tags: ["demo-script"] },
+        gateway: { user: auth.userId!, tags: ["demo-script"] },
       },
     });
 

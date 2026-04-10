@@ -69,11 +69,11 @@ erDiagram
 
 ### profiles
 
-1:1 mapping with `auth.users`. Created automatically by a trigger when a user signs up.
+1:1 mapping with authenticated users. Created by the Clerk webhook (`/api/webhooks/clerk`) when a user signs up.
 
 | Column | Type | Constraints | Default | Description |
 |--------|------|-------------|---------|-------------|
-| `id` | UUID | PK, FK → `auth.users(id)` ON DELETE CASCADE | — | User ID from Supabase Auth |
+| `id` | TEXT | PK | — | User ID from Clerk |
 | `email` | TEXT | — | — | User's email address |
 | `role` | `user_role` | NOT NULL | `'user'` | Access control role |
 | `created_at` | TIMESTAMPTZ | NOT NULL | `now()` | Account creation time |

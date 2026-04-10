@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@/lib/supabase/server";
 
 export async function PATCH(
@@ -6,14 +7,12 @@ export async function PATCH(
 ) {
   const { playbook_id } = await params;
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const { userId } = await auth();
+  if (!userId) {
     return Response.json({ error: "Not authenticated" }, { status: 401 });
   }
+
+  const supabase = await createClient();
 
   let body: { generated_prompts: unknown };
   try {
@@ -36,7 +35,7 @@ export async function PATCH(
       status: "completed" as const,
     })
     .eq("id", playbook_id)
-    .eq("user_id", user.id);
+    .eq("user_id", userId);
 
   if (error) {
     return Response.json({ error: error.message }, { status: 500 });

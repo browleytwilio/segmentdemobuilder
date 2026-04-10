@@ -50,46 +50,11 @@ export function createMockSupabaseClient() {
   const queryBuilder = createChainableQuery();
 
   const client = {
-    auth: {
-      getUser: vi.fn(() =>
-        Promise.resolve({ data: { user: null }, error: null })
-      ),
-      exchangeCodeForSession: vi.fn(() =>
-        Promise.resolve({ error: null })
-      ),
-      signOut: vi.fn(() => Promise.resolve({ error: null })),
-      signInWithPassword: vi.fn(() =>
-        Promise.resolve({ data: { user: null, session: null }, error: null })
-      ),
-      signUp: vi.fn(() =>
-        Promise.resolve({ data: { user: null, session: null }, error: null })
-      ),
-      signInWithOAuth: vi.fn(() =>
-        Promise.resolve({ data: { url: null, provider: null }, error: null })
-      ),
-      signInWithOtp: vi.fn(() =>
-        Promise.resolve({ data: {}, error: null })
-      ),
-    },
     from: vi.fn(() => queryBuilder),
     rpc: vi.fn(() => Promise.resolve({ data: null, error: null })),
   };
 
   return { client, queryBuilder };
-}
-
-/**
- * Helper to configure the mock client with an authenticated user.
- */
-export function withAuthenticatedUser(
-  client: ReturnType<typeof createMockSupabaseClient>["client"],
-  user = { id: "user_123", email: "test@example.com" }
-) {
-  client.auth.getUser.mockResolvedValue({
-    data: { user } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-    error: null,
-  });
-  return user;
 }
 
 /**

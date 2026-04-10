@@ -18,7 +18,7 @@ The Segment Demo Builder is designed with a security-first architecture. The cor
     Every database table has RLS policies enforcing ownership and role-based access at the PostgreSQL level.
   </Card>
   <Card title="Authentication" icon="lock" href="/security/authentication-security">
-    Supabase Auth with cookie-based sessions, OAuth code exchange, and automatic profile creation.
+    Clerk authentication with JWT sessions, domain restriction, and webhook-driven profile sync.
   </Card>
   <Card title="Role-Based Access" icon="users-gear" href="/admin/user-management">
     Two-tier role system (user / super_admin) with a protected prime admin account.
@@ -33,7 +33,7 @@ The Segment Demo Builder is designed with a security-first architecture. The cor
 | Data isolation | RLS policies on all 4 tables enforce per-user ownership |
 | Admin protection | `super_admin` role required, prime admin cannot be demoted |
 | Public sharing | Only `completed` playbooks viewable, always sanitized |
-| Session management | Supabase cookie-based sessions with automatic refresh |
+| Session management | Clerk JWT-based sessions with automatic refresh |
 | Rate limiting | API endpoints protected by Upstash Redis sliding window |
 | Input validation | Zod schemas validate all form inputs at runtime |
 | Draft cleanup | Stale drafts auto-pruned after 30 days via `pg_cron` |

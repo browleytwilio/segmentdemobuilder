@@ -13,87 +13,52 @@ export interface PricingTier {
 
 export const pricingTiers: PricingTier[] = [
   {
-    id: "starter",
-    name: "Starter",
-    price: "$0",
-    annualPrice: "$0",
-    period: "/month",
-    description: "Perfect for individual SEs getting started with demo automation.",
-    features: [
-      "Up to 5 playbooks",
-      "4-step wizard builder",
-      "SE demo script generation",
-      "Markdown export",
-      "Community support",
-    ],
-    cta: "Get Started Free",
-    href: "/login",
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    price: "$49",
-    annualPrice: "$39",
-    period: "/month",
-    description: "For SE teams who need advanced features and collaboration.",
+    id: "twilio-se",
+    name: "Twilio SE Access",
+    price: "Free",
+    period: "for all Twilio SEs",
+    description:
+      "Full access to every feature — wizard builder, natural language mode, AI Copilot, scenario recommendations, and admin tools. Available to every @twilio.com account.",
     features: [
       "Unlimited playbooks",
-      "All Starter features",
-      "Team sharing & collaboration",
-      "Custom prompt templates",
-      "Priority support",
-      "Admin panel access",
-      "Version history",
+      "Natural Language Builder",
+      "AI Segment Copilot",
+      "AI scenario recommendations with impact scoring",
+      "Team playbook library",
+      "Admin template management with AI refinement",
+      "Live demo credential rehydration",
+      "SE demo script generation",
     ],
-    cta: "Start Free Trial",
-    href: "/login",
+    cta: "Sign In with Twilio",
+    href: "/sign-in",
     popular: true,
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    price: "Custom",
-    period: "",
-    description: "Custom solutions for large SE organizations with advanced needs.",
-    features: [
-      "Everything in Pro",
-      "SSO / SAML authentication",
-      "Custom integrations",
-      "Dedicated success manager",
-      "SLA guarantee",
-      "Custom branding",
-      "On-premise deployment option",
-      "Advanced analytics",
-    ],
-    cta: "Contact Sales",
-    href: "/contact",
   },
 ];
 
 export const pricingFaq = [
   {
-    question: "Can I try it before committing?",
+    question: "Who can access the Demo Builder?",
     answer:
-      "Absolutely. The Starter plan is free forever with up to 5 playbooks. Start building demos today with zero risk.",
+      "Any Twilio employee with an @twilio.com email address. Sign in with Clerk and you'll be provisioned automatically.",
   },
   {
-    question: "How does team sharing work?",
+    question: "Is there a playbook limit?",
     answer:
-      "On Pro and Enterprise plans, you can share playbooks via URL with anyone on your team. They can view, duplicate, and iterate on your work.",
+      "No. Every account gets unlimited playbooks. Build as many as you need for your prospect pipeline.",
   },
   {
-    question: "What happens to my data if I downgrade?",
+    question: "How are my credentials handled?",
     answer:
-      "Your playbooks remain accessible. On the Starter plan, you're limited to 5 active playbooks but can still view all existing ones.",
+      "Credentials are never persisted — they exist in-memory only during compilation and are sanitized before storage. We use Supabase with row-level security so your playbooks are only visible to you unless you share them.",
   },
   {
-    question: "Do you offer discounts for annual billing?",
+    question: "Can I share playbooks with colleagues?",
     answer:
-      "Yes, annual billing saves you 20%. The Pro plan drops from $49/month to $39/month when billed annually.",
+      "Yes. Every completed playbook has a shareable URL. Anyone with a Twilio account can view a shared playbook. You can also export to Markdown or print for offline use.",
   },
   {
-    question: "Is my data secure?",
+    question: "How do I get admin access?",
     answer:
-      "Credentials are never persisted — they exist in-memory only during compilation and are sanitized before storage. We use Supabase with row-level security.",
+      "Admin access (for managing prompt templates and demo features) is granted by an existing super_admin. Reach out to the SE Enablement team to request access.",
   },
 ];

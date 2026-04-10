@@ -49,6 +49,6 @@ Super-admins can promote any user to `super_admin` via the [User Management](/ad
 
 All `/admin/*` routes are protected by:
 
-1. **Authentication check** — Unauthenticated users are redirected to `/login`
+1. **Authentication check** — Unauthenticated users are redirected to `/sign-in`
 2. **Role check** — Server actions call `requireAdmin()` which verifies the caller's role is `super_admin`
 3. **RLS policies** — Database queries enforce admin-only access at the row level

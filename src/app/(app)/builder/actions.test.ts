@@ -2,11 +2,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   createMockSupabaseClient,
-  withAuthenticatedUser,
   withQueryResult,
 } from "@/__test-utils__/mocks/supabase";
 
 const { client: mockClient, queryBuilder } = createMockSupabaseClient();
+
+let mockClerkUserId: string | null = null;
+
+vi.mock("@clerk/nextjs/server", () => ({
+  auth: vi.fn(() => Promise.resolve({ userId: mockClerkUserId })),
+}));
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(() => Promise.resolve(mockClient)),
@@ -25,11 +30,7 @@ import {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  // Reset auth to unauthenticated
-  mockClient.auth.getUser.mockResolvedValue({
-    data: { user: null },
-    error: null,
-  });
+  mockClerkUserId = null;
 });
 
 // ---------------------------------------------------------------------------
@@ -58,7 +59,7 @@ describe("createPlaybook", () => {
   });
 
   it("inserts with user_id, customer_name, industry, status draft, demo_config", async () => {
-    const user = withAuthenticatedUser(mockClient);
+    mockClerkUserId = "user_123";
     queryBuilder.single.mockResolvedValue({
       data: { id: "new-id" },
       error: null,
@@ -68,7 +69,7 @@ describe("createPlaybook", () => {
 
     expect(mockClient.from).toHaveBeenCalledWith("playbooks");
     expect(queryBuilder.insert).toHaveBeenCalledWith({
-      user_id: user.id,
+      user_id: "user_123",
       customer_name: validInput.customer_name,
       industry: validInput.industry,
       status: "draft",
@@ -79,7 +80,7 @@ describe("createPlaybook", () => {
   });
 
   it("returns { id } on success", async () => {
-    withAuthenticatedUser(mockClient);
+    mockClerkUserId = "user_123";
     queryBuilder.single.mockResolvedValue({
       data: { id: "new-id" },
       error: null,
@@ -90,7 +91,7 @@ describe("createPlaybook", () => {
   });
 
   it("returns { error } on DB failure", async () => {
-    withAuthenticatedUser(mockClient);
+    mockClerkUserId = "user_123";
     queryBuilder.single.mockResolvedValue({
       data: null,
       error: { message: "insert failed" },

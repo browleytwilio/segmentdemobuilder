@@ -6,6 +6,15 @@ export interface Testimonial {
   company: string;
 }
 
+export const logoCompanies: { name: string }[] = [
+  { name: "Twilio" },
+  { name: "Segment" },
+  { name: "SendGrid" },
+  { name: "Flex" },
+  { name: "Engage" },
+  { name: "Connections" },
+];
+
 export const testimonials: Testimonial[] = [
   {
     id: "1",
@@ -13,15 +22,15 @@ export const testimonials: Testimonial[] = [
       "We cut our demo prep time from 4 hours to 15 minutes. The AI-generated build prompts are incredibly accurate and the SE scripts have measurably improved our win rate.",
     name: "Sarah Chen",
     role: "VP of Solutions Engineering",
-    company: "DataStack",
+    company: "Twilio",
   },
   {
     id: "2",
     quote:
       "The industry-tailored scenarios are a game changer. My team can now deliver FinTech-specific demos that speak directly to compliance officers and product leads.",
     name: "Marcus Rivera",
-    role: "Senior SE Manager",
-    company: "CloudMetrics",
+    role: "SE Manager",
+    company: "Twilio",
   },
   {
     id: "3",
@@ -29,7 +38,7 @@ export const testimonials: Testimonial[] = [
       "Finally, a tool that understands the SE workflow. The playbook library has become our team's single source of truth for demo best practices.",
     name: "Priya Patel",
     role: "Solutions Architect",
-    company: "Nexus Analytics",
+    company: "Twilio",
   },
   {
     id: "4",
@@ -37,7 +46,7 @@ export const testimonials: Testimonial[] = [
       "The credential security model was the deciding factor for our enterprise adoption. In-memory only, never persisted — exactly what our security team demanded.",
     name: "James O'Brien",
     role: "Director of SE",
-    company: "SecureFlow",
+    company: "Twilio",
   },
   {
     id: "5",
@@ -45,7 +54,7 @@ export const testimonials: Testimonial[] = [
       "I onboarded 12 new SEs last quarter and had them producing quality demos within their first week. The guided wizard removes all the guesswork.",
     name: "Anya Volkov",
     role: "SE Enablement Lead",
-    company: "GrowthPilot",
+    company: "Twilio",
   },
   {
     id: "6",
@@ -53,19 +62,6 @@ export const testimonials: Testimonial[] = [
       "The auto-generated demo scripts with click-paths and aha moments have standardized our demo quality across the entire APJ region.",
     name: "Kenji Tanaka",
     role: "Regional SE Lead, APJ",
-    company: "InsightEdge",
+    company: "Twilio",
   },
-];
-
-export const logoCompanies = [
-  { name: "DataStack" },
-  { name: "CloudMetrics" },
-  { name: "Nexus Analytics" },
-  { name: "SecureFlow" },
-  { name: "GrowthPilot" },
-  { name: "InsightEdge" },
-  { name: "Velocitiq" },
-  { name: "Amplify" },
-  { name: "Streamline" },
-  { name: "PulseData" },
 ];

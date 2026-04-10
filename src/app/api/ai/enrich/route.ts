@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   }
 
   if (aiGenerateRatelimit) {
-    const { success } = await aiGenerateRatelimit.limit(auth.user!.id);
+    const { success } = await aiGenerateRatelimit.limit(auth.userId!);
     if (!success) {
       return Response.json({ error: "Too many requests" }, { status: 429 });
     }
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
           system: systemPrompt,
           prompt: `Enrich the following prompt for a ${context.industry} demo targeting a ${context.persona}. Customer: ${context.customerName}.\n\n---\n\n${prompt.promptText}`,
           providerOptions: {
-            gateway: { user: auth.user!.id, tags: ["enrichment"] },
+            gateway: { user: auth.userId!, tags: ["enrichment"] },
           },
         });
         return { ...prompt, promptText: text };

@@ -11,8 +11,24 @@ export const features: Feature[] = [
     id: "ai-prompts",
     title: "AI-Powered Prompt Engine",
     description:
-      "Generate step-by-step build instructions with exact code blocks, dependencies, and architecture patterns — tailored to each prospect.",
+      "Generate step-by-step build instructions with exact code blocks, dependencies, and architecture patterns — tailored to each prospect. Each prompt is automatically enriched with industry-specific context and persona-adapted technical depth during compilation.",
     icon: "Sparkles",
+    category: "build",
+  },
+  {
+    id: "nl-builder",
+    title: "Natural Language Builder",
+    description:
+      "Describe your demo in plain English — AI parses your intent, selects the right architecture flags, and recommends matching scenarios. Skip the wizard entirely and go straight to a tailored playbook.",
+    icon: "MessageSquare",
+    category: "build",
+  },
+  {
+    id: "ai-scenario-intelligence",
+    title: "AI Scenario Intelligence",
+    description:
+      "Not sure which scenarios fit best? AI analyzes your prospect's industry and persona, then ranks the top scenarios with reasoning and an impact score. One click to apply the full recommendation set.",
+    icon: "BrainCircuit",
     category: "build",
   },
   {
@@ -32,28 +48,12 @@ export const features: Feature[] = [
     category: "build",
   },
   {
-    id: "demo-scripts",
-    title: "SE Demo Scripts",
-    description:
-      "Auto-generated click-path narratives with talking points, aha moments, and closing strategies — ready for live prospect demos.",
-    icon: "Presentation",
-    category: "deliver",
-  },
-  {
     id: "wizard-builder",
     title: "4-Step Wizard Builder",
     description:
       "Guided workflow from context gathering to credential injection. Build a complete playbook in under 5 minutes.",
     icon: "Wand2",
     category: "build",
-  },
-  {
-    id: "share-export",
-    title: "Share & Export",
-    description:
-      "Share playbooks via URL with your team, export to Markdown, or print professionally formatted documentation.",
-    icon: "Share2",
-    category: "collaborate",
   },
   {
     id: "version-pinning",
@@ -64,12 +64,20 @@ export const features: Feature[] = [
     category: "build",
   },
   {
-    id: "credential-security",
-    title: "Credential Security",
+    id: "real-time-compilation",
+    title: "Real-Time Compilation",
     description:
-      "API keys and tokens are held in-memory only — never persisted to storage or logged. Sanitized placeholders stored in database.",
-    icon: "Shield",
-    category: "deliver",
+      "Watch your playbook compile across five phases — dependency fetching, template compilation, AI enrichment, saving, and redirect. Per-phase timing keeps you informed.",
+    icon: "Zap",
+    category: "build",
+  },
+  {
+    id: "share-export",
+    title: "Share & Export",
+    description:
+      "Share playbooks via URL with your team, export to Markdown, or print professionally formatted documentation.",
+    icon: "Share2",
+    category: "collaborate",
   },
   {
     id: "team-playbooks",
@@ -83,24 +91,40 @@ export const features: Feature[] = [
     id: "admin-templates",
     title: "Template Management",
     description:
-      "Admin panel for managing prompt templates with versioning. Create, archive, and update templates without code changes.",
+      "Admin panel for managing prompt templates with versioning and AI-assisted refinement. Describe what you want changed in plain English — the AI rewrites the template while preserving all {{VARIABLE}} placeholders.",
     icon: "Settings",
     category: "collaborate",
   },
   {
-    id: "real-time-compilation",
-    title: "Real-Time Compilation",
+    id: "demo-scripts",
+    title: "SE Demo Scripts",
     description:
-      "Watch your playbook compile in real-time with progress indicators. Multi-phase generation ensures comprehensive coverage.",
-    icon: "Zap",
-    category: "build",
+      "Auto-generated click-path narratives with talking points, aha moments, and closing strategies — ready for live prospect demos.",
+    icon: "Presentation",
+    category: "deliver",
   },
   {
-    id: "dark-mode",
-    title: "Dark Mode Native",
+    id: "ai-copilot",
+    title: "AI Segment Copilot",
     description:
-      "Full dark mode support throughout the application. Generated code blocks and demo scripts optimized for readability.",
-    icon: "Moon",
+      "Your always-on Segment expert. Ask questions mid-demo, get instant context on Profile API, Engage, Protocols, and any CDP capability — without leaving the app.",
+    icon: "Bot",
+    category: "deliver",
+  },
+  {
+    id: "credential-security",
+    title: "Credential Security",
+    description:
+      "API keys and tokens are held in-memory only — never persisted to storage or logged. Sanitized placeholders stored in database.",
+    icon: "Shield",
+    category: "deliver",
+  },
+  {
+    id: "credential-rehydration",
+    title: "Live Demo Rehydration",
+    description:
+      "Playbooks store sanitized placeholders — inject your real Segment write keys and tokens on-demand when it's demo time. Credentials are replaced client-side only and cleared when you close the session.",
+    icon: "KeyRound",
     category: "deliver",
   },
 ];

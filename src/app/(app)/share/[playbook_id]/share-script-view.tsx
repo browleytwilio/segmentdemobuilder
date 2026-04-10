@@ -1,11 +1,15 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import type { PlaybookRow } from "@/lib/compiler/types";
 import { generateDemoScript } from "@/lib/compiler/demo-script";
 import { downloadMarkdown } from "@/lib/export/download";
+import { clonePlaybook } from "@/app/(app)/dashboard/actions";
 import { DemoScriptView } from "@/components/playbook/demo-script-view";
 import { Button } from "@/components/ui/button";
-import { DownloadIcon } from "lucide-react";
+import { CopyIcon, DownloadIcon, Loader2Icon } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { trackEvent } from "@/lib/analytics/events";
 
@@ -26,6 +30,9 @@ export function ShareScriptView({ playbook }: ShareScriptViewProps) {
     scenarioSlugs: playbook.demo_config.scenarioSlugs,
   });
 
+  const router = useRouter();
+  const [forking, setForking] = useState(false);
+
   const tracked = useRef(false);
   useEffect(() => {
     if (tracked.current) return;
@@ -41,6 +48,22 @@ export function ShareScriptView({ playbook }: ShareScriptViewProps) {
     downloadMarkdown(`${playbook.customer_name}-demo-script.md`, script);
   }
 
+  async function handleFork() {
+    setForking(true);
+    const result = await clonePlaybook(playbook.id);
+    if (result.error) {
+      toast.error(result.error);
+    } else if (result.id) {
+      trackEvent("Shared Playbook Forked", {
+        source_playbook_id: playbook.id,
+        new_playbook_id: result.id,
+      });
+      toast.success("Playbook forked to your library");
+      router.push(`/playbooks/${result.id}`);
+    }
+    setForking(false);
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -50,15 +73,29 @@ export function ShareScriptView({ playbook }: ShareScriptViewProps) {
             {playbook.industry} — SE Demo Script
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleDownload}
-          className="print:hidden"
-        >
-          <DownloadIcon className="size-3.5" />
-          Download .md
-        </Button>
+        <div className="flex gap-2 print:hidden">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleFork}
+            disabled={forking}
+          >
+            {forking ? (
+              <Loader2Icon className="size-3.5 animate-spin" />
+            ) : (
+              <CopyIcon className="size-3.5" />
+            )}
+            Fork to My Library
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDownload}
+          >
+            <DownloadIcon className="size-3.5" />
+            Download .md
+          </Button>
+        </div>
       </div>
 
       <DemoScriptView markdown={script} />

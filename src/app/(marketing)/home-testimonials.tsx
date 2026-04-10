@@ -17,10 +17,10 @@ export function HomeTestimonials() {
         className="mb-16 text-center"
       >
         <p className="mb-4 text-sm font-medium uppercase tracking-wider text-marketing-green">
-          Testimonials
+          From the SE Org
         </p>
         <GradientHeading as="h2">
-          Loved by SE teams worldwide
+          What Twilio SEs say about demo prep
         </GradientHeading>
       </motion.div>
 

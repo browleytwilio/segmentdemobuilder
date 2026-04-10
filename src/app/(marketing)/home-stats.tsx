@@ -4,10 +4,10 @@ import { SectionWrapper } from "@/components/marketing/sections/section-wrapper"
 import { StatCounter } from "@/components/marketing/sections/stat-counter";
 
 const stats = [
-  { value: 15, suffix: "min", label: "Average playbook creation time" },
-  { value: 74, suffix: "%", label: "Reduction in demo prep time" },
-  { value: 500, suffix: "+", label: "Playbooks generated" },
-  { value: 34, suffix: "%", label: "Demo-to-POC conversion rate" },
+  { value: 5, suffix: "min", label: "Time from wizard to generated playbook" },
+  { value: 2, suffix: "", label: "Ways to build — wizard or plain English" },
+  { value: 4, suffix: "", label: "Industries supported out of the box" },
+  { value: 0, suffix: "", label: "Credentials ever stored to database" },
 ];
 
 export function HomeStats() {

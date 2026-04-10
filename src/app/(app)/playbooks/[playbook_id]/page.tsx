@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
 import { getPlaybookById } from "@/app/(app)/dashboard/actions";
+import { getPlaybookComments } from "@/app/(app)/playbooks/actions";
 import { PlaybookViewer } from "@/components/playbook/playbook-viewer";
+import { CommentThread } from "@/components/playbook/comment-thread";
+import { VisibilitySelector } from "@/components/playbook/visibility-selector";
 
 export default async function PlaybookPage({
   params,
@@ -8,11 +12,36 @@ export default async function PlaybookPage({
   params: Promise<{ playbook_id: string }>;
 }) {
   const { playbook_id } = await params;
-  const playbook = await getPlaybookById(playbook_id);
+  const [playbook, comments, { userId }] = await Promise.all([
+    getPlaybookById(playbook_id),
+    getPlaybookComments(playbook_id),
+    auth(),
+  ]);
 
   if (!playbook) {
     notFound();
   }
 
-  return <PlaybookViewer playbook={playbook} />;
+  return (
+    <div className="space-y-8">
+      {/* Visibility control for owner */}
+      <div className="mx-auto max-w-4xl px-4 flex justify-end print:hidden">
+        <VisibilitySelector
+          playbookId={playbook_id}
+          currentVisibility={playbook.visibility ?? "private"}
+        />
+      </div>
+
+      <PlaybookViewer playbook={playbook} />
+
+      {/* Comments section */}
+      <div className="mx-auto max-w-4xl px-4 pb-10 print:hidden">
+        <CommentThread
+          playbookId={playbook_id}
+          comments={comments}
+          currentUserId={userId}
+        />
+      </div>
+    </div>
+  );
 }

@@ -5,11 +5,9 @@ import { useRouter } from "next/navigation";
 
 // ── Mocks ──────────────────────────────────────────────────────────
 
-const mockSignOut = vi.fn(() => Promise.resolve({ error: null }));
-vi.mock("@/lib/supabase/client", () => ({
-  createClient: vi.fn(() => ({
-    auth: { signOut: mockSignOut },
-  })),
+const mockSignOut = vi.fn(() => Promise.resolve());
+vi.mock("@clerk/nextjs", () => ({
+  useClerk: vi.fn(() => ({ signOut: mockSignOut })),
 }));
 
 const mockTrackEvent = vi.fn();
@@ -84,7 +82,7 @@ describe("UserMenu", () => {
     expect(mockResetAnalytics).toHaveBeenCalledOnce();
   });
 
-  it("navigates to /login after logout", async () => {
+  it("navigates to /sign-in after logout", async () => {
     const user = userEvent.setup();
     const mockPush = vi.fn();
     vi.mocked(useRouter).mockReturnValue({
@@ -99,9 +97,8 @@ describe("UserMenu", () => {
     render(<UserMenu email="alice@example.com" />);
     await user.click(screen.getByText("Log out"));
 
-    // signOut is async, so wait for the push call
     await vi.waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/login");
+      expect(mockPush).toHaveBeenCalledWith("/sign-in");
     });
   });
 });

@@ -71,6 +71,18 @@
           ]
         },
         {
+          "group": "AI Features",
+          "icon": "sparkles",
+          "pages": [
+            "guides/ai-features",
+            "guides/ai-copilot",
+            "guides/ai-demo-script",
+            "guides/ai-scenario-recommendations",
+            "guides/nl-builder",
+            "concepts/ai-enrichment"
+          ]
+        },
+        {
           "group": "Security",
           "icon": "shield",
           "pages": [
@@ -99,7 +111,14 @@
           "pages": [
             "reference/api/dependencies-versions",
             "reference/api/playbooks-update",
-            "reference/api/auth-callback"
+            "reference/api/auth-callback",
+            "reference/api/webhooks-clerk",
+            "reference/api/ai-chat",
+            "reference/api/ai-demo-script",
+            "reference/api/ai-enrich",
+            "reference/api/ai-recommend",
+            "reference/api/ai-parse-intent",
+            "reference/api/ai-refine-template"
           ]
         },
         {
@@ -150,7 +169,8 @@
             "admin/user-management",
             "admin/prompt-template-editor",
             "admin/feature-configurator",
-            "admin/template-authoring"
+            "admin/template-authoring",
+            "admin/ai-template-assistant"
           ]
         }
       ]

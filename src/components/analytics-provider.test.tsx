@@ -5,10 +5,13 @@ import { render, screen, waitFor } from "@testing-library/react";
 const mockLoadAnalytics = vi.fn();
 const mockTrackPage = vi.fn();
 const mockIdentifyUser = vi.fn();
-const mockTrackEvent = vi.fn();
-const mockGetUser = vi.fn(() =>
-  Promise.resolve({ data: { user: null } }),
-);
+
+let mockClerkUser: { id: string; primaryEmailAddress?: { emailAddress: string }; createdAt?: Date } | null = null;
+let mockClerkIsLoaded = true;
+
+vi.mock("@clerk/nextjs", () => ({
+  useUser: vi.fn(() => ({ user: mockClerkUser, isLoaded: mockClerkIsLoaded })),
+}));
 
 vi.mock("@/lib/analytics/snippet", () => ({
   loadAnalytics: (...args: unknown[]) => mockLoadAnalytics(...args),
@@ -20,23 +23,14 @@ vi.mock("@/lib/analytics/page", () => ({
 
 vi.mock("@/lib/analytics/events", () => ({
   identifyUser: (...args: unknown[]) => mockIdentifyUser(...args),
-  trackEvent: (...args: unknown[]) => mockTrackEvent(...args),
-}));
-
-vi.mock("@/lib/supabase/client", () => ({
-  createClient: vi.fn(() => ({
-    auth: { getUser: mockGetUser },
-  })),
 }));
 
 beforeEach(() => {
   mockLoadAnalytics.mockClear();
   mockTrackPage.mockClear();
   mockIdentifyUser.mockClear();
-  mockTrackEvent.mockClear();
-  mockGetUser.mockClear();
-  mockGetUser.mockResolvedValue({ data: { user: null } });
-  // Reset module registry so WRITE_KEY is re-evaluated on each import
+  mockClerkUser = null;
+  mockClerkIsLoaded = true;
   vi.resetModules();
 });
 
@@ -88,20 +82,14 @@ describe("AnalyticsProvider", () => {
     vi.unstubAllEnvs();
   });
 
-  it("identifies an authenticated user via supabase", async () => {
+  it("identifies an authenticated user via Clerk", async () => {
     vi.stubEnv("NEXT_PUBLIC_SEGMENT_WRITE_KEY", "test-write-key");
 
-    mockGetUser.mockResolvedValue({
-      data: {
-        user: {
-          id: "user-abc",
-          email: "test@example.com",
-          created_at: "2024-01-01",
-          app_metadata: {},
-          identities: [],
-        },
-      },
-    });
+    mockClerkUser = {
+      id: "user-abc",
+      primaryEmailAddress: { emailAddress: "test@example.com" },
+      createdAt: new Date("2024-01-01"),
+    };
 
     const AnalyticsProvider = await importProvider();
 
@@ -114,16 +102,16 @@ describe("AnalyticsProvider", () => {
     await waitFor(() => {
       expect(mockIdentifyUser).toHaveBeenCalledWith("user-abc", {
         email: "test@example.com",
-        created_at: "2024-01-01",
+        created_at: new Date("2024-01-01").toISOString(),
       });
     });
     vi.unstubAllEnvs();
   });
 
-  it("does not identify user when supabase returns null user", async () => {
+  it("does not identify user when Clerk returns null user", async () => {
     vi.stubEnv("NEXT_PUBLIC_SEGMENT_WRITE_KEY", "test-write-key");
 
-    mockGetUser.mockResolvedValue({ data: { user: null } });
+    mockClerkUser = null;
 
     const AnalyticsProvider = await importProvider();
 
@@ -133,9 +121,9 @@ describe("AnalyticsProvider", () => {
       </AnalyticsProvider>,
     );
 
-    // Give the async identify flow time to settle
+    // Give the identify flow time to settle
     await waitFor(() => {
-      expect(mockGetUser).toHaveBeenCalled();
+      expect(mockClerkIsLoaded).toBe(true);
     });
     expect(mockIdentifyUser).not.toHaveBeenCalled();
     vi.unstubAllEnvs();

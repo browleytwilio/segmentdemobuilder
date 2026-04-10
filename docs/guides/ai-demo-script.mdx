@@ -1,0 +1,49 @@
+---
+title: "AI Demo Script Generation"
+description: "Generate persona-tailored, narrative-rich demo scripts with AI instead of relying on static click paths."
+icon: "presentation-screen"
+---
+
+The AI Demo Script generator creates a personalized presentation narrative for your completed playbook. It adapts the script to the prospect's industry, persona, and selected scenarios.
+
+## How to Use
+
+1. Open a completed playbook from the **Dashboard**
+2. Switch to the **SE Demo Script** tab
+3. Click **Generate AI Script**
+4. The script streams in real-time as it's generated
+
+## What Gets Generated
+
+The AI creates a structured demo script with:
+
+- **Opening** — tailored to the prospect's industry pain points
+- **Scenario walkthroughs** — step-by-step narration for each selected feature
+- **Talking points** — persona-specific value propositions (technical depth for CTOs, business outcomes for CMOs)
+- **Transition language** — smooth bridges between demo sections
+- **Closing** — summary of value delivered and next steps
+
+## Regeneration
+
+If you want a different take, click the **Regenerate** button that appears after the first generation completes. This clears the previous script and generates a fresh one.
+
+## Exporting
+
+Click **Export** to download the AI-generated script as a Markdown file named `{customer}-ai-demo-script.md`. You can also use the static script below (auto-generated from click-path data) as a fallback.
+
+## Static vs. AI Script
+
+| Aspect | Static Script | AI Script |
+|--------|---------------|-----------|
+| Source | Click-path registry data | LLM generation |
+| Personalization | Basic (scenario names) | Deep (persona tone, industry context) |
+| Narrative flow | Bullet points | Natural prose with transitions |
+| Consistency | Deterministic | Varies per generation |
+
+<Tip>
+Use the AI script for important demos where personalization matters. Use the static script when you need a quick, predictable reference.
+</Tip>
+
+## Rate Limits
+
+Script generation uses the `aiGenerate` rate limit: **10 requests per minute** per user.

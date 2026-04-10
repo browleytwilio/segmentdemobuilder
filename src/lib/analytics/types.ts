@@ -48,6 +48,7 @@ export interface SegmentPageProperties {
 // ---------------------------------------------------------------------------
 export interface SegmentEventMap {
   // Auth — success
+  "Sign Up Started": { method: "email" };
   "Signed Up": { method: "email" };
   "Signed In": {
     method: "email" | "magic_link" | "oauth";
@@ -55,7 +56,6 @@ export interface SegmentEventMap {
   };
   "Magic Link Requested": { email_domain: string };
   "OAuth Started": { provider: string };
-  "Auth Callback Completed": { method: "oauth" };
   "Signed Out": { method: "manual" };
 
   // Auth — failure
@@ -67,7 +67,6 @@ export interface SegmentEventMap {
   };
   "Magic Link Failed": { error: string };
   "OAuth Failed": { provider: string; error: string };
-  "Auth Callback Failed": { error: string };
 
   // Landing & Navigation
   "CTA Clicked": { cta: string; location: string };
@@ -173,4 +172,27 @@ export interface SegmentEventMap {
   "AI Scenarios Recommended": { industry: string; persona: string; count: number };
   "NL Builder Used": { description_length: number };
   "AI Template Refined": { template_id: string };
+
+  // Signup restriction
+  "Signup Rejected": { email_domain: string };
+
+  // Dashboard search & organization
+  "Dashboard Tab Switched": { tab: "mine" | "shared" };
+  "Dashboard Filtered": { filter_type: string; filter_value: string };
+  "Dashboard Searched": { query_length: number; result_count: number };
+  "Playbook Favorited": { playbook_id: string; is_favorite: boolean };
+  "Tag Created": { tag_name: string; color: string };
+  "Tag Applied": { playbook_id: string; tag_id: string };
+  "Tag Removed": { playbook_id: string; tag_id: string };
+
+  // Cloning & templates
+  "Playbook Cloned": { source_playbook_id: string; new_playbook_id: string; source: "dashboard" | "share" };
+  "Template Used": { template_id: string; template_name: string; industry: string };
+  "Shared Playbook Forked": { source_playbook_id: string; new_playbook_id: string };
+
+  // Shared playbooks & comments
+  "Playbook Visibility Changed": { playbook_id: string; visibility: string };
+  "Comment Added": { playbook_id: string; comment_length: number };
+  "Comment Deleted": { playbook_id: string; comment_id: string };
+  "Shared Playbooks Viewed": { count: number };
 }

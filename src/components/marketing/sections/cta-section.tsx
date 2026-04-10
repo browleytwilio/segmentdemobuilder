@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics/events";
 
 interface CTASectionProps {
   heading: string;
@@ -17,7 +18,7 @@ interface CTASectionProps {
 export function CTASection({
   heading,
   description,
-  primaryCta = { label: "Get Started Free", href: "/login" },
+  primaryCta = { label: "Get Started Free", href: "/sign-in" },
   secondaryCta,
   className,
 }: CTASectionProps) {
@@ -67,6 +68,12 @@ export function CTASection({
             <Button
               size="lg"
               render={<Link href={primaryCta.href} />}
+              onClick={() =>
+                trackEvent("CTA Clicked", {
+                  cta: primaryCta.label,
+                  location: "cta_section",
+                })
+              }
               className="relative overflow-hidden bg-gradient-to-r from-marketing-blue to-marketing-purple text-white hover:opacity-95"
             >
               <span className="relative z-10 flex items-center gap-2">
@@ -81,6 +88,12 @@ export function CTASection({
               size="lg"
               variant="outline"
               render={<Link href={secondaryCta.href} />}
+              onClick={() =>
+                trackEvent("CTA Clicked", {
+                  cta: secondaryCta.label,
+                  location: "cta_section",
+                })
+              }
               className="border-white/[0.12] bg-white/[0.03] backdrop-blur-sm hover:bg-white/[0.06] hover:border-white/20"
             >
               {secondaryCta.label}

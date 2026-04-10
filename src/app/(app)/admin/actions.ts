@@ -1,26 +1,25 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@/lib/supabase/server";
 
 const PROTECTED_EMAIL = "browley@twilio.com";
 
 async function requireAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { supabase, user, error: "Not authenticated" as const };
+  const { userId } = await auth();
+  if (!userId) return { supabase: null, userId: null, error: "Not authenticated" as const };
 
+  const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
-    .eq("id", user.id)
+    .eq("id", userId)
     .single();
 
   if (profile?.role !== "super_admin")
-    return { supabase, user, error: "Forbidden" as const };
-  return { supabase, user, error: null };
+    return { supabase, userId, error: "Forbidden" as const };
+  return { supabase, userId, error: null };
 }
 
 // --- User Management ---
@@ -98,7 +97,7 @@ export async function getActivePromptTemplates() {
 export async function savePromptTemplate(templateId: string, content: string) {
   const admin = await requireAdmin();
   if (admin.error) return { error: admin.error, newVersion: null };
-  const { supabase, user } = admin;
+  const { supabase, userId } = admin;
 
   // Fetch the current active row
   const { data: current, error: fetchError } = await supabase
@@ -132,7 +131,7 @@ export async function savePromptTemplate(templateId: string, content: string) {
       content,
       version: newVersion,
       is_active: true,
-      updated_by: user.id,
+      updated_by: userId,
     });
 
   if (insertError) {
@@ -150,15 +149,15 @@ export async function createPromptTemplate(
 ) {
   const admin = await requireAdmin();
   if (admin.error) return { error: admin.error };
-  const { supabase, user } = admin;
+  const { supabase, userId } = admin;
 
-  const { error } = await supabase.from("prompt_templates").insert({
+  const { error } = await supabase!.from("prompt_templates").insert({
     name,
     category,
     content,
     version: 1,
     is_active: true,
-    updated_by: user.id,
+    updated_by: userId,
   });
 
   if (error) return { error: error.message };

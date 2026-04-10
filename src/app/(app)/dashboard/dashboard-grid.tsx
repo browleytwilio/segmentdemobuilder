@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { deletePlaybook } from "./actions";
-import type { PlaybookSummary } from "@/lib/compiler/types";
+import { deletePlaybook, toggleFavorite, clonePlaybook } from "./actions";
+import type { PlaybookSummary, Tag } from "@/lib/compiler/types";
+import { TagManager } from "@/components/dashboard/tag-manager";
 import {
   Card,
   CardContent,
@@ -22,9 +23,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { TrashIcon } from "lucide-react";
+import { CopyIcon, StarIcon, TrashIcon } from "lucide-react";
 import { trackEvent } from "@/lib/analytics/events";
 
 function formatDate(iso: string) {
@@ -37,12 +37,26 @@ function formatDate(iso: string) {
 
 export function DashboardGrid({
   playbooks,
+  allTags,
+  isSharedView = false,
 }: {
   playbooks: PlaybookSummary[];
+  allTags: Tag[];
+  isSharedView?: boolean;
 }) {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [targetId, setTargetId] = useState<string | null>(null);
+  const [togglingFav, setTogglingFav] = useState<string | null>(null);
+  const [cloning, setCloning] = useState<string | null>(null);
+
+  const sharedTracked = useRef(false);
+  useEffect(() => {
+    if (isSharedView && !sharedTracked.current) {
+      sharedTracked.current = true;
+      trackEvent("Shared Playbooks Viewed", { count: playbooks.length });
+    }
+  }, [isSharedView, playbooks.length]);
 
   async function handleDelete() {
     if (!targetId) return;
@@ -59,6 +73,20 @@ export function DashboardGrid({
     setTargetId(null);
   }
 
+  async function handleToggleFavorite(pb: PlaybookSummary) {
+    setTogglingFav(pb.id);
+    const result = await toggleFavorite(pb.id);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      trackEvent("Playbook Favorited", {
+        playbook_id: pb.id,
+        is_favorite: !pb.is_favorite,
+      });
+    }
+    setTogglingFav(null);
+  }
+
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -69,18 +97,59 @@ export function DashboardGrid({
                 <CardTitle className="text-base">
                   {pb.customer_name || "Untitled"}
                 </CardTitle>
-                <Badge
-                  variant={pb.status === "completed" ? "default" : "outline"}
-                >
-                  {pb.status}
-                </Badge>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleFavorite(pb)}
+                    disabled={togglingFav === pb.id}
+                    className="rounded p-0.5 text-muted-foreground transition-colors hover:text-yellow-500"
+                  >
+                    <StarIcon
+                      className={`size-4 ${
+                        pb.is_favorite
+                          ? "fill-yellow-500 text-yellow-500"
+                          : ""
+                      }`}
+                    />
+                  </button>
+                  <Badge
+                    variant={pb.status === "completed" ? "default" : "outline"}
+                  >
+                    {pb.status}
+                  </Badge>
+                </div>
               </div>
-              <CardDescription>{pb.industry}</CardDescription>
+              <CardDescription>
+                {pb.industry}
+                {isSharedView && pb.user_email && (
+                  <span className="block text-xs text-muted-foreground/70 mt-0.5">
+                    by {pb.user_email.split("@")[0]}
+                  </span>
+                )}
+              </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-2">
               <p className="text-xs text-muted-foreground">
                 Updated {formatDate(pb.updated_at)}
               </p>
+              {pb.tags && pb.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {pb.tags.map((tag) => (
+                    <span
+                      key={tag.id}
+                      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.65rem] font-medium bg-secondary text-secondary-foreground"
+                    >
+                      <span
+                        className="size-1.5 rounded-full"
+                        style={{
+                          backgroundColor: `var(--color-${tag.color}, ${tag.color})`,
+                        }}
+                      />
+                      {tag.name}
+                    </span>
+                  ))}
+                </div>
+              )}
             </CardContent>
             <CardFooter className="gap-2">
               <Link
@@ -96,6 +165,33 @@ export function DashboardGrid({
               >
                 View
               </Link>
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={cloning === pb.id}
+                onClick={async () => {
+                  setCloning(pb.id);
+                  const result = await clonePlaybook(pb.id);
+                  if (result.error) {
+                    toast.error(result.error);
+                  } else {
+                    trackEvent("Playbook Cloned", {
+                      source_playbook_id: pb.id,
+                      new_playbook_id: result.id ?? "",
+                      source: "dashboard",
+                    });
+                    toast.success("Playbook cloned");
+                  }
+                  setCloning(null);
+                }}
+              >
+                <CopyIcon className="size-4" />
+              </Button>
+              <TagManager
+                playbookId={pb.id}
+                appliedTags={pb.tags ?? []}
+                allTags={allTags}
+              />
               <Button
                 size="sm"
                 variant="ghost"

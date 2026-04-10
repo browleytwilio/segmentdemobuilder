@@ -8,6 +8,10 @@ icon: table-cells-row-lock
 
 Every table in the database has Row Level Security (RLS) enabled. RLS policies are enforced at the PostgreSQL level, meaning they apply regardless of how the data is accessed — through the Supabase client, direct SQL, or the REST API.
 
+<Info>
+  Authentication is handled by Clerk, not Supabase Auth. RLS still works because Clerk issues a custom JWT (via the `supabase` JWT template) that Supabase trusts — `auth.uid()` in RLS policies resolves to the Clerk user ID.
+</Info>
+
 ## How RLS Works
 
 When a query executes, PostgreSQL checks the caller's identity (`auth.uid()`) and role (`profiles.role`) against the policy conditions. Rows that don't match the conditions are invisible to the caller.

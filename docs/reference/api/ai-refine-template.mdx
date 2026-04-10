@@ -1,0 +1,57 @@
+---
+title: "AI Refine Template"
+description: "Non-streaming endpoint that refines a prompt template based on natural language instructions."
+icon: "sparkles"
+api: "POST /api/ai/refine-template"
+---
+
+Non-streaming endpoint powering the [AI Template Assistant](/admin/ai-template-assistant). Takes an existing template and a refinement instruction, returns the refined template text.
+
+## Request
+
+```json
+{
+  "templateContent": "# Step 1: Project Setup\n\nCreate a Next.js application for {{CUSTOMER_NAME}}...",
+  "instruction": "Add more detail for FinTech industry use cases"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `templateContent` | `string` | Yes | Current template content (1-50,000 chars) |
+| `instruction` | `string` | Yes | What to change (1-1,000 chars) |
+
+## Response
+
+```json
+{
+  "refinedContent": "# Step 1: Project Setup\n\nCreate a Next.js application for {{CUSTOMER_NAME}}, incorporating financial transaction monitoring..."
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `refinedContent` | `string` | The refined template text |
+
+## Behavior
+
+- The AI preserves all `{{VARIABLE}}` placeholders in the template
+- The response is the **complete** refined template, not a diff
+- The admin must explicitly click **Accept** and then **Save** to persist changes
+
+## Configuration
+
+| Setting | Value |
+|---------|-------|
+| Model | `fast` (gpt-5.4-nano) |
+| Max duration | 60s |
+| Rate limit | 10 req/min per user |
+
+## Errors
+
+| Status | Description |
+|--------|-------------|
+| 400 | Invalid request body |
+| 401 | Not authenticated |
+| 429 | Rate limit exceeded |
+| 502 | Failed to refine template |

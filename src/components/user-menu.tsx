@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { useClerk } from "@clerk/nextjs";
 import { trackEvent, resetAnalytics } from "@/lib/analytics/events";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,15 +20,14 @@ interface UserMenuProps {
 
 export function UserMenu({ email }: UserMenuProps) {
   const router = useRouter();
+  const { signOut } = useClerk();
   const initial = email.charAt(0).toUpperCase();
 
   async function handleLogout() {
     trackEvent("Signed Out", { method: "manual" });
     resetAnalytics();
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/login");
-    router.refresh();
+    await signOut();
+    router.push("/sign-in");
   }
 
   return (

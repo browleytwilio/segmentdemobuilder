@@ -1,0 +1,44 @@
+---
+title: "Smart Scenario Recommendations"
+description: "AI-powered scenario suggestions based on your prospect's industry, persona, and architecture."
+icon: "lightbulb"
+---
+
+Smart Recommendations help you choose the most impactful demo scenarios for your prospect. Instead of manually scanning the scenario list, click **AI Suggest** and get curated recommendations with reasoning.
+
+## How to Use
+
+1. In the **Builder Wizard**, reach **Step 3: Scenarios**
+2. Click the **AI Suggest** button at the top of the scenario list
+3. Review the recommendations — each includes:
+   - **Scenario name** and slug
+   - **Reasoning** explaining why this scenario fits the prospect
+   - **Impact score** (1-10) indicating expected demo impact
+4. Click a recommendation to auto-select that scenario
+
+## What the AI Considers
+
+The recommendation engine receives:
+
+- **Customer name** — for context-aware suggestions
+- **Industry** — maps to industry-specific scenario catalogs
+- **Persona** — adapts recommendations to what matters to CMOs vs. CTOs vs. Product Managers
+- **Architecture flags** — only recommends scenarios compatible with enabled features
+
+## Example
+
+For a **FinTech CTO** with Profile API enabled, the AI might recommend:
+
+| Scenario | Reasoning | Impact |
+|----------|-----------|--------|
+| Real-time risk scoring | CTOs care about technical architecture; Profile API enables real-time trait lookups for risk models | 9/10 |
+| PII compliance workflows | FinTech regulation is a top-of-mind concern; demonstrates Protocols governance | 8/10 |
+| Cross-device identity | Shows Identity Resolution solving a concrete FinTech challenge (multi-app banking) | 7/10 |
+
+## After Recommendations
+
+Recommendations are additive — they auto-check scenarios but don't uncheck your existing selections. You can freely adjust after accepting recommendations.
+
+<Info>
+Recommendations use the `fast` model tier for quick responses. Typical response time is 2-4 seconds.
+</Info>
