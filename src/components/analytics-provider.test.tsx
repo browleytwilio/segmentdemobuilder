@@ -25,6 +25,10 @@ vi.mock("@/lib/analytics/events", () => ({
   identifyUser: (...args: unknown[]) => mockIdentifyUser(...args),
 }));
 
+vi.mock("@/app/(app)/profile/actions", () => ({
+  getMyRole: vi.fn(() => Promise.resolve("user")),
+}));
+
 beforeEach(() => {
   mockLoadAnalytics.mockClear();
   mockTrackPage.mockClear();

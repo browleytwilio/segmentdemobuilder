@@ -8,6 +8,7 @@ import { FeatureCard } from "@/components/marketing/sections/feature-card";
 import { CTASection } from "@/components/marketing/sections/cta-section";
 import { features, featureCategories } from "@/lib/marketing/data/features";
 import { cn } from "@/lib/utils";
+import { SplitComparison } from "@/components/marketing/sections/split-comparison";
 
 export function FeaturesContent() {
   const [activeCategory, setActiveCategory] = useState<string>("all");
@@ -87,73 +88,7 @@ export function FeaturesContent() {
 
       {/* Before / After comparison */}
       <SectionWrapper background="muted">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mx-auto max-w-4xl"
-        >
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground sm:text-4xl">
-            Before vs. After
-          </h2>
-          <div className="grid gap-6 sm:grid-cols-2">
-            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8">
-              <h3 className="mb-6 text-lg font-semibold text-red-400/80">
-                Without Demo Builder
-              </h3>
-              <ul className="space-y-4 text-sm text-muted-foreground">
-                <li className="flex items-start gap-3">
-                  <span className="mt-1 text-red-400/60">&#x2717;</span>
-                  4+ hours of manual demo preparation
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="mt-1 text-red-400/60">&#x2717;</span>
-                  Inconsistent quality across SE team
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="mt-1 text-red-400/60">&#x2717;</span>
-                  Generic demos for every industry
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="mt-1 text-red-400/60">&#x2717;</span>
-                  No standardized demo scripts
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="mt-1 text-red-400/60">&#x2717;</span>
-                  6+ weeks to onboard new SEs
-                </li>
-              </ul>
-            </div>
-            <div className="rounded-2xl border border-marketing-green/20 bg-marketing-green/[0.03] p-8">
-              <h3 className="mb-6 text-lg font-semibold text-marketing-green">
-                With Demo Builder
-              </h3>
-              <ul className="space-y-4 text-sm text-muted-foreground">
-                <li className="flex items-start gap-3">
-                  <span className="mt-1 text-marketing-green">&#x2713;</span>
-                  15-minute playbook generation
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="mt-1 text-marketing-green">&#x2713;</span>
-                  Standardized quality from day one
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="mt-1 text-marketing-green">&#x2713;</span>
-                  Industry-tailored scenarios
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="mt-1 text-marketing-green">&#x2713;</span>
-                  Auto-generated SE demo scripts
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="mt-1 text-marketing-green">&#x2713;</span>
-                  2-week new SE ramp time
-                </li>
-              </ul>
-            </div>
-          </div>
-        </motion.div>
+        <SplitComparison />
       </SectionWrapper>
 
       <CTASection

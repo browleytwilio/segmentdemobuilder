@@ -71,6 +71,11 @@ export interface SegmentEventMap {
   // Landing & Navigation
   "CTA Clicked": { cta: string; location: string };
   "Theme Toggled": { theme: "dark" | "light" };
+  "Marketing Interaction": {
+    component: string;
+    interaction: string;
+    properties?: Record<string, string | number | boolean>;
+  };
 
   // Dashboard
   "Dashboard Viewed": {

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { HeroBadge } from "@/components/marketing/sections/hero-badge";
 import { GradientHeading } from "@/components/marketing/sections/gradient-heading";
 import { trackEvent } from "@/lib/analytics/events";
+import { TerminalAnimation } from "@/components/marketing/sections/terminal-animation";
 
 export function HomeHero() {
   const containerRef = useRef<HTMLElement>(null);
@@ -165,61 +166,11 @@ export function HomeHero() {
                 </div>
               </div>
 
-              {/* Fake app UI */}
-              <div className="relative grid grid-cols-12 gap-4 p-6 overflow-hidden">
+              {/* Compilation terminal */}
+              <div className="relative p-4 overflow-hidden">
                 {/* Scan line */}
                 <div className="animate-scan-line pointer-events-none absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-marketing-blue/40 to-transparent" />
-
-                <div className="col-span-3 space-y-2.5">
-                  <div className="mb-4 h-2 w-20 rounded bg-white/[0.08]" />
-                  <div className="h-7 w-full rounded-md bg-marketing-blue/[0.15] border border-marketing-blue/20" />
-                  <div className="h-7 w-full rounded-md bg-white/[0.04]" />
-                  <div className="h-7 w-full rounded-md bg-white/[0.04]" />
-                  <div className="mt-3 h-px w-full bg-white/[0.05]" />
-                  <div className="h-7 w-full rounded-md bg-white/[0.04]" />
-                  <div className="h-7 w-full rounded-md bg-white/[0.04]" />
-                </div>
-
-                <div className="col-span-9 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-marketing-blue/40 to-marketing-purple/40 border border-white/[0.08]" />
-                      <div className="space-y-1.5">
-                        <div className="h-2.5 w-36 rounded bg-white/[0.10]" />
-                        <div className="h-2 w-20 rounded bg-white/[0.04]" />
-                      </div>
-                    </div>
-                    <div className="h-7 w-24 rounded-lg bg-gradient-to-r from-marketing-blue/30 to-marketing-purple/30 border border-white/[0.08]" />
-                  </div>
-
-                  <div className="grid grid-cols-4 gap-3">
-                    {[
-                      { color: "marketing-blue", w: "w-10" },
-                      { color: "marketing-purple", w: "w-14" },
-                      { color: "marketing-cyan", w: "w-8" },
-                      { color: "marketing-green", w: "w-12" },
-                    ].map((item, i) => (
-                      <div key={i} className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3 space-y-2">
-                        <div className={`h-1.5 ${item.w} rounded bg-${item.color}/30`} />
-                        <div className="h-4 w-full rounded bg-white/[0.06]" />
-                        <div className="h-1.5 w-3/4 rounded bg-white/[0.04]" />
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-                    <div className="mb-3 flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-marketing-green/70" />
-                      <div className="h-2 w-24 rounded bg-white/[0.08]" />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="h-2 w-full rounded bg-white/[0.05]" />
-                      <div className="h-2 w-5/6 rounded bg-white/[0.05]" />
-                      <div className="h-2 w-4/6 rounded bg-white/[0.05]" />
-                      <div className="h-2 w-3/6 rounded bg-white/[0.04]" />
-                    </div>
-                  </div>
-                </div>
+                <TerminalAnimation />
               </div>
             </div>
           </div>

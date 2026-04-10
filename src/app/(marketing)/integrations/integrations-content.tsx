@@ -11,6 +11,7 @@ import {
   integrationCategories,
 } from "@/lib/marketing/data/integrations";
 import { cn } from "@/lib/utils";
+import { ArchitectureCanvas } from "@/components/marketing/sections/architecture-canvas";
 
 export function IntegrationsContent() {
   const [activeCategory, setActiveCategory] = useState<string>("all");
@@ -106,30 +107,9 @@ export function IntegrationsContent() {
         </motion.div>
       </SectionWrapper>
 
-      {/* How it connects */}
+      {/* Interactive architecture builder */}
       <SectionWrapper background="muted">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="mb-4 text-3xl font-bold text-foreground">
-            How it connects
-          </h2>
-          <p className="mb-12 text-muted-foreground">
-            The Demo Builder generates code that works with any Segment integration.
-            Your demo app sends events to Segment, which routes them to any destination.
-          </p>
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-6 py-4 text-sm font-medium text-foreground">
-              Your Demo App
-            </div>
-            <div className="text-muted-foreground/40">&rarr;</div>
-            <div className="rounded-xl border border-marketing-blue/30 bg-marketing-blue/10 px-6 py-4 text-sm font-medium text-foreground">
-              Segment CDP
-            </div>
-            <div className="text-muted-foreground/40">&rarr;</div>
-            <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-6 py-4 text-sm font-medium text-foreground">
-              300+ Destinations
-            </div>
-          </div>
-        </div>
+        <ArchitectureCanvas />
       </SectionWrapper>
 
       <CTASection

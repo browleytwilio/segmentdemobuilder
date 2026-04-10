@@ -8,6 +8,7 @@ import { GradientHeading } from "@/components/marketing/sections/gradient-headin
 import { StatCounter } from "@/components/marketing/sections/stat-counter";
 import { CTASection } from "@/components/marketing/sections/cta-section";
 import { AnimatedSection } from "@/components/marketing/animations/animated-section";
+import { ScenarioExplorerGrid } from "@/components/marketing/sections/scenario-explorer-grid";
 import { useCases } from "@/lib/marketing/data/use-cases";
 
 export function generateStaticParams() {
@@ -110,20 +111,10 @@ export default async function UseCaseDetailPage({
         <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
           Included Scenarios
         </h2>
-        <div className="mx-auto grid max-w-5xl gap-6 sm:grid-cols-2">
-          {uc.scenarios.map((s, i) => (
-            <AnimatedSection key={s.name} delay={i * 0.1}>
-              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6">
-                <h3 className="mb-2 font-semibold text-foreground">
-                  {s.name}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {s.description}
-                </p>
-              </div>
-            </AnimatedSection>
-          ))}
-        </div>
+        <p className="mx-auto mb-8 max-w-2xl text-center text-sm text-muted-foreground/60">
+          Click a scenario to explore the events, code, and before/after comparison.
+        </p>
+        <ScenarioExplorerGrid scenarios={uc.scenarios} />
       </SectionWrapper>
 
       {/* Metrics */}

@@ -31,6 +31,7 @@ export default async function AdminLayout({
         <AdminNavLink href="/admin/analytics">Analytics</AdminNavLink>
         <AdminNavLink href="/admin/playbooks">Playbooks</AdminNavLink>
         <AdminNavLink href="/admin/audit">Audit Log</AdminNavLink>
+        <AdminNavLink href="/admin/segment">Segment</AdminNavLink>
       </nav>
       <div>{children}</div>
     </div>

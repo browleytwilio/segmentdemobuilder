@@ -8,6 +8,7 @@ import { CodeBlockDisplay } from "@/components/marketing/sections/code-block-dis
 import { FAQSection } from "@/components/marketing/sections/faq-section";
 import { CTASection } from "@/components/marketing/sections/cta-section";
 import { howItWorksFaq } from "@/lib/marketing/data/faq";
+import { WizardPreview } from "@/components/marketing/sections/wizard-preview";
 
 const steps = [
   {
@@ -140,6 +141,19 @@ export function HowItWorksContent() {
             </div>
           ))}
         </div>
+      </SectionWrapper>
+
+      {/* Interactive wizard preview */}
+      <SectionWrapper background="dots">
+        <div className="mx-auto max-w-2xl text-center mb-10">
+          <h2 className="text-3xl font-bold text-foreground">
+            Try it yourself
+          </h2>
+          <p className="mt-3 text-muted-foreground">
+            Walk through the wizard right here — no sign-in required.
+          </p>
+        </div>
+        <WizardPreview />
       </SectionWrapper>
 
       <SectionWrapper background="muted">

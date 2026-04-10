@@ -4,12 +4,14 @@ import { HomeHowItWorks } from "./home-how-it-works";
 import { HomeStats } from "./home-stats";
 import { HomeTestimonials } from "./home-testimonials";
 import { CTASection } from "@/components/marketing/sections/cta-section";
+import { DataFlowVisualizer } from "@/components/marketing/sections/data-flow-visualizer";
 
 export default function MarketingHomePage() {
   return (
     <>
       <HomeHero />
       <HomeFeatures />
+      <DataFlowVisualizer />
       <HomeHowItWorks />
       <HomeStats />
       <HomeTestimonials />
