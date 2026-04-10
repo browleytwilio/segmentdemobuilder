@@ -1,13 +1,14 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-const isPublicRoute = createRouteMatcher([
-  "/sign-in(.*)",
-  "/sign-up(.*)",
-  "/api/webhooks(.*)",
-  "/share(.*)",
-  "/unauthorized",
+const isProtectedRoute = createRouteMatcher([
+  "/dashboard(.*)",
+  "/builder(.*)",
+  "/admin(.*)",
+  "/playbooks(.*)",
 ]);
+
+const isAuthRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)"]);
 
 export const proxy = clerkMiddleware(async (auth, req) => {
   const { pathname } = req.nextUrl;
@@ -17,34 +18,29 @@ export const proxy = clerkMiddleware(async (auth, req) => {
     return NextResponse.redirect(new URL("/sign-in", req.url));
   }
 
-  if (isPublicRoute(req)) {
-    // Redirect authenticated users away from auth pages
+  // Redirect authenticated users away from auth pages
+  if (isAuthRoute(req)) {
     const { userId } = await auth();
-    if (
-      userId &&
-      (pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up"))
-    ) {
+    if (userId) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
     return;
   }
 
-  // Redirect root to dashboard for authenticated users
-  if (pathname === "/") {
-    const { userId } = await auth();
-    if (userId) {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
+  // Protect app routes — unauthenticated users redirected to /sign-in
+  if (isProtectedRoute(req)) {
+    const { userId, sessionClaims } = await auth.protect();
+
+    // Belt-and-suspenders: reject non-Twilio emails even if webhook hasn't fired yet
+    const email = sessionClaims?.email as string | undefined;
+    if (email && !email.endsWith("@twilio.com")) {
+      return NextResponse.redirect(new URL("/unauthorized", req.url));
     }
+
+    return;
   }
 
-  // Protect all non-public routes
-  const { userId, sessionClaims } = await auth.protect();
-
-  // Belt-and-suspenders: reject non-Twilio emails even if webhook hasn't fired yet
-  const email = sessionClaims?.email as string | undefined;
-  if (email && !email.endsWith("@twilio.com")) {
-    return NextResponse.redirect(new URL("/unauthorized", req.url));
-  }
+  // Everything else (marketing pages, share routes, API, webhooks) is public
 });
 
 export const config = {
