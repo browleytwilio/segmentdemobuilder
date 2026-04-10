@@ -1,0 +1,92 @@
+---
+title: PATCH /api/playbooks/[playbook_id]
+description: Update a playbook with compiled prompts.
+icon: code
+tag: PATCH
+---
+
+# PATCH /api/playbooks/[playbook_id]
+
+Updates a playbook's `generated_prompts` field and transitions its status from `draft` to `completed`. Called by the compilation engine after prompt assembly and sanitization.
+
+## Request
+
+```bash
+PATCH /api/playbooks/{playbook_id}
+```
+
+**Authentication:** Required (Supabase session cookie)
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `playbook_id` | UUID | The playbook to update |
+
+**Request Body:**
+
+```json
+{
+  "generated_prompts": [
+    {
+      "stepNumber": 1,
+      "title": "Scaffold & Dependencies",
+      "expectedOutput": "A new Next.js 16 project with all dependencies installed",
+      "promptText": "Create a new Next.js project..."
+    }
+  ]
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `generated_prompts` | `CompiledPrompt[]` | Yes | Array of compiled prompt objects |
+
+Each `CompiledPrompt` must contain:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `stepNumber` | number | Sequential step number (1-based) |
+| `title` | string | Step title |
+| `expectedOutput` | string | What Claude Code should produce |
+| `promptText` | string | The full prompt text (sanitized) |
+
+## Response
+
+<CodeGroup>
+```json 200 OK
+{
+  "success": true
+}
+```
+
+```json 400 Bad Request
+{
+  "error": "generated_prompts must be an array"
+}
+```
+
+```json 401 Unauthorized
+{
+  "error": "Not authenticated"
+}
+```
+
+```json 500 Server Error
+{
+  "error": "Database update failed"
+}
+```
+</CodeGroup>
+
+## Behavior
+
+- Validates that `generated_prompts` is an array
+- Verifies the authenticated user owns the playbook (`user_id = auth.uid()`)
+- Updates the `generated_prompts` JSONB column
+- Sets `status` to `completed`
+- The `updated_at` timestamp is automatically updated by a database trigger
+
+<Warning>
+  Only sanitized prompts (Variant B) should be sent to this endpoint. The compilation engine handles sanitization before making this request. Never send prompts containing real credentials.
+</Warning>

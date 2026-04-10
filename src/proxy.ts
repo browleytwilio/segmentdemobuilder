@@ -25,8 +25,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect authenticated users away from login
-  if (pathname === "/login" && user) {
+  // Redirect authenticated users away from login and marketing homepage
+  if ((pathname === "/login" || pathname === "/") && user) {
     const dashboardUrl = new URL("/dashboard", request.url);
     return NextResponse.redirect(dashboardUrl);
   }

@@ -1,22 +1,26 @@
 import { generateText } from "ai";
+import { z } from "zod/v4";
 import { MODELS } from "@/lib/ai/config";
 import { requireAuthForAI } from "@/lib/ai/auth";
 import { aiGenerateRatelimit } from "@/lib/ai/rate-limit";
 import { buildEnrichmentSystemPrompt } from "@/lib/ai/system-prompts";
 import type { CompiledPrompt } from "@/lib/compiler/types";
-import type { DemoArchitecture } from "@/lib/stores/builder-store";
 
 export const maxDuration = 120;
 
-interface EnrichRequestBody {
-  prompts: CompiledPrompt[];
-  context: {
-    persona: string;
-    industry: string;
-    customerName: string;
-    architecture: DemoArchitecture;
-  };
-}
+const enrichBodySchema = z.object({
+  prompts: z.array(z.object({
+    stepNumber: z.number(),
+    title: z.string(),
+    promptText: z.string(),
+  }).passthrough()) as unknown as z.ZodType<CompiledPrompt[]>,
+  context: z.object({
+    persona: z.string(),
+    industry: z.string(),
+    customerName: z.string(),
+    architecture: z.record(z.string(), z.unknown()),
+  }),
+});
 
 export async function POST(req: Request) {
   const auth = await requireAuthForAI();
@@ -31,28 +35,35 @@ export async function POST(req: Request) {
     }
   }
 
-  const { prompts, context } = (await req.json()) as EnrichRequestBody;
+  const body = enrichBodySchema.safeParse(await req.json());
+  if (!body.success) {
+    return Response.json({ error: "Invalid request body" }, { status: 400 });
+  }
+  const { prompts, context } = body.data;
   const systemPrompt = buildEnrichmentSystemPrompt(context.persona, context.industry);
 
-  const enrichedPrompts: CompiledPrompt[] = [];
+  try {
+    const results = await Promise.allSettled(
+      prompts.map(async (prompt) => {
+        const { text } = await generateText({
+          model: MODELS.fast,
+          system: systemPrompt,
+          prompt: `Enrich the following prompt for a ${context.industry} demo targeting a ${context.persona}. Customer: ${context.customerName}.\n\n---\n\n${prompt.promptText}`,
+          providerOptions: {
+            gateway: { user: auth.user!.id, tags: ["enrichment"] },
+          },
+        });
+        return { ...prompt, promptText: text };
+      })
+    );
 
-  for (const prompt of prompts) {
-    try {
-      const { text } = await generateText({
-        model: MODELS.fast,
-        system: systemPrompt,
-        prompt: `Enrich the following prompt for a ${context.industry} demo targeting a ${context.persona}. Customer: ${context.customerName}.\n\n---\n\n${prompt.promptText}`,
-      });
+    const enrichedPrompts = results.map((result, i) =>
+      result.status === "fulfilled" ? result.value : prompts[i]
+    );
 
-      enrichedPrompts.push({
-        ...prompt,
-        promptText: text,
-      });
-    } catch {
-      // If enrichment fails for one prompt, keep the original
-      enrichedPrompts.push(prompt);
-    }
+    return Response.json({ enrichedPrompts });
+  } catch (err) {
+    console.error("[ai/enrich] Enrichment error:", err);
+    return Response.json({ error: "Enrichment failed" }, { status: 502 });
   }
-
-  return Response.json({ enrichedPrompts });
 }

@@ -1,0 +1,110 @@
+---
+title: Validation Schemas
+description: Zod schemas used for form validation across the wizard and rehydration modal.
+icon: check-double
+---
+
+# Validation Schemas
+
+The platform uses [Zod](https://zod.dev/) for runtime validation of all form inputs. Schemas are shared between the Builder Wizard steps and the Rehydration Modal.
+
+## Step 1: Context Schema
+
+```typescript
+const contextSchema = z.object({
+  customerName: z.string().min(2, "Customer name must be at least 2 characters"),
+  persona: z.enum(["CMO", "CTO / Engineering", "Product Manager", "Data Team"]),
+  industry: z.enum([
+    "E-commerce / Retail",
+    "B2B SaaS",
+    "FinTech",
+    "Media & Entertainment"
+  ]),
+});
+```
+
+| Field | Type | Validation |
+|-------|------|------------|
+| `customerName` | string | Minimum 2 characters |
+| `persona` | enum | One of 4 persona options |
+| `industry` | enum | One of 4 industry options |
+
+**Persona options:** CMO, CTO / Engineering, Product Manager, Data Team
+
+**Industry options:** E-commerce / Retail, B2B SaaS, FinTech, Media & Entertainment
+
+## Step 2: Architecture Schema
+
+```typescript
+const architectureSchema = z.object({
+  enableSESidebar: z.boolean(),
+  enableSeededProfiles: z.boolean(),
+  enableProfileAPI: z.boolean(),
+  enableIntentPredictions: z.boolean(),
+});
+```
+
+All fields are simple booleans with no additional constraints. `enableSecondPagePers` is managed separately (auto-set based on scenario selection).
+
+## Step 3: Scenarios Schema
+
+```typescript
+const scenariosSchema = z.object({
+  selectedScenarios: z.array(z.string()),
+});
+```
+
+An array of `demo_features` UUID strings. No minimum or maximum count is enforced — users can select zero or more scenarios.
+
+## Step 4: Credentials Schema
+
+The credentials schema is more complex because the Profile API Token field is conditionally required:
+
+```typescript
+const baseCredentialsSchema = z.object({
+  segmentWriteFrontend: z.string().min(10),
+  segmentWriteBackend: z.string().optional(),
+  segmentWorkspace: z.string().min(10),
+  segmentProfileToken: z.string().optional(),
+  supabaseUrl: z.string().url().includes(".supabase.co"),
+  supabaseAnon: z.string().startsWith("eyJ"),
+});
+```
+
+| Field | Type | Validation | Required |
+|-------|------|------------|----------|
+| `segmentWriteFrontend` | string | Min 10 characters | Yes |
+| `segmentWriteBackend` | string | — | No |
+| `segmentWorkspace` | string | Min 10 characters | Yes |
+| `segmentProfileToken` | string | — | Conditional |
+| `supabaseUrl` | string | Valid URL containing `.supabase.co` | Yes |
+| `supabaseAnon` | string | Must start with `eyJ` (JWT prefix) | Yes |
+
+### Conditional Profile Token
+
+The `createCredentialsSchema(enableProfileAPI)` function adds a `superRefine` check:
+
+```typescript
+function createCredentialsSchema(enableProfileAPI: boolean) {
+  return baseCredentialsSchema.superRefine((data, ctx) => {
+    if (enableProfileAPI && !data.segmentProfileToken) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Profile API Token is required when Profile API is enabled",
+        path: ["segmentProfileToken"],
+      });
+    }
+  });
+}
+```
+
+When `enableProfileAPI` is `true` (set in Step 2), the Profile Token becomes required in Step 4.
+
+## Shared Usage
+
+The credentials schema is shared between:
+
+- **Builder Wizard Step 4** — Initial credential entry
+- **Rehydration Modal** — Re-injecting credentials into a saved playbook
+
+Both use the same `createCredentialsSchema()` factory to ensure consistent validation rules.

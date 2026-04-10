@@ -1,0 +1,79 @@
+---
+title: GET /api/dependencies/versions
+description: Fetch latest stable NPM package versions for compilation.
+icon: code
+tag: GET
+---
+
+# GET /api/dependencies/versions
+
+Returns the latest stable versions of all target NPM packages used during compilation. This endpoint powers the version resolution phase of the [Compilation Engine](/concepts/compilation).
+
+## Request
+
+```bash
+GET /api/dependencies/versions
+```
+
+**Authentication:** Not required (public endpoint)
+
+**Rate Limit:** 100 requests per 10 minutes per IP address (via Upstash Redis sliding window)
+
+**Caching:** ISR-cached for 1 hour
+
+## Response
+
+<CodeGroup>
+```json 200 OK
+{
+  "next": "16.2.3",
+  "react": "19.2.4",
+  "react-dom": "19.2.4",
+  "tailwindcss": "4.0.0",
+  "framer-motion": "12.38.0",
+  "@segment/analytics-next": "1.76.0",
+  "@supabase/supabase-js": "2.103.0",
+  "lucide-react": "1.8.0",
+  "@supabase/ssr": "0.10.2"
+}
+```
+
+```json 429 Rate Limited
+{
+  "error": "Rate limit exceeded. Try again later."
+}
+```
+</CodeGroup>
+
+## Target Packages
+
+| Package | Description | Fallback Version |
+|---------|-------------|-----------------|
+| `next` | Next.js framework | 16.2.3 |
+| `react` | React library | 19.2.4 |
+| `react-dom` | React DOM renderer | 19.2.4 |
+| `tailwindcss` | Utility-first CSS | 4.0.0 |
+| `framer-motion` | Animation library | 12.38.0 |
+| `@segment/analytics-next` | Segment analytics.js SDK | 1.76.0 |
+| `@supabase/supabase-js` | Supabase client | 2.103.0 |
+| `lucide-react` | Icon library | 1.8.0 |
+| `@supabase/ssr` | Supabase SSR helpers | 0.10.2 |
+
+## Fallback Behavior
+
+If the NPM registry is unreachable or returns an error, the API falls back to hardcoded versions defined in `FALLBACK_VERSIONS`. The compiler will still produce valid prompts — they just may not reference the absolute latest package versions.
+
+<Info>
+  The fallback versions are updated periodically with each platform release to stay reasonably current.
+</Info>
+
+## How Versions Become Template Variables
+
+The returned version map is transformed into template variables by the [Template Engine](/concepts/compilation):
+
+1. Strip `@scope/` prefix (e.g., `@segment/analytics-next` → `analytics-next`)
+2. Replace `.` and `-` with `_`
+3. Uppercase the result
+4. Prepend `NPM_` and append `_VERSION`
+
+Example: `@supabase/supabase-js` → `NPM_SUPABASE_JS_VERSION`

@@ -1,0 +1,91 @@
+---
+title: Feature Configurator
+description: Manage which demo scenarios appear in the Builder Wizard per industry.
+icon: sliders
+---
+
+# Feature Configurator
+
+<Snippet file="admin-only.mdx" />
+
+The Feature Configurator (`/admin/config`) controls which personalization scenarios appear in [Builder Wizard Step 3](/guides/builder-wizard) for each industry. Features are the bridge between prompt templates and the wizard UI.
+
+## How It Works
+
+Each feature entry links an industry to a prompt template:
+
+```
+Industry → Demo Feature → Prompt Template
+```
+
+When a user selects an industry in Step 1, the wizard queries `demo_features` for that industry and displays all active features as selectable scenarios in Step 3.
+
+## Feature Table
+
+| Column | Description |
+|--------|-------------|
+| Slug | URL-safe identifier (e.g., `cart-abandonment-recovery`) |
+| Label | Display name shown in the wizard |
+| Description | One-line description shown below the label |
+| Linked Template | The prompt template used during compilation |
+| Display Order | Sort position in the wizard's scenario list |
+| Active | Whether the feature appears in the wizard |
+
+## Industry Filter
+
+Use the dropdown at the top to filter features by industry. The available industries are:
+
+- E-commerce / Retail
+- B2B SaaS
+- FinTech
+- Media & Entertainment
+
+## Adding a Feature
+
+<Steps>
+  <Step title="Select the Target Industry">
+    Choose the industry from the filter dropdown.
+  </Step>
+
+  <Step title="Click Add Feature">
+    Opens the creation form.
+  </Step>
+
+  <Step title="Fill in the Details">
+    | Field | Rules | Example |
+    |-------|-------|---------|
+    | Slug | Kebab-case, unique within the industry | `loyalty-tier-upsell` |
+    | Label | Human-readable | `Loyalty Tier Upsell` |
+    | Description | One sentence | `Show upgrade incentives based on loyalty tier` |
+    | Prompt Template | Select from existing scenario templates | `Loyalty Tier Upsell` |
+    | Display Order | Integer for sorting | `4` |
+  </Step>
+
+  <Step title="Save">
+    The feature is created as active by default and immediately appears in the wizard for the selected industry.
+  </Step>
+</Steps>
+
+## Activating / Deactivating
+
+Toggle the **Active** switch to show or hide a feature in the wizard. Deactivating does not delete the feature — it can be reactivated at any time.
+
+<Info>
+  Changes take effect immediately. The next user who starts the Builder Wizard will see the updated scenario list.
+</Info>
+
+## Constraints
+
+- Each `(industry, slug)` combination must be unique
+- A feature must link to an existing, active prompt template
+- Deleting a prompt template that has linked features will cause compilation errors for those features
+
+## Analytics
+
+Feature management fires these events:
+
+| Event | Properties |
+|-------|------------|
+| `Feature Created` | `industry`, `slug` |
+| `Feature Toggled` | `feature_id`, `is_active` |
+| `Industry Filter Changed` | `industry` |

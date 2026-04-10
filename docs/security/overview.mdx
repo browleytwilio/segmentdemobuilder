@@ -1,0 +1,43 @@
+---
+title: Security Overview
+description: How the platform protects credentials, data, and access.
+icon: shield
+---
+
+# Security Overview
+
+The Segment Demo Builder is designed with a security-first architecture. The core principle is that **API keys and tokens are never persisted to the database** — they exist only in browser memory during active sessions.
+
+## Security Pillars
+
+<CardGroup cols={2}>
+  <Card title="Credential Isolation" icon="key" href="/security/credential-lifecycle">
+    API keys live in browser memory only. The database stores sanitized placeholders. Credentials cannot be extracted from saved playbooks.
+  </Card>
+  <Card title="Row Level Security" icon="table" href="/security/row-level-security">
+    Every database table has RLS policies enforcing ownership and role-based access at the PostgreSQL level.
+  </Card>
+  <Card title="Authentication" icon="lock" href="/security/authentication-security">
+    Supabase Auth with cookie-based sessions, OAuth code exchange, and automatic profile creation.
+  </Card>
+  <Card title="Role-Based Access" icon="users-gear" href="/admin/user-management">
+    Two-tier role system (user / super_admin) with a protected prime admin account.
+  </Card>
+</CardGroup>
+
+## Security Summary
+
+| Concern | How It's Addressed |
+|---------|-------------------|
+| Credential storage | Never persisted — in-memory only, sanitized before DB write |
+| Data isolation | RLS policies on all 4 tables enforce per-user ownership |
+| Admin protection | `super_admin` role required, prime admin cannot be demoted |
+| Public sharing | Only `completed` playbooks viewable, always sanitized |
+| Session management | Supabase cookie-based sessions with automatic refresh |
+| Rate limiting | API endpoints protected by Upstash Redis sliding window |
+| Input validation | Zod schemas validate all form inputs at runtime |
+| Draft cleanup | Stale drafts auto-pruned after 30 days via `pg_cron` |
+
+<Note>
+  The platform handles demo configuration credentials (Segment Write Keys, Supabase tokens) — not end-user PII. The security model is designed to prevent accidental credential exposure, not to serve as a secrets management system.
+</Note>

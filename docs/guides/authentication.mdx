@@ -1,0 +1,82 @@
+---
+title: Authentication
+description: Login methods — email/password, magic link, and OAuth.
+icon: right-to-bracket
+---
+
+# Authentication
+
+The Segment Demo Builder uses Supabase Auth for authentication, supporting three login methods: email/password, magic link, and OAuth (Google/GitHub).
+
+## Login Methods
+
+<Tabs>
+  <Tab title="Email & Password">
+    The standard email/password flow:
+
+    1. Enter your email and password on the login page
+    2. Click **Sign In** (or **Sign Up** for new accounts)
+    3. Supabase validates credentials and establishes a session
+    4. You're redirected to the Dashboard
+
+    Password requirements are managed by Supabase's default configuration.
+  </Tab>
+
+  <Tab title="Magic Link">
+    Passwordless login via email:
+
+    1. Enter your email on the login page
+    2. Click **Send Magic Link**
+    3. Check your inbox for the login email
+    4. Click the link — it authenticates you and redirects to the Dashboard
+
+    Magic links expire after the default Supabase TTL. Only one active link per email address.
+  </Tab>
+
+  <Tab title="Google OAuth">
+    Social login with Google:
+
+    1. Click the **Google** button on the login page
+    2. You're redirected to Google's consent screen
+    3. Authorize the application
+    4. Google redirects back to `/auth/callback` with an authorization code
+    5. The callback handler exchanges the code for a session
+    6. You're redirected to the Dashboard
+  </Tab>
+
+  <Tab title="GitHub OAuth">
+    Social login with GitHub:
+
+    1. Click the **GitHub** button on the login page
+    2. You're redirected to GitHub's authorization page
+    3. Authorize the application
+    4. GitHub redirects back to `/auth/callback` with an authorization code
+    5. The callback handler exchanges the code for a session
+    6. You're redirected to the Dashboard
+  </Tab>
+</Tabs>
+
+## Session Management
+
+- Sessions are managed via Supabase's cookie-based session middleware (`@supabase/ssr`)
+- Session tokens are refreshed automatically
+- Signing out calls `supabase.auth.signOut()` and `analytics.reset()`, then redirects to the login page
+
+## Auto-Profile Creation
+
+When a new user signs up (any method), a database trigger automatically:
+
+1. Creates a `profiles` row with the user's `id` and `email`
+2. Sets the default role to `user`
+3. If the email is the prime admin email, a second trigger promotes the role to `super_admin`
+
+## Protected Routes
+
+All routes under the `(app)` route group require authentication:
+
+- `/dashboard`
+- `/builder` and `/builder/compile/[playbook_id]`
+- `/playbooks/[playbook_id]`
+- `/admin/*` (additionally requires `super_admin` role)
+
+Unauthenticated users are redirected to `/login`. The `/share/[playbook_id]` route is the only app route that works without authentication.

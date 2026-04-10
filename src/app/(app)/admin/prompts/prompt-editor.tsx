@@ -2,8 +2,10 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
-import Editor from "@monaco-editor/react";
+import dynamic from "next/dynamic";
 import { savePromptTemplate, createPromptTemplate } from "../actions";
+
+const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 import { validateTemplateVariables } from "@/lib/admin/validate-variables";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

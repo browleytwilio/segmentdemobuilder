@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useBuilderStore } from "@/lib/stores/builder-store";
 import { trackEvent } from "@/lib/analytics/events";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,6 @@ export function NLBuilderEntry({ onSwitchToWizard }: { onSwitchToWizard: () => v
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { updateContext, updateArchitecture, setStep } = useBuilderStore();
-  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -1,0 +1,54 @@
+---
+title: Admin Overview
+description: Managing the platform as a Super-Admin.
+icon: shield-keyhole
+---
+
+# Admin Overview
+
+<Snippet file="admin-only.mdx" />
+
+The Admin Panel provides three management modules for platform configuration. Access it via the **Admin** link in the navigation bar (visible only to super-admins).
+
+## Admin Modules
+
+<CardGroup cols={3}>
+  <Card title="User Management" icon="users-gear" href="/admin/user-management">
+    View all platform users, their playbook counts, and assign roles.
+  </Card>
+  <Card title="Prompt Template Editor" icon="file-pen" href="/admin/prompt-template-editor">
+    Edit AI prompt templates in a Monaco code editor with validation and versioning.
+  </Card>
+  <Card title="Feature Configurator" icon="sliders" href="/admin/feature-configurator">
+    Manage which demo scenarios appear in the Builder Wizard per industry.
+  </Card>
+</CardGroup>
+
+## How Admin Access Works
+
+Admin access is controlled by the `role` column on the `profiles` table:
+
+| Role | Capabilities |
+|------|-------------|
+| `user` | Create playbooks, use the wizard, view own playbooks |
+| `super_admin` | Everything above, plus: manage users, edit templates, configure features |
+
+### Prime Admin
+
+The account `browley@twilio.com` is automatically promoted to `super_admin` when the profile is created (via a database trigger). This account:
+
+- Cannot be demoted or modified by other admins
+- Is protected at both the server action and database trigger level
+- Ensures there is always at least one admin account
+
+### Promoting Other Admins
+
+Super-admins can promote any user to `super_admin` via the [User Management](/admin/user-management) page. The new admin immediately gains access to all admin features.
+
+## Admin Route Protection
+
+All `/admin/*` routes are protected by:
+
+1. **Authentication check** — Unauthenticated users are redirected to `/login`
+2. **Role check** — Server actions call `requireAdmin()` which verifies the caller's role is `super_admin`
+3. **RLS policies** — Database queries enforce admin-only access at the row level

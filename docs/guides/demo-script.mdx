@@ -1,0 +1,92 @@
+---
+title: SE Demo Script
+description: Using the auto-generated presentation narrative for live demos.
+icon: presentation-screen
+---
+
+# SE Demo Script
+
+Every compiled playbook includes an auto-generated SE Demo Script — a presentation-ready narrative with setup checklists, click paths, and "Aha!" moments for each scenario. Access it via the **SE Demo Script** tab in the Playbook Viewer.
+
+## Script Structure
+
+The generated script follows a consistent format:
+
+### Header
+
+```markdown
+# Acme Corp — SE Demo Script
+**Industry:** E-commerce / Retail | **Target Persona:** CMO
+```
+
+### Setup Checklist
+
+A pre-demo checklist ensuring everything is ready:
+
+- Local dev server running (`npm run dev`)
+- Segment workspace open in a separate tab
+- Segment Debugger / Live Event Stream visible
+- SE Sidebar visible (if enabled)
+- Seeded profiles loaded (if enabled)
+- Browser DevTools open on Network tab (optional)
+
+### The Narrative
+
+An opening statement framing the demo:
+
+> "Today we're going to show you how Acme Corp can leverage Segment's Customer Data Platform to create real-time, personalized experiences..."
+
+### Demo Scenarios
+
+For each selected scenario, the script includes:
+
+1. **Numbered click path** — Exact steps to walk through during the presentation
+2. **"Aha!" Moment** — The key visual proof point that demonstrates Segment's value
+
+<Accordion title="Example: Second-Page Personalization Click Path">
+  1. Navigate to a product page in the Acme Corp demo.
+  2. Point out the **Product Viewed** event firing in the SE Sidebar.
+  3. Click back to the homepage.
+  4. Show how the **hero banner has changed** to reflect the category they just viewed.
+  5. Explain: "This happened in real-time — Segment captured the Product Viewed event and the page instantly personalized."
+
+  **"Aha!" Moment:** Open the Segment Debugger → show the `Product Viewed` event with its properties (product_id, category). Then refresh the homepage to prove the personalization persists via sessionStorage.
+</Accordion>
+
+### Closing
+
+A wrap-up statement and next steps:
+
+> "Everything you just saw — the real-time personalization, the instant UI changes, the event stream — is powered by Segment..."
+
+## Using the Script
+
+<Steps>
+  <Step title="Review Before the Demo">
+    Read through the entire script to familiarize yourself with the click paths and "Aha!" moments. Practice the transitions between scenarios.
+  </Step>
+
+  <Step title="During the Demo">
+    Keep the script tab open on a secondary monitor or printed copy. Follow the click paths in order for a smooth presentation flow.
+  </Step>
+
+  <Step title="After the Demo">
+    Use the **Export** button to download the script as Markdown. Share it with the prospect or your team for follow-up.
+  </Step>
+</Steps>
+
+## Rendering
+
+The demo script is rendered using React Markdown with GitHub-flavored markdown support. Custom styling is applied for:
+
+- Headings (h1-h3 with appropriate sizing)
+- Blockquotes (styled as callout cards for narrative sections)
+- Code blocks (syntax-highlighted)
+- Ordered/unordered lists
+- Print-friendly styling via the **Print** button
+
+## Script Customization
+
+The script is generated from the playbook's `demo_config` — specifically the selected scenarios and their `scenarioSlugs` mapping. Each scenario slug maps to a click-path factory function that produces the steps and "Aha!" moment.
+
+To add custom click paths for new scenarios, see [Template Authoring Guide](/admin/template-authoring).

@@ -59,29 +59,22 @@ export async function fetchScenarioTemplates(featureIds: string[]) {
 
   const supabase = await createClient();
 
-  // Fetch features and their linked templates separately for clean typing
+  // Single joined query: demo_features → prompt_templates via FK
+  // Replaces two sequential round trips (N+1 pattern).
   const { data: features, error } = await supabase
     .from("demo_features")
-    .select("id, slug, prompt_template_id")
+    .select("id, slug, prompt_templates(id, name, content, is_active)")
     .in("id", featureIds);
 
   if (error || !features) return { templates: [], invalidIds: featureIds };
-
-  const templateIds = features.map((f) => f.prompt_template_id);
-  const { data: tpls } = await supabase
-    .from("prompt_templates")
-    .select("id, name, content")
-    .in("id", templateIds)
-    .eq("is_active", true);
-
-  const tplMap = new Map((tpls ?? []).map((t) => [t.id, t]));
 
   const templates: { featureId: string; slug: string; templateName: string; content: string }[] = [];
   const validIds = new Set<string>();
 
   for (const f of features) {
-    const tpl = tplMap.get(f.prompt_template_id);
-    if (tpl && tpl.content) {
+    const raw = f.prompt_templates as unknown;
+    const tpl = Array.isArray(raw) ? raw[0] as { id: string; name: string; content: string; is_active: boolean } | undefined : raw as { id: string; name: string; content: string; is_active: boolean } | null;
+    if (tpl && tpl.is_active && tpl.content) {
       validIds.add(f.id);
       templates.push({
         featureId: f.id,

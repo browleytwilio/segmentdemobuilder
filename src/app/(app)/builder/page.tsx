@@ -1,10 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { BuilderWizard } from "@/components/builder/builder-wizard";
-import { NLBuilderEntry } from "@/components/builder/nl-builder-entry";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ListOrderedIcon, SparklesIcon } from "lucide-react";
+
+const NLBuilderEntry = dynamic(
+  () => import("@/components/builder/nl-builder-entry").then((m) => m.NLBuilderEntry),
+  { ssr: false }
+);
 
 export default function BuilderPage() {
   const [activeTab, setActiveTab] = useState("wizard");

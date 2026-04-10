@@ -98,7 +98,7 @@ export default function CompilePage({
             variantA = enrichedPrompts;
           }
         } catch {
-          // AI enrichment is best-effort — continue with original prompts
+          toast.info("AI enrichment skipped — using standard prompts");
         }
 
         // 4. Sanitize to Variant B (placeholders)

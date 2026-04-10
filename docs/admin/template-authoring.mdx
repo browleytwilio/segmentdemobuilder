@@ -1,0 +1,165 @@
+---
+title: Template Authoring Guide
+description: Best practices for writing effective AI prompt templates.
+icon: pen-nib
+---
+
+# Template Authoring Guide
+
+<Snippet file="admin-only.mdx" />
+
+This guide covers how to write effective scenario prompt templates that produce reliable results when executed by Claude Code.
+
+## Anatomy of a Good Template
+
+Every scenario template should include 5 sections:
+
+<Steps>
+  <Step title="Context / Purpose">
+    Start with a Markdown heading and a one-paragraph explanation of what this scenario builds and why.
+
+    ```markdown
+    # Scenario: Loyalty Tier Upsell
+
+    Build a component that shows upgrade incentives when the user's Segment
+    traits indicate they're on a lower loyalty tier.
+    ```
+  </Step>
+
+  <Step title="Segment Integration Code">
+    Provide the exact `track`, `identify`, or `group` calls with real code blocks. Use `{{VARIABLE}}` placeholders for dynamic values.
+
+    ```tsx
+    analytics.track("Tier Check Requested", {
+      user_id: userId,
+      current_tier: "silver",
+      customer: "{{CUSTOMER_NAME}}",
+    });
+    ```
+  </Step>
+
+  <Step title="UI Component Code">
+    Provide the complete React component with an **exact file path**.
+
+    ```markdown
+    Create `src/components/loyalty/tier-upsell.tsx`:
+    ```
+
+    Include imports, interfaces, the full component body, and styles. Leave nothing for the AI to guess.
+  </Step>
+
+  <Step title="Integration Instructions">
+    Explain exactly where and how to wire the new component into the existing demo app.
+
+    ```markdown
+    ## Integration
+    Import `<TierUpsell />` in `src/app/page.tsx` and place it below the hero section.
+    ```
+  </Step>
+
+  <Step title="Verification / Demo Flow">
+    Describe how to verify the feature works and the click path for the demo.
+
+    ```markdown
+    ## Demo Flow
+    1. Load the app as a "Silver" tier user
+    2. See the upsell banner
+    3. Switch to a "Gold" tier user — banner disappears
+    ```
+  </Step>
+</Steps>
+
+## Good vs. Bad Templates
+
+<Tabs>
+  <Tab title="Good Template">
+    ```markdown
+    # Scenario: Loyalty Tier Upsell
+
+    Build a loyalty upsell banner that appears for Silver-tier users.
+
+    ## 1. Track Tier Check
+
+    On dashboard load, fire a track call:
+
+    ```tsx
+    analytics.track("Tier Check", {
+      tier: user.tier,
+      customer: "{{CUSTOMER_NAME}}",
+    });
+    ```
+
+    ## 2. Upsell Banner
+
+    Create `src/components/loyalty/tier-upsell.tsx`:
+
+    ```tsx
+    "use client";
+    import { useState, useEffect } from "react";
+    // ... complete component code ...
+    export function TierUpsell() { /* full implementation */ }
+    ```
+
+    ## 3. Integration
+
+    Import in `src/app/page.tsx` below the hero:
+    ```tsx
+    import { TierUpsell } from "@/components/loyalty/tier-upsell";
+    ```
+
+    ## 4. Verification
+
+    1. Run `npm run dev`
+    2. Navigate to the homepage as a Silver user
+    3. Verify the upsell banner is visible
+    ```
+
+    **Why it works:** Exact file paths, complete code, clear verification.
+  </Tab>
+  <Tab title="Bad Template">
+    ```markdown
+    Create a loyalty component that shows different things based on the user's tier.
+    Use Segment to track it. Make it look nice with Tailwind.
+    ```
+
+    **Why it fails:**
+    - No file paths — Claude will put files anywhere
+    - No code blocks — Claude will hallucinate the implementation
+    - "Make it look nice" — vague, leads to inconsistent results
+    - No Segment calls — misses the entire point of the demo
+    - No verification — no way to know if it worked
+  </Tab>
+</Tabs>
+
+## Best Practices
+
+1. **Always include exact file paths** — `src/components/loyalty/tier-upsell.tsx`, not "create a component"
+2. **Provide complete code blocks** — Every line of every file. Don't leave blanks.
+3. **Use `{{NPM_*_VERSION}}` variables** for all package version references
+4. **Include a verification step** — "Run the dev server and navigate to..."
+5. **Write defensive constraints** — "DO NOT modify the existing root layout" or "DO NOT install packages not listed here"
+6. **Test after editing** — Generate a playbook that uses your updated scenario to verify it compiles and executes correctly
+
+## Common Pitfalls
+
+<AccordionGroup>
+  <Accordion title="Using invalid variables">
+    The editor validates on save, but it's easy to typo a variable name. Always reference the [Variable Reference](/reference/templates/variables) — there are exactly 17 valid names.
+  </Accordion>
+
+  <Accordion title="Writing vague prompts">
+    Claude Code works best with explicit, prescriptive instructions. Every time you write "implement a...", instead write the actual code. Vagueness leads to hallucinated packages, wrong file structures, and broken demos.
+  </Accordion>
+
+  <Accordion title="Missing context refresh">
+    Later scenario steps execute after foundation and architecture prompts. If your scenario depends on files created by earlier steps (like the Analytics Provider), reference them explicitly: "Import from `@/components/providers/analytics-provider`".
+  </Accordion>
+
+  <Accordion title="Forgetting to link the feature">
+    Creating a template alone doesn't make it appear in the wizard. You must also create a [Demo Feature](/admin/feature-configurator) entry that links the template to an industry.
+  </Accordion>
+
+  <Accordion title="Not testing changes">
+    Always generate a test playbook after editing a template. The compilation engine doesn't catch logical errors in your prompt text — only variable validation.
+  </Accordion>
+</AccordionGroup>

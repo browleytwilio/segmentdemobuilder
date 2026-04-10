@@ -4,7 +4,12 @@ import { Redis } from "@upstash/redis";
 function createRedis() {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) return null;
+  if (!url || !token) {
+    console.warn(
+      "[ai/rate-limit] Upstash Redis not configured — AI rate limiting is DISABLED"
+    );
+    return null;
+  }
   return new Redis({ url, token });
 }
 

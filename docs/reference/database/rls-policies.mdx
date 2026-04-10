@@ -1,0 +1,70 @@
+---
+title: RLS Policies
+description: Row Level Security policies, triggers, and functions.
+icon: shield
+---
+
+# Row Level Security Policies
+
+All four tables have RLS enabled. Policies enforce ownership, role-based access, and public sharing rules.
+
+## profiles
+
+| Policy | Operation | Condition |
+|--------|-----------|-----------|
+| Users can view own profile | SELECT | `id = auth.uid()` |
+| Users can update own profile | UPDATE | `id = auth.uid()` |
+| Super-admins can view all profiles | SELECT | Caller's role = `super_admin` |
+| Super-admins can update roles | UPDATE | Caller's role = `super_admin` |
+
+## playbooks
+
+| Policy | Operation | Condition |
+|--------|-----------|-----------|
+| Users can view own playbooks | SELECT | `user_id = auth.uid()` |
+| Users can insert own playbooks | INSERT | `user_id = auth.uid()` |
+| Users can update own playbooks | UPDATE | `user_id = auth.uid()` |
+| Users can delete own playbooks | DELETE | `user_id = auth.uid()` |
+| Public can view completed playbooks | SELECT | `status = 'completed'` (anonymous access for share links) |
+
+## prompt_templates
+
+| Policy | Operation | Condition |
+|--------|-----------|-----------|
+| Authenticated users can view templates | SELECT | User is authenticated |
+| Super-admins can insert templates | INSERT | Caller's role = `super_admin` |
+| Super-admins can update templates | UPDATE | Caller's role = `super_admin` |
+
+## demo_features
+
+| Policy | Operation | Condition |
+|--------|-----------|-----------|
+| Authenticated users can view active features | SELECT | User is authenticated |
+| Super-admins can insert features | INSERT | Caller's role = `super_admin` |
+| Super-admins can update features | UPDATE | Caller's role = `super_admin` |
+
+## Triggers
+
+| Trigger | Table | Event | Function | Description |
+|---------|-------|-------|----------|-------------|
+| `on_auth_user_created` | `auth.users` | AFTER INSERT | `handle_new_user()` | Auto-creates a `profiles` row when a user signs up |
+| `on_profile_created_promote_admin` | `profiles` | AFTER INSERT | `promote_prime_admin()` | Auto-promotes `browley@twilio.com` to `super_admin` |
+| `profiles_updated_at` | `profiles` | BEFORE UPDATE | `update_updated_at()` | Sets `updated_at = now()` |
+| `playbooks_updated_at` | `playbooks` | BEFORE UPDATE | `update_updated_at()` | Sets `updated_at = now()` |
+| `prompt_templates_updated_at` | `prompt_templates` | BEFORE UPDATE | `update_updated_at()` | Sets `updated_at = now()` |
+| `demo_features_updated_at` | `demo_features` | BEFORE UPDATE | `update_updated_at()` | Sets `updated_at = now()` |
+
+## Functions
+
+| Function | Returns | Description |
+|----------|---------|-------------|
+| `handle_new_user()` | TRIGGER | Creates a `profiles` row from `auth.users` data |
+| `promote_prime_admin()` | TRIGGER | Promotes the prime admin email to `super_admin` role |
+| `update_updated_at()` | TRIGGER | Generic `updated_at` timestamp updater |
+| `admin_users_with_playbook_count()` | TABLE | RPC function returning all users with their playbook counts (admin only) |
+
+## Scheduled Jobs
+
+| Job | Schedule | Description |
+|-----|----------|-------------|
+| Draft pruning | Daily (via `pg_cron`) | Deletes `draft` playbooks older than 30 days |

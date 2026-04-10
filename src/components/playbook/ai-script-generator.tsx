@@ -9,7 +9,7 @@ import { trackEvent } from "@/lib/analytics/events";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
-import { SparklesIcon, DownloadIcon, LoaderIcon } from "lucide-react";
+import { SparklesIcon, DownloadIcon, LoaderIcon, RefreshCwIcon } from "lucide-react";
 
 const transport = new DefaultChatTransport({ api: "/api/ai/demo-script" });
 
@@ -19,10 +19,9 @@ interface AIScriptGeneratorProps {
 
 export function AIScriptGenerator({ playbook }: AIScriptGeneratorProps) {
   const [generated, setGenerated] = useState(false);
-  const hasTriggered = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status, setMessages } = useChat({
     transport,
     onFinish: () => {
       trackEvent("AI Script Generated", {
@@ -43,8 +42,8 @@ export function AIScriptGenerator({ playbook }: AIScriptGeneratorProps) {
   const isStreaming = status === "streaming" || status === "submitted";
 
   function handleGenerate() {
-    if (hasTriggered.current) return;
-    hasTriggered.current = true;
+    if (isStreaming) return;
+    setMessages([]);
     setGenerated(true);
     sendMessage(
       {
@@ -111,10 +110,16 @@ export function AIScriptGenerator({ playbook }: AIScriptGeneratorProps) {
           )}
         </div>
         {!isStreaming && streamedText && (
-          <Button variant="outline" size="sm" onClick={handleExport} className="gap-2">
-            <DownloadIcon className="size-3.5" />
-            Export
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleGenerate} className="gap-2">
+              <RefreshCwIcon className="size-3.5" />
+              Regenerate
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExport} className="gap-2">
+              <DownloadIcon className="size-3.5" />
+              Export
+            </Button>
+          </div>
         )}
       </div>
       <div

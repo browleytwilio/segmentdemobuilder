@@ -1,10 +1,9 @@
 import { generateText, Output } from "ai";
-import { z } from "zod";
+import { z } from "zod/v4";
 import { MODELS } from "@/lib/ai/config";
 import { requireAuthForAI } from "@/lib/ai/auth";
 import { aiGenerateRatelimit } from "@/lib/ai/rate-limit";
 import { buildRecommendationSystemPrompt } from "@/lib/ai/system-prompts";
-import type { DemoArchitecture } from "@/lib/stores/builder-store";
 
 export const maxDuration = 30;
 
@@ -19,12 +18,12 @@ const recommendationSchema = z.object({
   summary: z.string(),
 });
 
-interface RecommendRequestBody {
-  customerName: string;
-  industry: string;
-  persona: string;
-  architecture: DemoArchitecture;
-}
+const recommendBodySchema = z.object({
+  customerName: z.string().max(200),
+  industry: z.string().max(100),
+  persona: z.string().max(100),
+  architecture: z.record(z.string(), z.boolean()),
+});
 
 export async function POST(req: Request) {
   const auth = await requireAuthForAI();
@@ -39,25 +38,46 @@ export async function POST(req: Request) {
     }
   }
 
-  const { customerName, industry, persona, architecture } =
-    (await req.json()) as RecommendRequestBody;
+  const body = recommendBodySchema.safeParse(await req.json());
+  if (!body.success) {
+    return Response.json({ error: "Invalid request body" }, { status: 400 });
+  }
+  const { customerName, industry, persona, architecture } = body.data;
 
   const features = Object.entries(architecture)
     .filter(([, v]) => v)
     .map(([k]) => k);
 
-  const { output } = await generateText({
-    model: MODELS.fast,
-    system: buildRecommendationSystemPrompt(),
-    prompt: `Recommend demo scenarios for:
+  try {
+    const { output } = await generateText({
+      model: MODELS.fast,
+      system: buildRecommendationSystemPrompt(),
+      prompt: `Recommend demo scenarios for:
 - Customer: ${customerName || "Unknown"}
 - Industry: ${industry}
 - Persona: ${persona}
 - Enabled architecture: ${features.join(", ") || "defaults only"}
 
 Return the best scenarios for this prospect with reasoning.`,
-    output: Output.object({ schema: recommendationSchema }),
-  });
+      output: Output.object({ schema: recommendationSchema }),
+      providerOptions: {
+        gateway: { user: auth.user!.id, tags: ["recommendations"] },
+      },
+    });
 
-  return Response.json(output);
+    if (!output) {
+      return Response.json(
+        { error: "Failed to generate recommendations" },
+        { status: 502 }
+      );
+    }
+
+    return Response.json(output);
+  } catch (err) {
+    console.error("[ai/recommend-scenarios] Error:", err);
+    return Response.json(
+      { error: "Failed to generate recommendations" },
+      { status: 502 }
+    );
+  }
 }

@@ -44,38 +44,10 @@ export function AITemplateAssistant({
         signal: abortRef.current.signal,
       });
       if (!res.ok) throw new Error("Failed to refine template");
-      if (!res.body) throw new Error("No response body");
 
-      // Read the raw text from the streaming response
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let fullText = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        fullText += decoder.decode(value, { stream: true });
-      }
-
-      // Extract text content from the SSE stream
-      // The stream format is SSE with data lines containing JSON
-      const textParts: string[] = [];
-      for (const line of fullText.split("\n")) {
-        if (line.startsWith("g:")) {
-          try {
-            const parsed = JSON.parse(line.slice(2));
-            if (parsed?.type === "text" && parsed?.value) {
-              textParts.push(parsed.value);
-            }
-          } catch {
-            // Skip unparseable lines
-          }
-        }
-      }
-
-      const refinedText = textParts.join("");
-      if (refinedText) {
-        setResult(refinedText);
+      const { refinedContent } = await res.json();
+      if (refinedContent) {
+        setResult(refinedContent);
         trackEvent("AI Template Refined", { template_id: templateId });
       } else {
         setResult(null);

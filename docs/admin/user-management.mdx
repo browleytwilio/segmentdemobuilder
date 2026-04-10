@@ -1,0 +1,62 @@
+---
+title: User Management
+description: Managing user roles and viewing platform usage.
+icon: users-gear
+---
+
+# User Management
+
+<Snippet file="admin-only.mdx" />
+
+The User Management page (`/admin/users`) displays all platform users with their roles and playbook counts, and allows super-admins to change user roles.
+
+## Users Table
+
+The table displays the following columns:
+
+| Column | Description |
+|--------|-------------|
+| Email | User's email address |
+| Role | Current role (`user` or `super_admin`) |
+| Playbook Count | Number of playbooks the user has created |
+| Created At | Account creation date |
+| Actions | Role change dropdown |
+
+Data is fetched via the `admin_users_with_playbook_count()` RPC function, which joins `profiles` with `playbooks` to compute counts.
+
+## Changing Roles
+
+<Steps>
+  <Step title="Find the User">
+    Locate the user in the table. Users are sorted by creation date (newest first).
+  </Step>
+
+  <Step title="Select New Role">
+    Use the dropdown in the Actions column to select either `user` or `super_admin`.
+  </Step>
+
+  <Step title="Confirm">
+    The role change takes effect immediately. The user will see admin navigation on their next page load.
+  </Step>
+</Steps>
+
+## Protection Rules
+
+<Warning>
+  The prime admin account (`browley@twilio.com`) cannot be modified. Attempting to change this account's role will fail with an error. This is enforced both in the server action and at the database level.
+</Warning>
+
+Role changes are enforced by:
+
+1. **Server action** — `updateUserRole()` checks that the target is not the protected email
+2. **RLS policy** — Only `super_admin` callers can execute the UPDATE on `profiles`
+3. **Database trigger** — `promote_prime_admin()` re-promotes the prime admin if somehow demoted
+
+## Analytics
+
+Role changes fire a `User Role Changed` event with:
+
+| Property | Description |
+|----------|-------------|
+| `target_user_id` | UUID of the user whose role changed |
+| `new_role` | The new role value |

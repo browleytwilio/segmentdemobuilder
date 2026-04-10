@@ -1,0 +1,167 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Segment Demo Builder",
+  "theme": "maple",
+  "colors": {
+    "primary": "#52BD95",
+    "light": "#7DD3B0",
+    "dark": "#3D9E78"
+  },
+  "appearance": {
+    "default": "system"
+  },
+  "logo": {
+    "light": "/images/logo-light.svg",
+    "dark": "/images/logo-dark.svg"
+  },
+  "favicon": "/images/favicon.svg",
+  "navbar": {
+    "primary": {
+      "type": "button",
+      "label": "Open App",
+      "href": "https://segment-demo-builder.vercel.app"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/browley/segment-demo-builder"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+      "groups": [
+        {
+          "group": "Getting Started",
+          "icon": "rocket",
+          "pages": ["introduction", "quickstart"]
+        },
+        {
+          "group": "Concepts",
+          "icon": "lightbulb",
+          "pages": [
+            "concepts/how-it-works",
+            "concepts/playbooks",
+            "concepts/compilation",
+            "concepts/credentials",
+            "concepts/scenarios",
+            "concepts/analytics"
+          ]
+        },
+        {
+          "group": "Tutorials",
+          "icon": "graduation-cap",
+          "pages": [
+            "tutorials/first-playbook",
+            "tutorials/share-playbook",
+            "tutorials/rehydrate-playbook",
+            "tutorials/custom-scenario"
+          ]
+        },
+        {
+          "group": "How-To Guides",
+          "icon": "book-open",
+          "pages": [
+            "guides/builder-wizard",
+            "guides/playbook-viewer",
+            "guides/demo-script",
+            "guides/authentication",
+            "guides/dashboard"
+          ]
+        },
+        {
+          "group": "Security",
+          "icon": "shield",
+          "pages": [
+            "security/overview",
+            "security/credential-lifecycle",
+            "security/row-level-security",
+            "security/authentication-security"
+          ]
+        },
+        {
+          "group": "Troubleshooting",
+          "icon": "wrench",
+          "pages": [
+            "troubleshooting/common-issues",
+            "troubleshooting/compilation-errors"
+          ]
+        }
+      ]
+    },
+    {
+      "tab": "Reference",
+      "groups": [
+        {
+          "group": "API",
+          "icon": "code",
+          "pages": [
+            "reference/api/dependencies-versions",
+            "reference/api/playbooks-update",
+            "reference/api/auth-callback"
+          ]
+        },
+        {
+          "group": "Database",
+          "icon": "database",
+          "pages": [
+            "reference/database/schema",
+            "reference/database/rls-policies",
+            "reference/database/migrations"
+          ]
+        },
+        {
+          "group": "Analytics",
+          "icon": "chart-mixed",
+          "pages": [
+            "reference/analytics/events",
+            "reference/analytics/identify-traits",
+            "reference/analytics/page-tracking"
+          ]
+        },
+        {
+          "group": "Templates",
+          "icon": "brackets-curly",
+          "pages": [
+            "reference/templates/variables",
+            "reference/templates/scenario-catalog",
+            "reference/templates/architecture-features"
+          ]
+        },
+        {
+          "group": "Data Model",
+          "icon": "table",
+          "pages": [
+            "reference/builder-state",
+            "reference/validation-schemas"
+          ]
+        }
+      ]
+    },
+    {
+      "tab": "Admin Guide",
+      "groups": [
+        {
+          "group": "Administration",
+          "icon": "shield-keyhole",
+          "pages": [
+            "admin/overview",
+            "admin/user-management",
+            "admin/prompt-template-editor",
+            "admin/feature-configurator",
+            "admin/template-authoring"
+          ]
+        }
+      ]
+    }
+  ]},
+  "analytics": {
+    "segment": {
+      "writeKey": "YOUR_DOCS_SEGMENT_WRITE_KEY"
+    }
+  },
+  "search": {
+    "prompt": "Search the Segment Demo Builder docs..."
+  }
+}

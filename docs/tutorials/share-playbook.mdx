@@ -1,0 +1,56 @@
+---
+title: Share a Playbook
+description: How to share a completed playbook via a public link.
+icon: share-nodes
+---
+
+# Share a Playbook
+
+Completed playbooks can be shared via a public link that anyone can access without authentication. This is useful for sharing demo configurations with colleagues or prospects.
+
+## How to Share
+
+<Steps>
+  <Step title="Open the Playbook">
+    Navigate to the playbook you want to share from the Dashboard, or open it directly if you just compiled it.
+  </Step>
+
+  <Step title="Copy the Share Link">
+    In the Playbook Viewer, click the **Share** button in the top toolbar. The share URL is copied to your clipboard automatically.
+
+    The URL follows the format:
+    ```
+    https://segment-demo-builder.vercel.app/share/{playbook_id}
+    ```
+  </Step>
+
+  <Step title="Send the Link">
+    Share the URL with anyone — no account or login is required to view it.
+  </Step>
+</Steps>
+
+## What Recipients See
+
+The share page displays a **read-only** version of the playbook:
+
+- All prompt steps with titles and prompt text
+- The SE Demo Script tab
+- Ability to download the demo script as Markdown
+
+## What Recipients Don't See
+
+- **Real credentials** — The share page shows the sanitized version with `YOUR_*` placeholders
+- **Rehydration modal** — There's no way to inject credentials on the share page
+- **Mark Complete** buttons — Progress tracking is only available to the playbook owner
+- **Edit or delete** controls
+
+<Info>
+  The share page works because of a specific RLS policy that allows anonymous `SELECT` access to playbooks with `status = 'completed'`. Draft playbooks cannot be accessed via share links.
+</Info>
+
+## Analytics on Share Pages
+
+When someone views a shared playbook, two anonymous events are tracked:
+
+- **Shared Playbook Viewed** — with the `playbook_id` and `industry`
+- **Shared Demo Script Downloaded** — if they download the demo script

@@ -1,0 +1,73 @@
+---
+title: Analytics
+description: How the platform tracks its own usage via Segment — dogfooding the product.
+icon: chart-line
+---
+
+# Analytics
+
+The Segment Demo Builder tracks its own usage via Segment's analytics.js SDK — a deliberate dogfooding strategy. Every meaningful user interaction generates a typed Segment event, providing product telemetry and demonstrating real Segment integration patterns.
+
+## How Analytics Load
+
+The analytics system initializes in three steps:
+
+1. **Snippet injection** — The `AnalyticsProvider` component loads the analytics.js snippet from Segment's CDN on mount
+2. **Method stubbing** — Before the full SDK loads, a queue-based stub captures early calls (track, page, identify) so nothing is lost
+3. **Activation** — Once the SDK initializes, queued calls are flushed and new calls execute immediately
+
+## Event Categories
+
+The platform fires **55 typed events** across 9 categories:
+
+| Category | Events | Description |
+|----------|--------|-------------|
+| **Auth** | 11 | Sign up, sign in, magic link, OAuth, sign out — plus failure variants |
+| **Navigation** | 2 | CTA clicks, theme toggles |
+| **Dashboard** | 4 | Views, playbook open/delete, new playbook clicks |
+| **Builder Wizard** | 7 | Wizard start, step navigation, step submission (with per-step properties), playbook creation |
+| **Compilation** | 4 | Phase changes, completion, failure, retry |
+| **Playbook Viewer** | 12 | Views, tab switches, step clicks, prompt copies, completions, exports, sharing |
+| **Share** | 2 | Shared playbook views, demo script downloads |
+| **Admin** | 7 | Role changes, template CRUD, feature CRUD, industry filters |
+| **AI** | 7 | Chat interactions, script generation, enrichment, scenario recommendations |
+
+Every event in the `SegmentEventMap` is **compile-time checked** — TypeScript enforces that event names and property shapes match the declared interface. This prevents typos and schema drift.
+
+## User Identification
+
+The platform calls `analytics.identify()` in two scenarios:
+
+1. **After login** — The `AnalyticsProvider` detects a Supabase session and identifies the user with their ID and traits
+2. **After OAuth callback** — A short-lived cookie (`x-analytics-identify`, 30-second TTL) triggers identification on the client after the server-side redirect
+
+Traits sent with identify:
+
+| Trait | Type | Description |
+|-------|------|-------------|
+| `email` | string | User's email address |
+| `role` | string | `"user"` or `"super_admin"` (optional) |
+| `created_at` | string | Account creation timestamp (optional) |
+
+On sign-out, `analytics.reset()` is called to generate a new anonymous ID.
+
+## Page Tracking
+
+The `AnalyticsProvider` automatically fires `analytics.page()` on every route change via Next.js navigation events. Page calls can include contextual properties like `playbook_id`, `industry`, and `status` when available.
+
+## Implementation Pattern
+
+The analytics layer uses a type-safe wrapper function:
+
+```typescript
+function trackEvent<E extends keyof SegmentEventMap>(
+  event: E,
+  properties: SegmentEventMap[E]
+): void {
+  window.analytics.track(event, properties);
+}
+```
+
+This ensures that calling `trackEvent("Wizard Step Submitted", { step: 1, ... })` is validated against the exact property shape declared for that event.
+
+See the complete [Analytics Event Reference](/reference/analytics/events) for all 55 events with their typed property schemas.

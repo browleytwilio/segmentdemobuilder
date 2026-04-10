@@ -1,0 +1,68 @@
+---
+title: Rehydrate a Playbook
+description: Re-inject credentials into a saved playbook with sanitized placeholders.
+icon: droplet
+---
+
+# Rehydrate a Playbook
+
+When you reload a saved playbook, the prompt text contains sanitized placeholders like `YOUR_SEGMENT_WRITE_KEY` instead of your real credentials. The **Rehydration Modal** lets you re-inject your keys so the prompts are ready to copy into Claude Code.
+
+## When Rehydration Is Needed
+
+The Playbook Viewer automatically detects placeholder strings in the prompt text. If any `YOUR_*` patterns are found, the Rehydration Modal appears immediately when you open the playbook.
+
+Placeholder detection checks for these patterns:
+- `YOUR_SEGMENT_WRITE_KEY`
+- `YOUR_SEGMENT_BACKEND_WRITE_KEY`
+- `YOUR_SEGMENT_WORKSPACE_TOKEN`
+- `YOUR_SEGMENT_PROFILE_TOKEN`
+- `YOUR_SUPABASE_URL`
+- `YOUR_SUPABASE_ANON_KEY`
+
+## How to Rehydrate
+
+<Steps>
+  <Step title="Open the Playbook">
+    Navigate to a completed playbook from the Dashboard. If the prompts contain placeholders, the Rehydration Modal appears automatically.
+  </Step>
+
+  <Step title="Enter Your Credentials">
+    Fill in the credential fields in the modal:
+
+    | Field | Required | Description |
+    |-------|----------|-------------|
+    | Segment Write Key (Frontend) | Yes | Your JavaScript source write key |
+    | Segment Write Key (Backend) | No | Backend source write key |
+    | Segment Workspace API Token | Yes | Workspace-level API token |
+    | Segment Profile API Token | Conditional | Required if Profile API was enabled |
+    | Supabase URL | Yes | Your Supabase project URL |
+    | Supabase Anon Key | Yes | Your Supabase anon/public key |
+
+    The same validation rules from Wizard Step 4 apply here (min lengths, URL format, JWT prefix).
+  </Step>
+
+  <Step title="Inject Keys">
+    Click **Inject Keys**. The modal performs an in-memory replacement:
+
+    - Every `YOUR_SEGMENT_WRITE_KEY` in the prompt text becomes your actual write key
+    - Same for all other placeholder→credential mappings
+    - The updated prompts are displayed immediately in the viewer
+  </Step>
+
+  <Step title="Copy and Use">
+    The prompts now contain your real credentials. Copy each step into Claude Code as normal.
+  </Step>
+</Steps>
+
+## Skipping Rehydration
+
+If you just want to review the playbook structure without real credentials, click **Skip** on the modal. The prompts will display with `YOUR_*` placeholders visible.
+
+<Warning>
+  Rehydration is purely client-side. Your credentials are **never sent back to the database**. The database always retains the sanitized version, regardless of how many times you rehydrate. If you refresh the page, you'll need to rehydrate again.
+</Warning>
+
+## Highlighted Placeholders
+
+In the prompt cards, any remaining `YOUR_*` placeholder text is visually highlighted with a red background. This makes it easy to spot unrehydrated prompts at a glance.

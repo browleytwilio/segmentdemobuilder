@@ -1,0 +1,138 @@
+---
+title: Build Your First Playbook
+description: A complete walkthrough of building an E-commerce demo from scratch.
+icon: graduation-cap
+---
+
+# Build Your First Playbook
+
+This tutorial walks through building a complete E-commerce demo for a fictional customer "Acme Corp", targeting a CMO persona with three personalization scenarios. By the end, you'll have a set of AI prompts ready to paste into Claude Code.
+
+## Prerequisites
+
+- A Segment Demo Builder account
+- A Segment workspace with a JavaScript source (to get a Write Key)
+- A Supabase project (to get the URL and Anon Key)
+- Claude Code installed
+
+<Tip>
+  If you don't have credentials ready, you can still follow this tutorial. The compiler will use placeholder values, and you can inject real credentials later via the [Rehydration Modal](/tutorials/rehydrate-playbook).
+</Tip>
+
+## Step-by-Step
+
+<Steps>
+  <Step title="Navigate to the Builder">
+    From the Dashboard, click **New Playbook** in the top navigation bar. This opens the Builder Wizard at Step 1.
+  </Step>
+
+  <Step title="Configure Context (Step 1)">
+    Fill in the demo context:
+
+    | Field | Value |
+    |-------|-------|
+    | Customer Name | `Acme Corp` |
+    | Persona | `CMO` |
+    | Industry | `E-commerce / Retail` |
+
+    Click **Next**. The wizard validates that the customer name is at least 2 characters and that persona/industry are selected.
+  </Step>
+
+  <Step title="Choose Architecture (Step 2)">
+    For this demo, enable:
+
+    | Feature | Setting | Why |
+    |---------|---------|-----|
+    | SE Sidebar | On (default) | Shows real-time events during the demo |
+    | Seeded Profiles | On (default) | Pre-populates Unify with test users |
+    | Profile API | Off (default) | Not needed for our selected scenarios |
+    | Intent Predictions | Off (default) | Not needed for E-commerce scenarios |
+
+    Click **Next**.
+  </Step>
+
+  <Step title="Select Scenarios (Step 3)">
+    The wizard shows E-commerce / Retail scenarios fetched from the database. Select all three:
+
+    - **Second-Page Personalization** — Hero banner adapts based on browsing
+    - **Authenticated VIP State** — Free shipping for VIP users
+    - **Cart Abandonment Recovery** — Push notification after 30 seconds
+
+    Click **Next**.
+  </Step>
+
+  <Step title="Enter Credentials (Step 4)">
+    Paste your API keys:
+
+    | Field | Where to Find It |
+    |-------|-------------------|
+    | Segment Write Key (Frontend) | Segment → Sources → Your JS Source → Settings → Write Key |
+    | Segment Workspace API Token | Segment → Settings → API Access → Tokens |
+    | Supabase URL | Supabase → Project Settings → API → Project URL |
+    | Supabase Anon Key | Supabase → Project Settings → API → anon/public key |
+
+    Leave the optional fields (Backend Write Key, Profile Token) empty for this demo.
+
+    Click **Generate Playbook**.
+  </Step>
+
+  <Step title="Watch Compilation">
+    The compiler runs automatically through four phases:
+
+    1. **Loading** — Fetches the latest NPM package versions
+    2. **Compiling** — Merges templates with your configuration and credentials
+    3. **Saving** — Stores the sanitized version to the database
+    4. **Redirecting** — Sends you to the Playbook Viewer
+
+    This typically takes 2-5 seconds.
+  </Step>
+
+  <Step title="Review Your Playbook">
+    You'll land on the Playbook Viewer with the **Build Prompts** tab active. You should see 6 steps:
+
+    1. Scaffold & Dependencies
+    2. Environment Setup
+    3. Architecture Setup (SE Sidebar + Seeded Profiles)
+    4. Second-Page Personalization
+    5. Authenticated VIP State
+    6. Cart Abandonment Recovery
+  </Step>
+
+  <Step title="Execute with Claude Code">
+    Open Claude Code in your terminal and work through each step:
+
+    1. Click the **Copy** button on Step 1
+    2. Paste into Claude Code and let it execute
+    3. Wait for it to complete (it will create a Next.js project and install dependencies)
+    4. Click **Mark Complete** in the viewer
+    5. Move to Step 2 and repeat
+
+    <Warning>
+      Execute steps in order. Each step assumes the previous one completed successfully. If Claude Code reports an error, check the **Troubleshooting** accordion on that step's card before proceeding.
+    </Warning>
+  </Step>
+
+  <Step title="Run Your Demo">
+    After all 6 steps are complete:
+
+    ```bash
+    cd acme-corp-demo
+    npm run dev
+    ```
+
+    Open `http://localhost:3000` in your browser. You should see:
+    - The SE Sidebar in the bottom-right corner showing live events
+    - A homepage with a hero banner
+    - Product pages that trigger personalization
+    - A cart with VIP shipping detection
+    - An abandonment notification after 30 seconds of inactivity
+
+    Switch to the **SE Demo Script** tab in the Playbook Viewer for a ready-made presentation narrative.
+  </Step>
+</Steps>
+
+## What's Next?
+
+- [Share your playbook](/tutorials/share-playbook) with colleagues
+- [Explore the Demo Script](/guides/demo-script) for presentation tips
+- Try building a **B2B SaaS** or **FinTech** demo with different scenarios

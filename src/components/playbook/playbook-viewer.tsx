@@ -7,6 +7,7 @@ import { generateDemoScript } from "@/lib/compiler/demo-script";
 import { downloadMarkdown } from "@/lib/export/download";
 import { useClipboard } from "@/hooks/use-clipboard";
 import { usePlaybookProgress } from "@/hooks/use-playbook-progress";
+import dynamic from "next/dynamic";
 import {
   RehydrationModal,
   needsRehydration,
@@ -14,9 +15,16 @@ import {
 } from "./rehydration-modal";
 import { StepStepper } from "./step-stepper";
 import { PromptCard } from "./prompt-card";
-import { DemoScriptView } from "./demo-script-view";
-import { AIScriptGenerator } from "./ai-script-generator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const DemoScriptView = dynamic(
+  () => import("./demo-script-view").then((m) => m.DemoScriptView),
+  { ssr: false }
+);
+const AIScriptGenerator = dynamic(
+  () => import("./ai-script-generator").then((m) => m.AIScriptGenerator),
+  { ssr: false }
+);
 import { Button } from "@/components/ui/button";
 import {
   DownloadIcon,

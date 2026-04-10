@@ -1,0 +1,94 @@
+---
+title: Common Issues
+description: Frequently encountered issues and their solutions.
+icon: circle-question
+---
+
+# Common Issues
+
+<AccordionGroup>
+  <Accordion title="My playbook shows YOUR_SEGMENT_WRITE_KEY placeholders" defaultOpen>
+    **Cause:** The playbook was loaded from the database, which stores the sanitized version with placeholders.
+
+    **Solution:** Use the Rehydration Modal to re-inject your real credentials. It appears automatically when placeholders are detected. See [Rehydrate a Playbook](/tutorials/rehydrate-playbook).
+  </Accordion>
+
+  <Accordion title="I can't access the Admin panel">
+    **Cause:** Your account doesn't have the `super_admin` role.
+
+    **Solution:** Ask an existing super-admin to promote your account via [User Management](/admin/user-management). The prime admin (`browley@twilio.com`) is always available as a fallback.
+  </Accordion>
+
+  <Accordion title="Compilation is stuck on 'Loading'">
+    **Cause:** The NPM version fetch is failing or timing out, likely due to network issues or rate limiting.
+
+    **Solution:**
+    1. Check your internet connection
+    2. Wait a minute and retry — the API has a rate limit of 100 requests per 10 minutes
+    3. If the issue persists, the compiler will fall back to hardcoded versions automatically
+  </Accordion>
+
+  <Accordion title="No scenarios appear in Wizard Step 3">
+    **Cause:** Either no `demo_features` are configured for the selected industry, or they're all deactivated.
+
+    **Solution:**
+    1. Verify you selected an industry in Step 1
+    2. If you're an admin, check the [Feature Configurator](/admin/feature-configurator) to ensure features are active for that industry
+    3. Ensure the database has been seeded (migration `006_demo_features_and_seeds.sql`)
+  </Accordion>
+
+  <Accordion title="Claude Code produces errors when executing a prompt">
+    **Cause:** Claude Code may have encountered a dependency conflict, a missing file from a prior step, or an ambiguous instruction.
+
+    **Solution:**
+    1. Check the **Troubleshooting** accordion on the prompt card — it has step-specific guidance
+    2. Ensure you executed all previous steps in order
+    3. Verify the demo app still runs (`npm run dev`) before proceeding
+    4. If a dependency error occurs, check that the NPM versions in the prompt match what's installed
+  </Accordion>
+
+  <Accordion title="The Rehydration Modal doesn't appear">
+    **Cause:** The prompts don't contain `YOUR_*` placeholder strings. This happens when you still have the in-memory Variant A (with real credentials) from the current session.
+
+    **Solution:** This is expected behavior. The modal only appears when placeholders are detected. If you need to change credentials, refresh the page — this clears the in-memory state and reloads from the database (with placeholders), triggering the modal.
+  </Accordion>
+
+  <Accordion title="I lost my credentials after refreshing the page">
+    **Cause:** Credentials are stored in browser memory only and are intentionally cleared on page refresh.
+
+    **Solution:** This is by design for security. Use the Rehydration Modal to re-enter your credentials. Consider keeping your credentials in a secure password manager for easy re-entry.
+  </Accordion>
+
+  <Accordion title="My saved template changes aren't showing in playbooks">
+    **Cause:** Template changes only affect new compilations. Existing playbooks retain the prompts from when they were compiled.
+
+    **Solution:** Generate a new playbook to see the updated template. Existing playbooks cannot be re-compiled with new templates.
+  </Accordion>
+
+  <Accordion title="OAuth login redirects to an error page">
+    **Cause:** The OAuth callback failed to exchange the authorization code for a session.
+
+    **Solution:**
+    1. Try again — the authorization code may have expired
+    2. Ensure the OAuth provider (Google/GitHub) is properly configured in your Supabase project
+    3. Check that the callback URL in your OAuth provider settings matches your deployment URL
+  </Accordion>
+
+  <Accordion title="The SE Demo Script tab is empty">
+    **Cause:** The playbook's `demo_config` doesn't contain the `scenarioSlugs` mapping needed to generate click paths.
+
+    **Solution:** This can happen with playbooks created before the CMS migration. Generate a new playbook — newer playbooks include the `scenarioSlugs` map that the demo script generator needs.
+  </Accordion>
+
+  <Accordion title="Share link returns a 404 or blank page">
+    **Cause:** The playbook either doesn't exist, is still in `draft` status, or was deleted.
+
+    **Solution:** Only `completed` playbooks are accessible via share links. Verify the playbook exists and has been compiled successfully. Draft playbooks are automatically pruned after 30 days.
+  </Accordion>
+
+  <Accordion title="Supabase Anon Key validation fails ('must start with eyJ')">
+    **Cause:** The Supabase Anon Key is a JWT token that always starts with `eyJ` (base64-encoded `{"alg":...}`). You may be pasting the wrong key.
+
+    **Solution:** In Supabase, go to **Project Settings → API → Project API Keys → anon/public**. The key should be a long string starting with `eyJhbGciOi...`.
+  </Accordion>
+</AccordionGroup>

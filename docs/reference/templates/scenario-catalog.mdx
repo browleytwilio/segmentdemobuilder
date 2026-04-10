@@ -1,0 +1,170 @@
+---
+title: Scenario Catalog
+description: All 9 built-in scenario templates with click paths and "Aha!" moments.
+icon: list-check
+---
+
+# Scenario Catalog
+
+The platform ships with 9 pre-built scenario templates across 4 industries. Each scenario generates a complete, working personalization feature in the demo application with an accompanying click path for live presentations.
+
+## Scenario Summary
+
+| # | Slug | Label | Industry | Description |
+|---|------|-------|----------|-------------|
+| 1 | `second-page-personalization` | Second-Page Personalization | E-commerce / Retail | Hero banner adapts based on prior Product Viewed category |
+| 2 | `authenticated-vip-state` | Authenticated VIP State | E-commerce / Retail | Free shipping when user identified as VIP |
+| 3 | `cart-abandonment-recovery` | Cart Abandonment Recovery | E-commerce / Retail | Push notification simulation after 30s inactivity |
+| 4 | `intent-prediction-upsell` | Intent Prediction Upsell | B2B SaaS | "Talk to Sales" modal for high-intent users |
+| 5 | `group-level-context` | Group-Level Context | B2B SaaS | Admin tabs appear for Enterprise-tier organizations |
+| 6 | `edge-pii-masking` | Edge-based PII Masking | FinTech | Client-side payload scrubbing before data reaches Segment |
+| 7 | `risk-profile-gating` | Risk Profile Gating | FinTech | Loan products gated by real-time credit score traits |
+| 8 | `content-affinity-engine` | Content Affinity Engine | Media & Entertainment | Homepage categories reorder based on viewing affinity |
+| 9 | `paywall-thresholds` | Paywall Thresholds | Media & Entertainment | Subscription paywall after 3 anonymous article views |
+
+## Detailed Scenarios
+
+<AccordionGroup>
+  <Accordion title="1. Second-Page Personalization" defaultOpen>
+    **Industry:** E-commerce / Retail
+
+    **What it builds:** A personalized hero banner component that reads `sessionStorage` for the last viewed product category and swaps the hero content accordingly.
+
+    **Segment calls used:** `track("Product Viewed", { product_id, product_name, category })`
+
+    **Click path:**
+    1. Navigate to a product page in the demo
+    2. Point out the **Product Viewed** event firing in the SE Sidebar
+    3. Click back to the homepage
+    4. Show how the **hero banner has changed** to reflect the viewed category
+    5. Explain: "This happened in real-time — Segment captured the event and the page instantly personalized."
+
+    **"Aha!" Moment:** Open the Segment Debugger and show the `Product Viewed` event with its properties. Refresh the homepage to prove the personalization persists via sessionStorage.
+  </Accordion>
+
+  <Accordion title="2. Authenticated VIP State">
+    **Industry:** E-commerce / Retail
+
+    **What it builds:** A shipping cost component that reacts to the user's `vip` trait from `analytics.identify()`.
+
+    **Segment calls used:** `identify(userId, { email, vip: true, customer })`
+
+    **Click path:**
+    1. Show the cart page with a standard shipping fee
+    2. Click **Log In as VIP** (triggers the identify call)
+    3. Point out the instant UI change: shipping becomes **FREE (VIP)**
+    4. Explain: "The moment we identified this user as a VIP in Segment, the UI responded. No page reload needed."
+
+    **"Aha!" Moment:** Open the Segment Debugger and show the `identify` call with `{ vip: true }`. Show the trait in the Unify Profile viewer.
+  </Accordion>
+
+  <Accordion title="3. Cart Abandonment Recovery">
+    **Industry:** E-commerce / Retail
+
+    **What it builds:** A toast notification component that appears after 30 seconds of cart inactivity, simulating a push notification.
+
+    **Segment calls used:** `track("Cart Updated", { products, cart_value })`, `track("Cart Abandoned", { products, cart_value, abandoned_after_seconds })`
+
+    **Click path:**
+    1. Add items to the shopping cart
+    2. Navigate away from the cart
+    3. Wait 30 seconds — a **push notification simulation** appears
+    4. Explain: "Segment detected cart abandonment. In production, this would trigger a Twilio Engage push or email."
+
+    **"Aha!" Moment:** Show the `Cart Abandoned` event in the Segment Debugger with cart value and product details. Explain how this feeds into a Twilio Engage audience.
+  </Accordion>
+
+  <Accordion title="4. Intent Prediction Upsell">
+    **Industry:** B2B SaaS
+
+    **What it builds:** A dialog modal that appears automatically when the user's Segment Predictions score exceeds a threshold.
+
+    **Segment calls used:** Profile API read of `likelihood_to_purchase` prediction score
+
+    **Click path:**
+    1. Navigate the demo as a high-usage user
+    2. Point out the **"Talk to Sales" modal** that appears automatically
+    3. Explain: "Segment Predictions scored this user as high-intent (>70%). The modal triggers purely from trait data."
+
+    **"Aha!" Moment:** Show the Profile API response with `likelihood_to_purchase > 0.7`. Explain how Predictions computed this from behavioral data.
+  </Accordion>
+
+  <Accordion title="5. Group-Level Context">
+    **Industry:** B2B SaaS
+
+    **What it builds:** Conditional admin navigation tabs that appear only when the user's organization is on an Enterprise plan (via `analytics.group()`).
+
+    **Segment calls used:** `group(orgId, { name, plan: "Enterprise", industry })`
+
+    **Click path:**
+    1. Load the workspace as a **"Pro" tier** organization — standard navigation
+    2. Switch to an **"Enterprise" tier** organization (triggers group call)
+    3. Point out the **Admin tabs** (User Management, Audit Log, SSO Settings) now appearing
+    4. Explain: "The group() call told Segment this org is Enterprise. The UI adapts instantly."
+
+    **"Aha!" Moment:** Show the `group` call in the Debugger with `{ plan: 'Enterprise' }`.
+  </Accordion>
+
+  <Accordion title="6. Edge-based PII Masking">
+    **Industry:** FinTech
+
+    **What it builds:** An analytics.js enrichment plugin that intercepts `track` and `identify` calls, masking sensitive fields (SSN, credit card, etc.) before data leaves the browser.
+
+    **Segment calls used:** Custom `Plugin` registered via `analytics.register()`
+
+    **Click path:**
+    1. Submit a form with sensitive data (e.g., SSN: "123-45-6789")
+    2. Open the SE Sidebar and find the **Form Submitted** event
+    3. Point out the SSN appears as **"*****6789"** — masked before it left the browser
+    4. Explain: "This middleware runs client-side. PII never touches your data warehouse."
+
+    **"Aha!" Moment:** Compare the raw form input with the masked payload in the Segment Debugger.
+  </Accordion>
+
+  <Accordion title="7. Risk Profile Gating">
+    **Industry:** FinTech
+
+    **What it builds:** A loan panel component that gates financial products based on real-time credit score traits fetched from Segment's Profile API.
+
+    **Segment calls used:** Profile API read of `credit_score` and `risk_level` traits
+
+    **Click path:**
+    1. Load the dashboard as a user with a **high credit score** — show Pre-Approved panel
+    2. Switch to a user with a **low credit score** — show restricted UI
+    3. Explain: "Segment's Profile API returns real-time credit traits. The UI gates products accordingly."
+
+    **"Aha!" Moment:** Show the Profile API response with `credit_score` and `risk_level` traits.
+  </Accordion>
+
+  <Accordion title="8. Content Affinity Engine">
+    **Industry:** Media & Entertainment
+
+    **What it builds:** A client-side affinity scoring system that reorders homepage content categories based on accumulated viewing behavior.
+
+    **Segment calls used:** `track("Content Viewed", { content_id, category, view_duration_seconds })`
+
+    **Click path:**
+    1. Visit the homepage — note the default category ordering
+    2. Click into several **Technology** articles, spending time on each
+    3. Return to the homepage — **Technology now appears first**
+    4. Explain: "Segment tracked Content Viewed events. The affinity engine reordered the homepage in real-time."
+
+    **"Aha!" Moment:** Show multiple `Content Viewed` events in the Debugger with category and duration. Show how affinity scores shifted.
+  </Accordion>
+
+  <Accordion title="9. Paywall Thresholds">
+    **Industry:** Media & Entertainment
+
+    **What it builds:** A paywall gate component that counts anonymous article views and blocks content after the free limit (3 views).
+
+    **Segment calls used:** `track("Article Viewed", { article_id, title, view_number })`
+
+    **Click path:**
+    1. Open an article — counter shows **2 free articles remaining**
+    2. Open a second article — **1 remaining**
+    3. Open a third article — **paywall blocks the content**
+    4. Explain: "Segment tracked each Article Viewed with a view count. On the 4th view, the paywall activates."
+
+    **"Aha!" Moment:** Show `Article Viewed` events in the Debugger with incrementing `view_number` properties. Highlight that this works without any login.
+  </Accordion>
+</AccordionGroup>

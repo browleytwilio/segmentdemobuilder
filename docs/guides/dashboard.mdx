@@ -1,0 +1,55 @@
+---
+title: Dashboard
+description: Managing your playbooks from the dashboard.
+icon: grid-2
+---
+
+# Dashboard
+
+The Dashboard is your home screen after logging in. It displays all your playbooks in a card grid with summary statistics.
+
+## Stats Bar
+
+The top of the dashboard shows three counts:
+
+| Stat | Description |
+|------|-------------|
+| **Total Playbooks** | Count of all your playbooks (draft + completed) |
+| **Drafts** | Playbooks that were created but haven't finished compiling |
+| **Completed** | Playbooks with compiled prompts ready to use |
+
+## Playbook Cards
+
+Each playbook appears as a card showing:
+
+- **Customer Name** — The demo customer (e.g., "Acme Corp")
+- **Industry** — The industry vertical
+- **Status** — Badge showing `Draft` or `Completed`
+- **Last Updated** — Relative timestamp
+
+### Card Actions
+
+- **Click** a completed playbook card → Opens the Playbook Viewer
+- **Click** a draft playbook card → Navigates to the compilation page to retry
+- **Delete** → Removes the playbook (with confirmation)
+
+## Creating a New Playbook
+
+Two ways to start:
+
+1. **Header button** — Click **New Playbook** in the top navigation bar
+2. **Empty state** — If you have no playbooks, the empty state shows a prominent "Create Your First Playbook" button
+
+Both navigate to the Builder Wizard at Step 1.
+
+## Empty State
+
+When you have no playbooks, the dashboard shows a welcome message with:
+
+- A brief explanation of the platform
+- A call-to-action button to create your first playbook
+- Links to documentation
+
+## Stale Draft Cleanup
+
+Draft playbooks older than 30 days are automatically pruned by a scheduled database job (`pg_cron`). This prevents accumulation of abandoned wizard sessions.

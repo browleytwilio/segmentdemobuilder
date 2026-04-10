@@ -1,0 +1,82 @@
+---
+title: Authentication Security
+description: Auth flows, session management, and route protection.
+icon: lock
+---
+
+# Authentication Security
+
+The platform uses Supabase Auth for all authentication, with cookie-based session management and automatic profile provisioning.
+
+## Auth Architecture
+
+```mermaid
+flowchart TD
+    A[User visits protected route] --> B{Has session cookie?}
+    B -->|Yes| C[Verify session with Supabase]
+    B -->|No| D[Redirect to /login]
+    C -->|Valid| E[Allow access]
+    C -->|Expired| F[Attempt token refresh]
+    F -->|Success| E
+    F -->|Failure| D
+    D --> G{Login method}
+    G -->|Email/Password| H[Supabase email auth]
+    G -->|Magic Link| I[Supabase magic link email]
+    G -->|OAuth| J[Redirect to provider]
+    J --> K[Provider consent screen]
+    K --> L[/auth/callback with code]
+    L --> M[Exchange code for session]
+    M --> N[Set session cookie + analytics cookie]
+    N --> O[Redirect to /dashboard]
+    H --> O
+    I --> O
+```
+
+## Session Management
+
+Sessions use Supabase's `@supabase/ssr` cookie middleware:
+
+- **Session tokens** are stored in HTTP-only cookies
+- **Automatic refresh** — The middleware refreshes expired access tokens using the refresh token
+- **Server-side validation** — Every server action and API route creates a Supabase server client that validates the session from cookies
+
+## OAuth Security
+
+The OAuth flow uses Supabase's PKCE (Proof Key for Code Exchange) implementation:
+
+1. The login page initiates OAuth via `supabase.auth.signInWithOAuth()`
+2. Supabase generates a PKCE challenge and redirects to the provider
+3. After consent, the provider redirects to `/auth/callback` with an authorization code
+4. The callback handler calls `supabase.auth.exchangeCodeForSession(code)`
+5. Supabase validates the PKCE verifier and exchanges the code for tokens
+6. A session cookie is set, plus a short-lived `x-analytics-identify` cookie (30-second TTL)
+
+The analytics cookie bridges the server-side redirect with client-side Segment identification.
+
+## Auto-Profile Provisioning
+
+When a user signs up via any method:
+
+1. Supabase creates an `auth.users` row
+2. A trigger (`on_auth_user_created`) fires `handle_new_user()`
+3. This creates a `profiles` row with `id`, `email`, and `role = 'user'`
+4. A second trigger (`on_profile_created_promote_admin`) checks if the email matches the prime admin — if so, promotes to `super_admin`
+
+This ensures every authenticated user has a profile record, and the prime admin is always promoted.
+
+## Route Protection Layers
+
+| Layer | What It Protects | How |
+|-------|-----------------|-----|
+| **Layout middleware** | `(app)` route group | Checks for Supabase session; redirects to `/login` if absent |
+| **Server actions** | Admin operations | `requireAdmin()` verifies `super_admin` role before executing |
+| **RLS policies** | Database rows | PostgreSQL enforces access rules on every query |
+| **API routes** | REST endpoints | Create Supabase server client from cookies; reject if no session |
+
+## Sign-Out
+
+The sign-out process:
+
+1. Calls `supabase.auth.signOut()` — clears the session cookie
+2. Calls `analytics.reset()` — generates new anonymous ID, clears Segment identity
+3. Redirects to `/login`

@@ -1,5 +1,5 @@
 import { tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 const KNOWLEDGE_BASE: Record<string, string> = {
   "identity resolution": `Segment Unify performs identity resolution by merging user profiles across devices and channels. It uses deterministic matching (exact matches on email, phone, external IDs) and probabilistic matching (behavioral signals). The identity graph maintains a canonical profile with all associated identifiers. Key concepts: external_id, anonymous_id, merge rules, identity conflicts, the Profile API for real-time lookups.`,
@@ -25,18 +25,17 @@ const KNOWLEDGE_BASE: Record<string, string> = {
   privacy: `Segment Privacy tools help with GDPR/CCPA compliance. User Deletion: API to delete all data for a given user across all destinations. Suppression: prevent future data collection for specific users. Consent Management: integrates with OneTrust, TrustArc — stamps events with consent status, destinations respect consent categories. Data Subject Access Requests (DSAR) supported.`,
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const segmentKnowledgeTool = (tool as any)({
+export const segmentKnowledgeTool = tool({
   description:
     "Look up detailed information about a Segment CDP concept. Use this when the user asks about Segment features, APIs, or architecture.",
-  parameters: z.object({
+  inputSchema: z.object({
     topic: z
       .string()
       .describe(
         "The Segment concept to look up (e.g., 'identity resolution', 'Profile API', 'Protocols')"
       ),
   }),
-  execute: async ({ topic }: { topic: string }) => {
+  execute: async ({ topic }) => {
     const key = topic.toLowerCase().trim();
 
     // Direct match

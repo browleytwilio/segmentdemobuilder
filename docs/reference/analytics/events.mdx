@@ -1,0 +1,474 @@
+---
+title: Analytics Event Reference
+description: All 55 tracked Segment events with typed property schemas.
+icon: chart-mixed
+---
+
+# Analytics Event Reference
+
+The Segment Demo Builder tracks 55 events across 9 categories via Segment's analytics.js SDK. Every event is compile-time checked against the `SegmentEventMap` TypeScript interface — typos and missing properties cause build errors.
+
+## Auth Events
+
+<AccordionGroup>
+  <Accordion title="Signed Up">
+    Fired when a user creates a new account via email/password.
+
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `method` | `"email"` | Always `"email"` |
+  </Accordion>
+
+  <Accordion title="Signed In">
+    Fired on successful login.
+
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `method` | `"email" \| "magic_link" \| "oauth"` | Authentication method |
+    | `provider` | string (optional) | OAuth provider name (e.g., `"google"`, `"github"`) |
+  </Accordion>
+
+  <Accordion title="Magic Link Requested">
+    Fired when a user requests a magic link login email.
+
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `email_domain` | string | Domain portion of the email (e.g., `"twilio.com"`) |
+  </Accordion>
+
+  <Accordion title="OAuth Started">
+    Fired when a user initiates OAuth login.
+
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `provider` | string | OAuth provider (`"google"` or `"github"`) |
+  </Accordion>
+
+  <Accordion title="Auth Callback Completed">
+    Fired after a successful OAuth callback.
+
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `method` | `"oauth"` | Always `"oauth"` |
+  </Accordion>
+
+  <Accordion title="Signed Out">
+    Fired on manual sign-out.
+
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `method` | `"manual"` | Always `"manual"` |
+  </Accordion>
+
+  <Accordion title="Sign Up Failed">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `method` | `"email"` | Always `"email"` |
+    | `error` | string | Error message |
+  </Accordion>
+
+  <Accordion title="Sign In Failed">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `method` | `"email" \| "magic_link" \| "oauth"` | Authentication method |
+    | `error` | string | Error message |
+    | `provider` | string (optional) | OAuth provider name |
+  </Accordion>
+
+  <Accordion title="Magic Link Failed">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `error` | string | Error message |
+  </Accordion>
+
+  <Accordion title="OAuth Failed">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `provider` | string | OAuth provider |
+    | `error` | string | Error message |
+  </Accordion>
+
+  <Accordion title="Auth Callback Failed">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `error` | string | Error message |
+  </Accordion>
+</AccordionGroup>
+
+## Navigation Events
+
+<AccordionGroup>
+  <Accordion title="CTA Clicked">
+    Fired when a marketing or UI call-to-action is clicked.
+
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `cta` | string | CTA identifier |
+    | `location` | string | Where on the page the CTA appeared |
+  </Accordion>
+
+  <Accordion title="Theme Toggled">
+    Fired when the user switches dark/light theme.
+
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `theme` | `"dark" \| "light"` | The new theme |
+  </Accordion>
+</AccordionGroup>
+
+## Dashboard Events
+
+<AccordionGroup>
+  <Accordion title="Dashboard Viewed">
+    Fired when the dashboard loads.
+
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `total_playbooks` | number | Total playbook count |
+    | `drafts` | number | Draft playbook count |
+    | `completed` | number | Completed playbook count |
+  </Accordion>
+
+  <Accordion title="Playbook Opened">
+    Fired when a user clicks into a playbook from the dashboard.
+
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Playbook UUID |
+    | `industry` | string (optional) | Industry vertical |
+    | `status` | string (optional) | Playbook status |
+  </Accordion>
+
+  <Accordion title="Playbook Deleted">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Deleted playbook UUID |
+  </Accordion>
+
+  <Accordion title="New Playbook Clicked">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `location` | `"header" \| "empty_state"` | Where the button was clicked |
+  </Accordion>
+</AccordionGroup>
+
+## Builder Wizard Events
+
+<AccordionGroup>
+  <Accordion title="Wizard Started">
+    Fired when the builder wizard page loads.
+
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `has_persisted_state` | boolean | Whether the Zustand store had saved wizard state |
+  </Accordion>
+
+  <Accordion title="Wizard Step Navigated">
+    Fired on every step transition (forward or backward).
+
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `from` | number | Previous step number |
+    | `to` | number | New step number |
+    | `direction` | `"forward" \| "backward"` | Navigation direction |
+    | `time_on_step_ms` | number (optional) | Milliseconds spent on the previous step |
+  </Accordion>
+
+  <Accordion title="Wizard Step Submitted">
+    Fired when a wizard step passes validation. Properties differ by step:
+
+    **Step 1 (Context):**
+    | Property | Type |
+    |----------|------|
+    | `step` | `1` |
+    | `customer_name_length` | number |
+    | `persona` | string |
+    | `industry` | string |
+
+    **Step 2 (Architecture):**
+    | Property | Type |
+    |----------|------|
+    | `step` | `2` |
+    | `enable_se_sidebar` | boolean |
+    | `enable_seeded_profiles` | boolean |
+    | `enable_profile_api` | boolean |
+    | `enable_intent_predictions` | boolean |
+
+    **Step 3 (Scenarios):**
+    | Property | Type |
+    |----------|------|
+    | `step` | `3` |
+    | `scenario_count` | number |
+    | `industry` | string |
+
+    **Step 4 (Credentials):**
+    | Property | Type |
+    |----------|------|
+    | `step` | `4` |
+    | `fields_provided_count` | number |
+  </Accordion>
+
+  <Accordion title="Credentials Help Opened">
+    Fired when the credentials help section is expanded. No properties.
+  </Accordion>
+
+  <Accordion title="Playbook Created">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | New playbook UUID |
+  </Accordion>
+
+  <Accordion title="Playbook Creation Failed">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `error` | string | Error message |
+  </Accordion>
+</AccordionGroup>
+
+## Compilation Events
+
+<AccordionGroup>
+  <Accordion title="Compilation Phase Changed">
+    Fired at each compilation stage transition.
+
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Playbook being compiled |
+    | `phase` | string | Current phase name |
+    | `elapsed_ms` | number | Time since compilation started |
+  </Accordion>
+
+  <Accordion title="Compilation Completed">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Compiled playbook UUID |
+    | `total_ms` | number | Total compilation time |
+    | `prompt_count` | number | Number of prompts generated |
+  </Accordion>
+
+  <Accordion title="Compilation Failed">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Playbook UUID |
+    | `error` | string | Error message |
+    | `failed_phase` | string | Phase where failure occurred |
+  </Accordion>
+
+  <Accordion title="Compilation Retried">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Playbook UUID |
+  </Accordion>
+</AccordionGroup>
+
+## Playbook Viewer Events
+
+<AccordionGroup>
+  <Accordion title="Playbook Viewed">
+    Fired when the viewer loads a playbook.
+
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Playbook UUID |
+    | `industry` | string (optional) | Industry vertical |
+    | `status` | string (optional) | Playbook status |
+    | `prompt_count` | number | Total prompt steps |
+    | `needs_rehydration` | boolean | Whether placeholders were detected |
+  </Accordion>
+
+  <Accordion title="Tab Switched">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Playbook UUID |
+    | `tab` | `"prompts" \| "script"` | Active tab |
+  </Accordion>
+
+  <Accordion title="Step Clicked">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Playbook UUID |
+    | `step_number` | number | Clicked step |
+  </Accordion>
+
+  <Accordion title="Prompt Copied">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Playbook UUID |
+    | `step_number` | number | Step that was copied |
+    | `prompt_title` | string | Title of the copied prompt |
+  </Accordion>
+
+  <Accordion title="Step Marked Complete">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Playbook UUID |
+    | `step_number` | number | Completed step |
+  </Accordion>
+
+  <Accordion title="Troubleshooting Expanded">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Playbook UUID |
+    | `step_number` | number | Step whose troubleshooting was expanded |
+  </Accordion>
+
+  <Accordion title="Keys Injected">
+    Fired when credentials are injected via the Rehydration Modal.
+
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `field_count` | number | Number of credential fields filled |
+  </Accordion>
+
+  <Accordion title="Rehydration Skipped">
+    Fired when the user dismisses the Rehydration Modal without entering keys. No properties.
+  </Accordion>
+
+  <Accordion title="Prompts Exported">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Playbook UUID |
+    | `format` | `"markdown"` | Export format |
+  </Accordion>
+
+  <Accordion title="Demo Script Exported">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Playbook UUID |
+    | `format` | `"markdown"` | Export format |
+  </Accordion>
+
+  <Accordion title="Share Link Copied">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Playbook UUID |
+  </Accordion>
+
+  <Accordion title="Print Triggered">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Playbook UUID |
+  </Accordion>
+</AccordionGroup>
+
+## Share Events
+
+<AccordionGroup>
+  <Accordion title="Shared Playbook Viewed">
+    Fired when someone views a playbook via a share link (anonymous).
+
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Playbook UUID |
+    | `industry` | string (optional) | Industry vertical |
+  </Accordion>
+
+  <Accordion title="Shared Demo Script Downloaded">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Playbook UUID |
+  </Accordion>
+</AccordionGroup>
+
+## Admin Events
+
+<AccordionGroup>
+  <Accordion title="User Role Changed">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `target_user_id` | string | User whose role changed |
+    | `new_role` | string | New role value |
+  </Accordion>
+
+  <Accordion title="Template Selected">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `template_id` | string | Template UUID |
+    | `category` | string | Template category |
+  </Accordion>
+
+  <Accordion title="Template Saved">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `template_id` | string | Template UUID |
+    | `new_version` | number | New version number |
+  </Accordion>
+
+  <Accordion title="Template Created">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `category` | string | Template category |
+  </Accordion>
+
+  <Accordion title="Feature Created">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `industry` | string | Target industry |
+    | `slug` | string | Feature slug |
+  </Accordion>
+
+  <Accordion title="Feature Toggled">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `feature_id` | string | Feature UUID |
+    | `is_active` | boolean | New active state |
+  </Accordion>
+
+  <Accordion title="Industry Filter Changed">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `industry` | string | Selected industry filter |
+  </Accordion>
+</AccordionGroup>
+
+## AI Events
+
+<AccordionGroup>
+  <Accordion title="AI Chat Sent">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `message_length` | number | Character count of message |
+    | `has_playbook_context` | boolean | Whether playbook context was attached |
+  </Accordion>
+
+  <Accordion title="AI Chat Response Received">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `response_time_ms` | number | Response latency |
+  </Accordion>
+
+  <Accordion title="AI Script Generated">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Playbook UUID |
+    | `industry` | string | Industry vertical |
+    | `persona` | string | Target persona |
+  </Accordion>
+
+  <Accordion title="AI Enrichment Completed">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `playbook_id` | string | Playbook UUID |
+    | `prompt_count` | number | Prompts enriched |
+  </Accordion>
+
+  <Accordion title="AI Scenarios Recommended">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `industry` | string | Industry vertical |
+    | `persona` | string | Target persona |
+    | `count` | number | Recommendations returned |
+  </Accordion>
+
+  <Accordion title="NL Builder Used">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `description_length` | number | Natural language description length |
+  </Accordion>
+
+  <Accordion title="AI Template Refined">
+    | Property | Type | Description |
+    |----------|------|-------------|
+    | `template_id` | string | Refined template UUID |
+  </Accordion>
+</AccordionGroup>

@@ -44,12 +44,16 @@ export function ChatMessage({ message }: ChatMessageProps) {
             );
           }
           if (part.type === "tool-segmentKnowledge") {
+            const input = (part.state === "input-available" || part.state === "output-available")
+              ? (part.input as { topic?: string })
+              : null;
+            const label = input?.topic ?? "Segment docs";
             return (
               <div
                 key={i}
                 className="my-1 rounded border border-border/50 bg-background/50 px-2 py-1 text-xs text-muted-foreground"
               >
-                Looking up: {((part as unknown as { args?: { topic?: string } }).args?.topic) ?? "Segment docs"}
+                Looking up: {label}
               </div>
             );
           }

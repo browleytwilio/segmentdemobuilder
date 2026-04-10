@@ -1,0 +1,22 @@
+---
+title: Migrations
+description: Database migration history.
+icon: clock-rotate-left
+---
+
+# Migration History
+
+The database schema is built incrementally through 6 migrations, each stored in `supabase/migrations/`.
+
+| # | File | Description |
+|---|------|-------------|
+| 1 | `001_create_tables.sql` | Creates `playbook_status` enum, `profiles` table (1:1 with `auth.users`), `playbooks` table with JSONB columns, and `idx_playbooks_user_id` index |
+| 2 | `002_rls_and_triggers.sql` | Enables RLS on `profiles` and `playbooks`, creates ownership policies (SELECT/INSERT/UPDATE/DELETE), the `handle_new_user()` trigger for auto-profile creation, and `update_updated_at()` triggers |
+| 3 | `003_draft_pruning.sql` | Adds a `pg_cron` scheduled job that deletes `draft` playbooks older than 30 days to prevent stale data accumulation |
+| 4 | `004_public_share_policy.sql` | Adds a public SELECT policy on `playbooks` allowing anonymous access to `completed` playbooks (enables the `/share/[playbook_id]` route) |
+| 5 | `005_admin_cms.sql` | Adds `user_role` enum and `role` column to `profiles`, creates `promote_prime_admin()` trigger, adds `prompt_templates` table with versioning, creates admin RLS policies, and the `admin_users_with_playbook_count()` RPC function |
+| 6 | `006_demo_features_and_seeds.sql` | Creates `demo_features` table with `UNIQUE(industry, slug)` constraint, adds RLS policies, seeds 9 scenario prompt templates and 9 corresponding demo features across all 4 industries |
+
+<Info>
+  Migrations are applied in order via the Supabase CLI (`supabase db push`). Each migration is idempotent — applying it multiple times has no effect.
+</Info>

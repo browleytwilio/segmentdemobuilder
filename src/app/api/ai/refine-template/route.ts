@@ -1,4 +1,5 @@
-import { streamText } from "ai";
+import { generateText } from "ai";
+import { z } from "zod/v4";
 import { MODELS } from "@/lib/ai/config";
 import { requireAuthForAI } from "@/lib/ai/auth";
 import { aiGenerateRatelimit } from "@/lib/ai/rate-limit";
@@ -6,10 +7,10 @@ import { buildRefineTemplateSystemPrompt } from "@/lib/ai/system-prompts";
 
 export const maxDuration = 60;
 
-interface RefineRequestBody {
-  templateContent: string;
-  instruction: string;
-}
+const refineBodySchema = z.object({
+  templateContent: z.string().min(1).max(50000),
+  instruction: z.string().min(1).max(1000),
+});
 
 export async function POST(req: Request) {
   const auth = await requireAuthForAI();
@@ -24,14 +25,27 @@ export async function POST(req: Request) {
     }
   }
 
-  const { templateContent, instruction } =
-    (await req.json()) as RefineRequestBody;
+  const body = refineBodySchema.safeParse(await req.json());
+  if (!body.success) {
+    return Response.json({ error: "Invalid request body" }, { status: 400 });
+  }
 
-  const result = streamText({
-    model: MODELS.chat,
-    system: buildRefineTemplateSystemPrompt(),
-    prompt: `## Current Template\n\n${templateContent}\n\n## Instruction\n\n${instruction}`,
-  });
+  try {
+    const result = await generateText({
+      model: MODELS.fast,
+      system: buildRefineTemplateSystemPrompt(),
+      prompt: `## Current Template\n\n${body.data.templateContent}\n\n## Instruction\n\n${body.data.instruction}`,
+      providerOptions: {
+        gateway: { user: auth.user!.id, tags: ["refine-template"] },
+      },
+    });
 
-  return result.toUIMessageStreamResponse();
+    return Response.json({ refinedContent: result.text });
+  } catch (err) {
+    console.error("[ai/refine-template] Error:", err);
+    return Response.json(
+      { error: "Failed to refine template" },
+      { status: 502 }
+    );
+  }
 }

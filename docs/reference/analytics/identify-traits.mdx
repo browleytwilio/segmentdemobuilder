@@ -1,0 +1,58 @@
+---
+title: Identify Traits
+description: User traits sent with analytics.identify() calls.
+icon: user
+---
+
+# Identify Traits
+
+The platform identifies users in Segment using `analytics.identify()` with a set of standard traits. This page documents the trait schema and when identification occurs.
+
+## SegmentUserTraits Interface
+
+```typescript
+interface SegmentUserTraits {
+  email: string;           // User's email address (always sent)
+  role?: "user" | "super_admin";  // Access control role (optional)
+  created_at?: string;     // Account creation timestamp (optional)
+}
+```
+
+| Trait | Type | Required | Description |
+|-------|------|----------|-------------|
+| `email` | string | Yes | User's email address |
+| `role` | `"user"` or `"super_admin"` | No | Platform role |
+| `created_at` | string | No | ISO 8601 timestamp of account creation |
+
+## When Identify Fires
+
+Identification happens in two scenarios:
+
+### After Login (AnalyticsProvider)
+
+The `AnalyticsProvider` component checks for a Supabase session on mount. If a session exists and the user hasn't been identified yet in this session:
+
+```typescript
+identifyUser(user.id, {
+  email: user.email,
+  role: profile.role,
+  created_at: profile.created_at,
+});
+```
+
+### After OAuth Callback
+
+OAuth authentication happens server-side, so a bridge mechanism is needed:
+
+1. The `/auth/callback` route sets a cookie `x-analytics-identify` with a 30-second TTL
+2. After redirect, the `AnalyticsProvider` detects this cookie
+3. It calls `analytics.identify()` with the user's traits
+4. The cookie is consumed (deleted)
+
+## Reset on Sign-Out
+
+When the user signs out, `analytics.reset()` is called. This:
+
+- Generates a new anonymous ID
+- Clears the current user identity
+- Ensures subsequent events are not attributed to the signed-out user

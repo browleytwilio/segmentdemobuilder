@@ -1,0 +1,65 @@
+---
+title: Row Level Security
+description: How Supabase RLS policies enforce data isolation.
+icon: table-cells-row-lock
+---
+
+# Row Level Security
+
+Every table in the database has Row Level Security (RLS) enabled. RLS policies are enforced at the PostgreSQL level, meaning they apply regardless of how the data is accessed — through the Supabase client, direct SQL, or the REST API.
+
+## How RLS Works
+
+When a query executes, PostgreSQL checks the caller's identity (`auth.uid()`) and role (`profiles.role`) against the policy conditions. Rows that don't match the conditions are invisible to the caller.
+
+## Policy Summary
+
+### profiles
+
+| Policy | Operation | Who Can Access | Condition |
+|--------|-----------|---------------|-----------|
+| Own profile | SELECT, UPDATE | Owner | `id = auth.uid()` |
+| All profiles | SELECT | Super-admins | Caller's role = `super_admin` |
+| Role updates | UPDATE | Super-admins | Caller's role = `super_admin` |
+
+A regular user can only see and update their own profile. Super-admins can see all profiles and change roles.
+
+### playbooks
+
+| Policy | Operation | Who Can Access | Condition |
+|--------|-----------|---------------|-----------|
+| Own playbooks | SELECT, INSERT, UPDATE, DELETE | Owner | `user_id = auth.uid()` |
+| Public share | SELECT | Anyone (including anonymous) | `status = 'completed'` |
+
+Users can only access their own playbooks. The public share policy allows anonymous read access to completed playbooks, enabling the `/share/[playbook_id]` route.
+
+<Info>
+  Super-admins do **not** have cross-user playbook access. The RLS policies enforce strict ownership — admin privileges are limited to user/template/feature management.
+</Info>
+
+### prompt_templates
+
+| Policy | Operation | Who Can Access | Condition |
+|--------|-----------|---------------|-----------|
+| View templates | SELECT | All authenticated users | `true` (any authenticated user) |
+| Create templates | INSERT | Super-admins only | Caller's role = `super_admin` |
+| Edit templates | UPDATE | Super-admins only | Caller's role = `super_admin` |
+
+All authenticated users can read templates (needed during compilation). Only super-admins can create or modify them.
+
+### demo_features
+
+| Policy | Operation | Who Can Access | Condition |
+|--------|-----------|---------------|-----------|
+| View features | SELECT | All authenticated users | `true` (any authenticated user) |
+| Create features | INSERT | Super-admins only | Caller's role = `super_admin` |
+| Edit features | UPDATE | Super-admins only | Caller's role = `super_admin` |
+
+Same pattern as `prompt_templates` — readable by all, writable by admins only.
+
+## Key Security Properties
+
+1. **No data leakage between users** — RLS ensures users can never see each other's playbooks, even via direct API access
+2. **Admin scope is limited** — Admins manage templates, features, and roles — not other users' playbooks
+3. **Anonymous access is read-only** — The public share policy only allows SELECT on completed playbooks
+4. **Role checks are consistent** — Admin policies use a subquery `(SELECT role FROM profiles WHERE id = auth.uid())` to verify the caller's role at query time

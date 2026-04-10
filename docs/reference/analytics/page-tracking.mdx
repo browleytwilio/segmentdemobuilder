@@ -1,0 +1,58 @@
+---
+title: Page Tracking
+description: Automatic page view tracking via the AnalyticsProvider.
+icon: eye
+---
+
+# Page Tracking
+
+The platform automatically tracks page views using Segment's `analytics.page()` method, fired on every Next.js route change.
+
+## How It Works
+
+The `AnalyticsProvider` component wraps the application and listens for route changes via Next.js navigation events. On each route transition, it calls:
+
+```typescript
+trackPage(pageName, properties);
+```
+
+Which maps to:
+
+```typescript
+window.analytics.page(name, properties);
+```
+
+## Page Properties
+
+Contextual properties are included when available:
+
+```typescript
+interface SegmentPageProperties {
+  playbook_id?: string;     // When viewing a specific playbook
+  industry?: string;        // When context includes an industry
+  status?: string;          // Playbook status (draft/completed)
+  total_playbooks?: number; // On the dashboard
+  drafts?: number;          // Draft count on dashboard
+  completed?: number;       // Completed count on dashboard
+}
+```
+
+| Property | Type | When Included |
+|----------|------|---------------|
+| `playbook_id` | string | Playbook viewer, compilation, share pages |
+| `industry` | string | Playbook viewer, builder wizard |
+| `status` | string | Playbook viewer |
+| `total_playbooks` | number | Dashboard |
+| `drafts` | number | Dashboard |
+| `completed` | number | Dashboard |
+
+## Analytics.js Loading
+
+The analytics.js snippet is loaded via the `loadAnalytics()` function:
+
+1. Creates method stubs for all analytics methods (`track`, `page`, `identify`, `group`, `reset`, etc.)
+2. Queues calls made before the SDK finishes loading
+3. Injects the analytics.js script tag from Segment's CDN
+4. Once loaded, flushes the queue and processes new calls directly
+
+The write key is configured via the `NEXT_PUBLIC_SEGMENT_WRITE_KEY` environment variable.

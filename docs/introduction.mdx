@@ -1,0 +1,80 @@
+---
+title: Introduction
+description: The intelligent prompt compiler that transforms custom Segment CDP demo creation from days to minutes.
+icon: hand-wave
+---
+
+# Segment Demo Builder
+
+The Segment Demo Builder is an intelligent prompt compiler and sales-enablement platform that generates sequenced AI build prompts for creating custom Segment CDP demos. Instead of spending days manually building demo applications, Sales Engineers configure a demo through a guided wizard and receive a set of copy-paste prompts that instruct Claude Code to build a fully working demo.
+
+## The Problem
+
+Building custom Segment CDP demos has historically been painful:
+
+- **Time-intensive** — 2-3 days of SE engineering work per custom demo
+- **Demo rot** — Static demo repos suffer from dependency drift and quickly become obsolete
+- **AI unreliability** — Generic AI coding struggles with complex architectures, hallucinating package versions and creating dependency conflicts
+
+## The Solution
+
+The Demo Builder acts as an opinionated architect that removes guesswork:
+
+- **Dynamic NPM version resolution** — Fetches the latest stable versions at compile time
+- **Industry-specific templates** — Managed prompt templates with `{{VARIABLE}}` substitution
+- **Strict build sequencing** — Prompts are ordered so each step builds on the last
+- **Credential security** — API keys are never persisted to the database
+
+<CardGroup cols={3}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Build your first demo in 5 minutes
+  </Card>
+  <Card title="How It Works" icon="gears" href="/concepts/how-it-works">
+    Understand the end-to-end flow
+  </Card>
+  <Card title="Admin Guide" icon="shield-keyhole" href="/admin/overview">
+    Manage templates and users
+  </Card>
+</CardGroup>
+
+## Who Is This For?
+
+| Role | What You'll Use |
+|------|----------------|
+| **Sales Engineers** | Builder Wizard, Playbook Viewer, Demo Scripts |
+| **SE Managers** | Dashboard, Sharing, Analytics |
+| **Platform Admins** | Template Editor, Feature Configurator, User Management |
+
+## Key Features
+
+<AccordionGroup>
+  <Accordion title="4-Step Builder Wizard">
+    Configure your demo's customer context, architecture options, personalization scenarios, and credentials through a guided, validated form.
+  </Accordion>
+  <Accordion title="Intelligent Compilation Engine">
+    The compiler fetches live NPM versions, merges database-driven templates with your configuration, and produces sequenced prompts with real code blocks.
+  </Accordion>
+  <Accordion title="9 Scenario Templates">
+    Pre-built personalization scenarios across E-commerce, B2B SaaS, FinTech, and Media & Entertainment — each with complete code, click paths, and "Aha!" moments.
+  </Accordion>
+  <Accordion title="Credential Security">
+    API keys live only in browser memory during your session. The database stores only sanitized placeholders. Re-inject keys anytime via the Rehydration Modal.
+  </Accordion>
+  <Accordion title="SE Demo Scripts">
+    Auto-generated presentation narratives with setup checklists, per-scenario click paths, and closing statements — ready to present to prospects.
+  </Accordion>
+  <Accordion title="Admin CMS">
+    Super-admins manage prompt templates in a Monaco code editor, configure per-industry features, and control user roles — all with versioning and validation.
+  </Accordion>
+</AccordionGroup>
+
+## Tech Stack
+
+The platform is built on modern, production-grade infrastructure:
+
+- **Next.js 16** with React 19 and TypeScript
+- **Supabase** for authentication, database, and Row Level Security
+- **Tailwind CSS 4** with shadcn/ui components
+- **Zustand** for client-side state management
+- **Segment Analytics** for product telemetry (dogfooding)
+- **Vercel** for deployment and edge functions

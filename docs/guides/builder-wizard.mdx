@@ -1,0 +1,101 @@
+---
+title: Builder Wizard
+description: Detailed guide to every field, validation rule, and feature of the 4-step wizard.
+icon: hat-wizard
+---
+
+# Builder Wizard
+
+The Builder Wizard is a 4-step progressive form that collects all the configuration needed to compile a demo playbook. Each step validates its inputs before allowing navigation to the next.
+
+## Wizard Overview
+
+The wizard maintains state in a [Zustand store](/reference/builder-state) with localStorage persistence. You can close the browser and return later — your progress (except credentials) is preserved.
+
+<Tabs>
+  <Tab title="Step 1: Context">
+    **Purpose:** Define the customer, target persona, and industry vertical.
+
+    | Field | Type | Validation | Description |
+    |-------|------|------------|-------------|
+    | Customer Name | Text input | Min 2 characters | The demo customer's company name (used in generated code and templates) |
+    | Persona | Select dropdown | Required, one of 4 options | Who you're presenting to — affects the demo script narrative |
+    | Industry | Select dropdown | Required, one of 4 options | Determines which scenarios are available in Step 3 |
+
+    **Persona options:** CMO, CTO / Engineering, Product Manager, Data Team
+
+    **Industry options:** E-commerce / Retail, B2B SaaS, FinTech, Media & Entertainment
+
+    <Tip>
+      The customer name appears throughout the generated demo — in UI headings, Segment event properties, and the demo script. Choose something realistic for your prospect.
+    </Tip>
+  </Tab>
+
+  <Tab title="Step 2: Architecture">
+    **Purpose:** Toggle optional structural features for the demo.
+
+    | Feature | Default | Description |
+    |---------|---------|-------------|
+    | SE Sidebar | On | Real-time event debug panel. Highly recommended for live demos. |
+    | Seeded Profiles | On | Pre-populated mock users. Ensures traits exist for demo scenarios. |
+    | Profile API | Off | Enables server-side trait lookups. Required for certain B2B/FinTech scenarios. |
+    | Intent Predictions | Off | Reads Segment Predictions scores. Requires Profile API. |
+
+    Toggling **Profile API** on makes the Profile Token required in Step 4. Toggling **Intent Predictions** on auto-enables Profile API.
+  </Tab>
+
+  <Tab title="Step 3: Scenarios">
+    **Purpose:** Select personalization use cases for the demo.
+
+    The available scenarios are fetched dynamically from the `demo_features` database table, filtered by the industry selected in Step 1. Each scenario shows:
+
+    - **Label** — Human-readable name
+    - **Description** — One-line summary of what it demonstrates
+
+    Select one or more scenarios using the checkboxes. If a scenario requires specific architecture features (like Profile API), ensure they're enabled in Step 2.
+
+    <Info>
+      Selecting **Second-Page Personalization** automatically enables the `enableSecondPagePers` architecture flag.
+    </Info>
+  </Tab>
+
+  <Tab title="Step 4: Credentials">
+    **Purpose:** Enter the API keys and tokens needed to build a working demo.
+
+    | Field | Required | Validation | Source |
+    |-------|----------|------------|--------|
+    | Segment Write Key (Frontend) | Yes | Min 10 chars | Segment → Sources → JS Source → Write Key |
+    | Segment Write Key (Backend) | No | — | Segment → Sources → Node Source → Write Key |
+    | Segment Workspace API Token | Yes | Min 10 chars | Segment → Settings → API Access |
+    | Segment Profile API Token | Conditional | Required if Profile API enabled | Segment → Unify → Profile API |
+    | Supabase URL | Yes | Valid URL with `.supabase.co` | Supabase → Settings → API |
+    | Supabase Anon Key | Yes | Must start with `eyJ` | Supabase → Settings → API |
+
+    <Warning>
+      Credentials are held in browser memory only and are **never saved to the database**. If you close the tab, you'll need to re-enter them via the Rehydration Modal when you reopen the playbook.
+    </Warning>
+  </Tab>
+</Tabs>
+
+## Navigation
+
+- **Next** — Validates the current step and advances. Shows validation errors if fields are invalid.
+- **Back** — Returns to the previous step without re-validating. Your inputs are preserved.
+- **Step indicators** — The stepper at the top shows your current position and completed steps.
+
+## Animations
+
+Step transitions use Framer Motion spring animations. The animation direction (slide left/right) reflects whether you're going forward or backward.
+
+## State Reset
+
+To start a fresh wizard, you can reset the store. This clears all persisted context, architecture, and scenario selections. Credentials (which are memory-only) are also cleared.
+
+## After Submission
+
+Clicking **Generate Playbook** on Step 4:
+
+1. Creates a `draft` playbook in the database with your configuration
+2. Redirects to `/builder/compile/[playbook_id]`
+3. The [Compilation Engine](/concepts/compilation) runs automatically
+4. On success, redirects to the Playbook Viewer

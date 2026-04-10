@@ -1,0 +1,111 @@
+---
+title: Create a Custom Scenario
+description: Admin tutorial — create a new scenario template and feature from scratch.
+icon: wand-magic-sparkles
+---
+
+# Create a Custom Scenario
+
+<Snippet file="admin-only.mdx" />
+
+This tutorial walks through creating a new scenario from scratch: writing the prompt template in the Monaco editor, creating a demo feature entry, and testing it by generating a playbook.
+
+## Overview
+
+Creating a new scenario involves two linked records:
+
+1. **Prompt Template** — The actual AI prompt text with `{{VARIABLE}}` placeholders
+2. **Demo Feature** — The wizard entry that links the template to an industry and makes it selectable
+
+## Step-by-Step
+
+<Steps>
+  <Step title="Plan Your Scenario">
+    Before writing the template, define:
+
+    - **Industry** — Which vertical will this scenario appear in?
+    - **Slug** — A kebab-case identifier (e.g., `loyalty-tier-upsell`)
+    - **What Segment calls it uses** — `track`, `identify`, `group`, Profile API reads, etc.
+    - **What UI it builds** — Component(s) that demonstrate the personalization
+    - **The "Aha!" moment** — What visual proof point will impress the prospect?
+  </Step>
+
+  <Step title="Create the Prompt Template">
+    Navigate to **Admin → Prompt Templates** (`/admin/prompts`).
+
+    1. Click **+ New Template**
+    2. Set the name (e.g., "Loyalty Tier Upsell")
+    3. Set the category to `scenario`
+    4. Write the template content in the Monaco editor
+
+    Structure your template with these sections:
+
+    ```markdown
+    # Scenario: Loyalty Tier Upsell
+
+    Build a component that shows upgrade incentives based on the user's loyalty tier.
+
+    ## 1. Track Loyalty Events
+
+    [Segment tracking code with {{CUSTOMER_NAME}} and {{SEGMENT_WRITE_KEY}}]
+
+    ## 2. UI Component
+
+    [React component code with real file paths]
+
+    ## 3. Integration
+
+    [How to wire the component into the demo app]
+    ```
+
+    <Tip>
+      Use `{{VARIABLE}}` placeholders for credentials and customer-specific values. See the [Template Variables Reference](/reference/templates/variables) for all 17 valid variables.
+    </Tip>
+  </Step>
+
+  <Step title="Validate and Save">
+    Click **Save**. The editor runs variable validation before saving:
+
+    - If all `{{VARIABLE}}` placeholders are valid → saves successfully with version 1
+    - If any invalid variables are found → a toast error shows which variables are unrecognized
+
+    The old version (if updating an existing template) is archived (`is_active = false`) and a new version is created.
+  </Step>
+
+  <Step title="Create the Demo Feature">
+    Navigate to **Admin → Feature Configurator** (`/admin/config`).
+
+    1. Select the target industry from the dropdown
+    2. Click **Add Feature**
+    3. Fill in the details:
+
+    | Field | Value |
+    |-------|-------|
+    | Slug | `loyalty-tier-upsell` |
+    | Label | `Loyalty Tier Upsell` |
+    | Description | `Show upgrade incentives based on loyalty tier traits` |
+    | Prompt Template | Select the template you just created |
+    | Display Order | Set the position in the wizard's scenario list |
+
+    4. Click **Save**
+  </Step>
+
+  <Step title="Test Your Scenario">
+    1. Open the **Builder Wizard** in a new tab
+    2. In Step 1, select the industry you configured
+    3. In Step 3, verify your new scenario appears in the list
+    4. Select it along with any other scenarios
+    5. Complete the wizard and compile
+    6. In the Playbook Viewer, verify your scenario appears as a prompt step with correct variable substitution
+  </Step>
+</Steps>
+
+## Template Authoring Tips
+
+- Always include **exact file paths** (e.g., `src/components/loyalty/tier-badge.tsx`)
+- Include **complete code blocks** — don't leave implementation to the AI
+- Use `{{NPM_*_VERSION}}` variables for any package versions
+- Add a **verification step** at the end ("Run the dev server and navigate to...")
+- Write **defensive constraints** ("DO NOT modify the existing layout" or "DO NOT install additional packages")
+
+See the full [Template Authoring Guide](/admin/template-authoring) for best practices and common pitfalls.

@@ -1,0 +1,122 @@
+---
+title: Compilation Errors
+description: Diagnosing and resolving compilation failures.
+icon: triangle-exclamation
+---
+
+# Compilation Errors
+
+The compilation engine can fail at four stages. This page covers the most common errors at each stage and how to resolve them.
+
+## Compilation Stages
+
+The compiler progresses through these stages in order:
+
+1. **Loading** — Fetch NPM package versions
+2. **Compiling** — Fetch templates and build prompts
+3. **Saving** — PATCH the playbook with compiled prompts
+4. **Redirecting** — Navigate to the Playbook Viewer
+
+If compilation fails, the UI shows which stage failed and offers a **Retry** button.
+
+## Stage 1: Loading Errors
+
+<AccordionGroup>
+  <Accordion title="NPM registry timeout">
+    **Symptom:** Compilation sticks on "Loading" for more than 10 seconds.
+
+    **Cause:** The `/api/dependencies/versions` endpoint couldn't reach the NPM registry.
+
+    **Resolution:** The API automatically falls back to hardcoded versions after a timeout. If the UI doesn't progress, click **Retry**. The fallback versions are recent and will produce valid prompts.
+  </Accordion>
+
+  <Accordion title="Rate limit exceeded (429)">
+    **Symptom:** Loading fails with a rate limit error.
+
+    **Cause:** More than 100 requests were made to the versions API within 10 minutes (from your IP).
+
+    **Resolution:** Wait a few minutes and retry. The rate limit window is 10 minutes. This is rare in normal usage and typically indicates automated tooling or rapid recompilation.
+  </Accordion>
+</AccordionGroup>
+
+## Stage 2: Compiling Errors
+
+<AccordionGroup>
+  <Accordion title="Template fetch failed">
+    **Symptom:** Compilation fails at the "Compiling" stage with a template-related error.
+
+    **Cause:** The selected scenario features couldn't be joined with their prompt templates. This happens if:
+    - A `demo_features` row references a `prompt_template_id` that doesn't exist
+    - The linked template has `is_active = false`
+    - A database connection issue
+
+    **Resolution:**
+    1. If you're an admin, check the [Feature Configurator](/admin/feature-configurator) — ensure each feature links to an active template
+    2. Retry the compilation
+    3. If the issue persists, try deselecting the problematic scenario and compiling with the remaining ones
+  </Accordion>
+
+  <Accordion title="No scenarios selected">
+    **Symptom:** Compilation succeeds but produces only 3 foundation prompts (no scenario prompts).
+
+    **Cause:** You didn't select any scenarios in Wizard Step 3.
+
+    **Resolution:** This is valid — the playbook will scaffold the base demo without personalization scenarios. If you intended to include scenarios, start a new wizard session and select them in Step 3.
+  </Accordion>
+
+  <Accordion title="Invalid template variables">
+    **Symptom:** Compiled prompts contain literal `{{VARIABLE_NAME}}` text instead of substituted values.
+
+    **Cause:** The template contains variable names that don't match the template context. This shouldn't happen if the admin editor's validation is working, but could occur if templates were inserted directly into the database.
+
+    **Resolution:** An admin should check the template in the [Prompt Template Editor](/admin/prompt-template-editor). The editor validates variables on save — resaving the template will catch any invalid variables.
+  </Accordion>
+</AccordionGroup>
+
+## Stage 3: Saving Errors
+
+<AccordionGroup>
+  <Accordion title="Authentication expired">
+    **Symptom:** Saving fails with a 401 error.
+
+    **Cause:** Your Supabase session expired during compilation.
+
+    **Resolution:** Refresh the page, log in again, and restart the wizard. Your wizard state (except credentials) is preserved in localStorage.
+  </Accordion>
+
+  <Accordion title="Playbook ownership mismatch">
+    **Symptom:** Saving fails with a 500 error about database update failure.
+
+    **Cause:** The playbook's `user_id` doesn't match your authenticated user ID. This can happen if you somehow navigated to a compilation URL for another user's playbook.
+
+    **Resolution:** Start a new playbook through the wizard. Each user can only compile their own playbooks.
+  </Accordion>
+</AccordionGroup>
+
+## Stage 4: Redirecting Errors
+
+<AccordionGroup>
+  <Accordion title="Redirect fails but compilation succeeded">
+    **Symptom:** The compilation completes (saving succeeds) but the redirect to the Playbook Viewer doesn't happen.
+
+    **Cause:** A client-side navigation error, possibly due to a stale Next.js cache.
+
+    **Resolution:** Navigate manually to `/playbooks/{playbook_id}` or go to the Dashboard and click on the playbook — it should show as `completed`.
+  </Accordion>
+</AccordionGroup>
+
+## General Troubleshooting
+
+<Warning>
+  If compilation fails repeatedly at the same stage, check the browser's developer console (F12 → Console) for detailed error messages. These provide more context than the UI error display.
+</Warning>
+
+**When to retry vs. start over:**
+
+| Situation | Action |
+|-----------|--------|
+| Network timeout | Retry (transient issue) |
+| Rate limit | Wait 10 minutes, then retry |
+| Template error | Fix the template (admin), then retry |
+| Auth expired | Log in again, start new wizard session |
+| Repeated failures | Check browser console, then start over |

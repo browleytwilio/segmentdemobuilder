@@ -1,8 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { CopilotChat } from "./copilot-chat";
+import dynamic from "next/dynamic";
 import { CopilotTrigger } from "./copilot-trigger";
+
+const CopilotChat = dynamic(
+  () => import("./copilot-chat").then((m) => m.CopilotChat),
+  { ssr: false }
+);
 
 export function CopilotWrapper() {
   const [open, setOpen] = useState(false);
@@ -10,7 +15,7 @@ export function CopilotWrapper() {
   return (
     <>
       <CopilotTrigger open={open} onToggle={() => setOpen(true)} />
-      <CopilotChat open={open} onClose={() => setOpen(false)} />
+      {open && <CopilotChat open={open} onClose={() => setOpen(false)} />}
     </>
   );
 }

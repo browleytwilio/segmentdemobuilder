@@ -1,0 +1,85 @@
+---
+title: Playbook Viewer
+description: Using the viewer to review prompts, track progress, and export.
+icon: book-open
+---
+
+# Playbook Viewer
+
+The Playbook Viewer is where you interact with your compiled playbook — reviewing prompts, copying them into Claude Code, tracking your progress, and exporting materials.
+
+## Layout
+
+The viewer has two tabs:
+
+- **Build Prompts** — The primary view with prompt cards and progress tracking
+- **SE Demo Script** — Auto-generated presentation narrative
+
+### Build Prompts Tab
+
+The Build Prompts view has a two-column layout:
+
+- **Left sidebar** — Step stepper showing all prompt steps with completion status
+- **Right panel** — The active prompt card with full details
+
+On mobile, the stepper collapses into a horizontal scrollable bar.
+
+## Prompt Cards
+
+Each prompt step is displayed as a card containing:
+
+<Steps>
+  <Step title="Step Title">
+    The prompt's name and sequential number (e.g., "Step 3: Architecture Setup").
+  </Step>
+
+  <Step title="Prompt Text">
+    The full AI prompt in a dark code block with syntax highlighting. Any `YOUR_*` placeholder text is highlighted with a red background for visibility.
+  </Step>
+
+  <Step title="Copy Button">
+    Copies the entire prompt text to your clipboard. A toast confirms the copy.
+  </Step>
+
+  <Step title="Expected Output">
+    A collapsible section describing what Claude Code should produce after executing this prompt.
+  </Step>
+
+  <Step title="Troubleshooting">
+    A collapsible accordion with common issues and fixes for this step type.
+  </Step>
+
+  <Step title="Mark Complete">
+    Marks the step as done and auto-advances to the next incomplete step. Completion state is stored in localStorage per playbook.
+  </Step>
+</Steps>
+
+## Progress Tracking
+
+- Completed steps show a green checkmark in the stepper
+- The viewer auto-scrolls to the first incomplete step on load
+- Progress is stored in `localStorage` keyed by `playbook_id`
+- Progress persists across browser sessions
+
+## Rehydration
+
+If the viewer detects `YOUR_*` placeholders in the prompt text, the [Rehydration Modal](/tutorials/rehydrate-playbook) appears automatically. You can inject your real credentials or skip to view the sanitized version.
+
+## Export
+
+Two export options are available:
+
+| Export | Format | Contents |
+|--------|--------|----------|
+| **Export Prompts** | Markdown (.md) | All prompt steps with titles and text |
+| **Export Demo Script** | Markdown (.md) | The SE Demo Script narrative |
+
+## Sharing
+
+Click the **Share** button to copy a public link to your clipboard. The link format is:
+
+```
+https://segment-demo-builder.vercel.app/share/{playbook_id}
+```
+
+Recipients can view the sanitized playbook without authentication. See [Share a Playbook](/tutorials/share-playbook) for details.

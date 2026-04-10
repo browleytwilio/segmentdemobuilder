@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { HomeHero } from "./home-hero";
 import { HomeFeatures } from "./home-features";
 import { HomeHowItWorks } from "./home-how-it-works";
@@ -10,14 +8,7 @@ import { LogoCloud } from "@/components/marketing/sections/logo-cloud";
 import { SectionWrapper } from "@/components/marketing/sections/section-wrapper";
 import { logoCompanies } from "@/lib/marketing/data/testimonials";
 
-export default async function MarketingHomePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (user) redirect("/dashboard");
-
+export default function MarketingHomePage() {
   return (
     <>
       <HomeHero />

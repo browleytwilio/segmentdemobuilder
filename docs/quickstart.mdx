@@ -1,0 +1,111 @@
+---
+title: Quickstart
+description: Build your first Segment CDP demo in 5 minutes.
+icon: rocket
+---
+
+# Quickstart
+
+This guide walks you through creating your first demo playbook — from signing in to having a set of AI build prompts ready to paste into Claude Code.
+
+## Prerequisites
+
+Before you begin, you'll need:
+
+- A Segment Demo Builder account (sign up or log in at the app)
+- Your Segment workspace credentials (Write Key, Workspace API Token)
+- Your Supabase project credentials (URL, Anon Key)
+- [Claude Code](https://claude.ai/claude-code) installed on your machine
+
+<Info>
+  Don't have credentials yet? You can still complete the wizard — the compilation step will use placeholder values that you can replace later via the [Rehydration Modal](/tutorials/rehydrate-playbook).
+</Info>
+
+## Build Your First Playbook
+
+<Steps>
+  <Step title="Sign In">
+    Navigate to the app and sign in using email/password, a magic link, or Google/GitHub OAuth. You'll land on the **Dashboard**.
+  </Step>
+
+  <Step title="Start the Builder Wizard">
+    Click **New Playbook** from the dashboard header or empty state. This opens the 4-step Builder Wizard.
+  </Step>
+
+  <Step title="Step 1 — Configure Context">
+    Fill in your demo details:
+    - **Customer Name** — The company name for the demo (e.g., "Acme Corp")
+    - **Persona** — Who you're presenting to (CMO, CTO / Engineering, Product Manager, or Data Team)
+    - **Industry** — The demo vertical (E-commerce / Retail, B2B SaaS, FinTech, or Media & Entertainment)
+
+    Click **Next** to proceed.
+  </Step>
+
+  <Step title="Step 2 — Choose Architecture">
+    Toggle optional architecture features:
+    - **SE Sidebar** — Real-time event stream debug panel (recommended)
+    - **Seeded Profiles** — Pre-populated mock users in Segment Unify
+    - **Profile API** — Real-time trait lookups from Segment
+    - **Intent Predictions** — Segment Predictions for personalization scoring
+
+    Click **Next**.
+  </Step>
+
+  <Step title="Step 3 — Select Scenarios">
+    Choose the personalization scenarios you want in your demo. The available scenarios depend on the industry you selected in Step 1. Select one or more, then click **Next**.
+  </Step>
+
+  <Step title="Step 4 — Enter Credentials">
+    Paste your API keys and tokens:
+    - Segment Write Key (Frontend)
+    - Segment Write Key (Backend) — optional
+    - Segment Workspace API Token
+    - Segment Profile API Token — required only if Profile API is enabled
+    - Supabase URL
+    - Supabase Anon Key
+
+    <Warning>
+      Credentials are held in browser memory only. They are **never saved to the database**. If you close the tab, you'll need to re-enter them via the Rehydration Modal.
+    </Warning>
+
+    Click **Generate Playbook**.
+  </Step>
+
+  <Step title="Compilation">
+    The compiler runs automatically:
+    1. Fetches latest NPM package versions
+    2. Loads scenario templates from the database
+    3. Compiles prompts with your credentials (Variant A)
+    4. Sanitizes credentials to placeholders (Variant B) and saves to database
+    5. Redirects you to the Playbook Viewer
+  </Step>
+
+  <Step title="Use Your Playbook">
+    In the Playbook Viewer:
+    1. Start with **Step 1** — copy the prompt text
+    2. Paste it into **Claude Code** and let it execute
+    3. Once complete, mark the step as done and move to the next
+    4. Repeat for all steps
+
+    <Tip>
+      Use the **SE Demo Script** tab for a ready-made presentation narrative with click paths and "Aha!" moments for each scenario.
+    </Tip>
+  </Step>
+</Steps>
+
+## What's Next?
+
+<CardGroup cols={2}>
+  <Card title="Builder Wizard Deep Dive" icon="hat-wizard" href="/guides/builder-wizard">
+    Learn about every field, validation rule, and tip for each wizard step.
+  </Card>
+  <Card title="Playbook Viewer Guide" icon="book-open" href="/guides/playbook-viewer">
+    Master the viewer — progress tracking, export, and sharing.
+  </Card>
+  <Card title="Scenario Catalog" icon="list-check" href="/reference/templates/scenario-catalog">
+    Browse all 9 built-in scenario templates.
+  </Card>
+  <Card title="Security Model" icon="shield" href="/security/overview">
+    Understand how your credentials are protected.
+  </Card>
+</CardGroup>

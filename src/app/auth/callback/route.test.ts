@@ -1,13 +1,14 @@
 // @vitest-environment node
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-  createMockSupabaseClient,
-} from "@/__test-utils__/mocks/supabase";
 
-const { client: mockClient } = createMockSupabaseClient();
+const mockExchangeCodeForSession = vi.fn();
 
-vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn(() => Promise.resolve(mockClient)),
+vi.mock("@supabase/ssr", () => ({
+  createServerClient: vi.fn(() => ({
+    auth: {
+      exchangeCodeForSession: mockExchangeCodeForSession,
+    },
+  })),
 }));
 
 import { GET } from "./route";
@@ -20,13 +21,13 @@ describe("GET /auth/callback", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Default: exchange succeeds
-    mockClient.auth.exchangeCodeForSession.mockResolvedValue({ error: null });
+    mockExchangeCodeForSession.mockResolvedValue({ error: null });
   });
 
   it("exchanges code for session and redirects to /dashboard on success", async () => {
     const response = await GET(makeRequest());
 
-    expect(mockClient.auth.exchangeCodeForSession).toHaveBeenCalledWith("test-code");
+    expect(mockExchangeCodeForSession).toHaveBeenCalledWith("test-code");
     expect(response.status).toBe(307);
     const location = response.headers.get("location");
     expect(location).toContain("/dashboard");
@@ -42,7 +43,7 @@ describe("GET /auth/callback", () => {
   });
 
   it("redirects to /login with error when exchange fails", async () => {
-    mockClient.auth.exchangeCodeForSession.mockResolvedValue({
+    mockExchangeCodeForSession.mockResolvedValue({
       error: { message: "exchange-failed" },
     });
 

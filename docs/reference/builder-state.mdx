@@ -1,0 +1,115 @@
+---
+title: Builder State
+description: Zustand store shape, persistence behavior, and migration logic.
+icon: database
+---
+
+# Builder State
+
+The Builder Wizard uses a Zustand store with localStorage persistence to maintain wizard progress across page refreshes and browser sessions. Credentials are explicitly excluded from persistence.
+
+## Store Shape
+
+```typescript
+interface BuilderState {
+  // Navigation
+  currentStep: number;           // 0-3 (4 steps)
+
+  // Base Context (Step 1) — Persisted
+  customerName: string;
+  industry: string;
+  persona: string;
+
+  // Architecture (Step 2) — Persisted
+  architecture: DemoArchitecture;
+
+  // Scenarios (Step 3) — Persisted
+  selectedScenarios: string[];   // Array of demo_features UUIDs
+
+  // Credentials (Step 4) — IN-MEMORY ONLY
+  keys: {
+    segmentWriteFrontend: string;
+    segmentWriteBackend: string;
+    segmentWorkspace: string;
+    segmentProfileToken: string;
+    supabaseUrl: string;
+    supabaseAnon: string;
+  };
+
+  // Actions
+  setStep: (step: number) => void;
+  updateContext: (context: Partial<...>) => void;
+  updateArchitecture: (config: Partial<DemoArchitecture>) => void;
+  updateKeys: (keys: Partial<BuilderState["keys"]>) => void;
+  resetStore: () => void;
+}
+```
+
+## DemoArchitecture Interface
+
+```typescript
+interface DemoArchitecture {
+  enableSESidebar: boolean;        // Default: true
+  enableSeededProfiles: boolean;   // Default: true
+  enableProfileAPI: boolean;       // Default: false
+  enableIntentPredictions: boolean; // Default: false
+  enableSecondPagePers: boolean;   // Default: false
+}
+```
+
+## Persistence Behavior
+
+The store uses Zustand's `persist` middleware with `partialize` to control what gets saved to localStorage:
+
+| Field | Persisted | Storage |
+|-------|-----------|---------|
+| `currentStep` | Yes | localStorage |
+| `customerName` | Yes | localStorage |
+| `industry` | Yes | localStorage |
+| `persona` | Yes | localStorage |
+| `architecture` | Yes | localStorage |
+| `selectedScenarios` | Yes | localStorage |
+| `keys` | **No** | Memory only |
+
+The localStorage key is `builder-store`.
+
+## Initial Defaults
+
+| Field | Default Value |
+|-------|---------------|
+| `currentStep` | `0` |
+| `customerName` | `""` |
+| `industry` | `""` |
+| `persona` | `""` |
+| `architecture.enableSESidebar` | `true` |
+| `architecture.enableSeededProfiles` | `true` |
+| `architecture.enableProfileAPI` | `false` |
+| `architecture.enableIntentPredictions` | `false` |
+| `architecture.enableSecondPagePers` | `false` |
+| `selectedScenarios` | `[]` |
+| All `keys.*` fields | `""` |
+
+## Version Migration
+
+The store is at **version 2**. When loading persisted state from an older version:
+
+**v0/v1 → v2:** The `selectedScenarios` array is cleared to `[]`. This is because scenarios changed from slug-based identifiers to UUID-based `demo_features` IDs. Users need to re-select their scenarios on Step 3.
+
+```typescript
+migrate: (persisted, version) => {
+  if (version === 0 || version === 1) {
+    return { ...initialState, ...prev, selectedScenarios: [] };
+  }
+  return persisted;
+}
+```
+
+## Actions
+
+| Action | Description |
+|--------|-------------|
+| `setStep(step)` | Navigate to a specific wizard step (0-3) |
+| `updateContext(partial)` | Update base context fields (customerName, industry, persona, selectedScenarios) |
+| `updateArchitecture(partial)` | Update architecture toggle flags |
+| `updateKeys(partial)` | Update credential fields (in-memory only) |
+| `resetStore()` | Reset all fields to initial defaults, including a fresh keys object |

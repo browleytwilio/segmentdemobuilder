@@ -1,5 +1,5 @@
 import { generateText, Output } from "ai";
-import { z } from "zod";
+import { z } from "zod/v4";
 import { MODELS } from "@/lib/ai/config";
 import { requireAuthForAI } from "@/lib/ai/auth";
 import { aiGenerateRatelimit } from "@/lib/ai/rate-limit";
@@ -26,6 +26,10 @@ const intentSchema = z.object({
   suggestedScenarios: z.array(z.string()),
 });
 
+const parseIntentBodySchema = z.object({
+  description: z.string().min(1).max(2000),
+});
+
 export async function POST(req: Request) {
   const auth = await requireAuthForAI();
   if (auth.error) {
@@ -39,14 +43,35 @@ export async function POST(req: Request) {
     }
   }
 
-  const { description } = (await req.json()) as { description: string };
+  const body = parseIntentBodySchema.safeParse(await req.json());
+  if (!body.success) {
+    return Response.json({ error: "Invalid request body" }, { status: 400 });
+  }
 
-  const { output } = await generateText({
-    model: MODELS.fast,
-    system: buildParseIntentSystemPrompt(),
-    prompt: description,
-    output: Output.object({ schema: intentSchema }),
-  });
+  try {
+    const { output } = await generateText({
+      model: MODELS.fast,
+      system: buildParseIntentSystemPrompt(),
+      prompt: body.data.description,
+      output: Output.object({ schema: intentSchema }),
+      providerOptions: {
+        gateway: { user: auth.user!.id, tags: ["parse-intent"] },
+      },
+    });
 
-  return Response.json(output);
+    if (!output) {
+      return Response.json(
+        { error: "Could not parse description" },
+        { status: 502 }
+      );
+    }
+
+    return Response.json(output);
+  } catch (err) {
+    console.error("[ai/parse-intent] Error:", err);
+    return Response.json(
+      { error: "Could not parse description" },
+      { status: 502 }
+    );
+  }
 }

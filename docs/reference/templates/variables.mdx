@@ -1,0 +1,77 @@
+---
+title: Template Variables
+description: All 17 valid {{VARIABLE}} placeholders for prompt templates.
+icon: brackets-curly
+---
+
+# Template Variables
+
+Prompt templates use `{{VARIABLE_NAME}}` placeholders that are replaced with real values during compilation. Only the 17 variables listed below are valid — the admin editor validates on save and rejects any unrecognized variables.
+
+## Context Variables
+
+| Variable | Source | Example Value |
+|----------|--------|---------------|
+| `{{CUSTOMER_NAME}}` | Wizard Step 1 | `Acme Corp` |
+| `{{INDUSTRY}}` | Wizard Step 1 | `E-commerce / Retail` |
+
+## Credential Variables
+
+| Variable | Source | Placeholder (when empty) |
+|----------|--------|--------------------------|
+| `{{SEGMENT_WRITE_KEY}}` | Wizard Step 4 | `YOUR_SEGMENT_WRITE_KEY` |
+| `{{SEGMENT_BACKEND_WRITE_KEY}}` | Wizard Step 4 | `YOUR_SEGMENT_BACKEND_WRITE_KEY` |
+| `{{SEGMENT_WORKSPACE_TOKEN}}` | Wizard Step 4 | `YOUR_SEGMENT_WORKSPACE_TOKEN` |
+| `{{SEGMENT_PROFILE_TOKEN}}` | Wizard Step 4 | `YOUR_SEGMENT_PROFILE_TOKEN` |
+| `{{SUPABASE_URL}}` | Wizard Step 4 | `YOUR_SUPABASE_URL` |
+| `{{SUPABASE_ANON_KEY}}` | Wizard Step 4 | `YOUR_SUPABASE_ANON_KEY` |
+
+If a credential field is left empty in the wizard, the template engine automatically inserts the `YOUR_*` placeholder value.
+
+## NPM Version Variables
+
+| Variable | Package | Fallback Version |
+|----------|---------|-----------------|
+| `{{NPM_NEXT_VERSION}}` | `next` | 16.2.3 |
+| `{{NPM_REACT_VERSION}}` | `react` | 19.2.4 |
+| `{{NPM_REACT_DOM_VERSION}}` | `react-dom` | 19.2.4 |
+| `{{NPM_TAILWINDCSS_VERSION}}` | `tailwindcss` | 4.0.0 |
+| `{{NPM_FRAMER_MOTION_VERSION}}` | `framer-motion` | 12.38.0 |
+| `{{NPM_ANALYTICS_NEXT_VERSION}}` | `@segment/analytics-next` | 1.76.0 |
+| `{{NPM_SUPABASE_JS_VERSION}}` | `@supabase/supabase-js` | 2.103.0 |
+| `{{NPM_LUCIDE_REACT_VERSION}}` | `lucide-react` | 1.8.0 |
+| `{{NPM_SSR_VERSION}}` | `@supabase/ssr` | 0.10.2 |
+
+## How NPM Variable Names Are Derived
+
+The transformation from package name to variable name follows this algorithm:
+
+1. Strip `@scope/` prefix — `@segment/analytics-next` → `analytics-next`
+2. Replace `.` and `-` with `_` — `analytics-next` → `analytics_next`
+3. Uppercase — `analytics_next` → `ANALYTICS_NEXT`
+4. Prepend `NPM_` and append `_VERSION` — `NPM_ANALYTICS_NEXT_VERSION`
+
+## Validation
+
+The admin template editor runs `validateTemplateVariables()` before saving. This function:
+
+1. Extracts all `{{WORD}}` patterns from the template content using regex
+2. Checks each against the whitelist of 17 valid variables
+3. Returns an array of invalid variable names
+4. If any are invalid, the save is blocked with a toast error
+
+<Warning>
+  Using an invalid variable in a template will **not** cause a runtime error — the placeholder is left as-is in the output (e.g., `{{INVALID_VAR}}` appears literally). However, the admin editor blocks saving templates with invalid variables to prevent this.
+</Warning>
+
+## Substitution Engine
+
+The template engine uses a simple regex-based replacement:
+
+```typescript
+template.replace(/\{\{(\w+)\}\}/g, (match, varName) => {
+  return varName in context ? context[varName] : match;
+});
+```
+
+Unknown variables are left untouched (the regex match is returned as-is). This is safe because the admin editor validates on save, ensuring only known variables exist in production templates.

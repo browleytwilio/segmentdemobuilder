@@ -1,0 +1,103 @@
+---
+title: Prompt Template Editor
+description: Edit AI prompt templates with Monaco Editor, versioning, and validation.
+icon: file-pen
+---
+
+# Prompt Template Editor
+
+<Snippet file="admin-only.mdx" />
+
+The Prompt Template Editor (`/admin/prompts`) provides a code editor interface for managing the AI prompt templates that power demo generation.
+
+## Layout
+
+The editor has a two-panel layout:
+
+- **Left sidebar** — Template list grouped by category (foundation, architecture, scenario)
+- **Right panel** — Monaco code editor with toolbar
+
+## Template Categories
+
+| Category | Editable | Description |
+|----------|----------|-------------|
+| `foundation` | Read-only | Core scaffolding prompts (too complex for template substitution) |
+| `architecture` | Read-only | Architecture feature prompts with conditional logic |
+| `scenario` | Yes | Industry-specific personalization scenario templates |
+
+<Info>
+  Foundation and architecture templates are marked "Code-Managed" in the sidebar. Their logic involves conditional code generation that can't be expressed as simple variable substitution, so they're maintained in the source code.
+</Info>
+
+## Editing a Template
+
+<Steps>
+  <Step title="Select a Template">
+    Click a template name in the left sidebar. The Monaco editor loads its content.
+  </Step>
+
+  <Step title="Edit the Content">
+    Modify the template text in the editor. Use `{{VARIABLE_NAME}}` for dynamic values.
+
+    The editor supports:
+    - Syntax highlighting
+    - Find and replace
+    - Multiple cursors
+    - Bracket matching
+    - Undo/redo
+  </Step>
+
+  <Step title="Save">
+    Click **Save** in the toolbar. Before saving, the editor runs validation:
+
+    1. Extracts all `{{VARIABLE}}` patterns from the content
+    2. Checks each against the [17 valid variables](/reference/templates/variables)
+    3. If invalid variables are found → shows a toast error listing them
+    4. If all valid → saves a new version
+  </Step>
+</Steps>
+
+## Versioning
+
+Every save creates a new version of the template:
+
+1. The current active version is archived (`is_active = false`)
+2. A new row is created with `version` incremented by 1 and `is_active = true`
+3. The `updated_by` field records which admin made the change
+
+This means you can never lose a previous version — they're all retained in the database (just not active).
+
+<Tip>
+  To verify your changes, generate a playbook that uses the updated scenario. The compilation engine always fetches the active version of each template.
+</Tip>
+
+## Creating a New Template
+
+<Steps>
+  <Step title="Click + New Template">
+    Opens a dialog for the template metadata.
+  </Step>
+
+  <Step title="Fill in Details">
+    | Field | Description |
+    |-------|-------------|
+    | Name | Human-readable template name |
+    | Category | Must be `scenario` for new templates |
+  </Step>
+
+  <Step title="Write Content">
+    The editor opens with an empty template. Write your prompt content using `{{VARIABLE}}` placeholders.
+  </Step>
+
+  <Step title="Save">
+    Same validation and versioning as editing an existing template.
+  </Step>
+</Steps>
+
+## Variable Reference Bar
+
+Below the editor, a reference bar displays all 17 valid `{{VARIABLE}}` placeholders for quick reference. Click any variable to copy it.
+
+<Warning>
+  After creating or editing a template, you must also create or update a [Demo Feature](/admin/feature-configurator) entry to make it appear in the Builder Wizard.
+</Warning>
