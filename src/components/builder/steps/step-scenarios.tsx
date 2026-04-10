@@ -8,10 +8,11 @@ import {
   scenariosSchema,
   type ScenariosFormData,
 } from "@/lib/validations/builderSchemas";
-import { getDemoFeaturesForWizard } from "@/app/builder/actions";
+import { getDemoFeaturesForWizard } from "@/app/(app)/builder/actions";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { trackEvent } from "@/lib/analytics/events";
 
 interface DemoFeature {
   id: string;
@@ -39,12 +40,16 @@ export function StepScenarios({ onNext, onBack }: StepScenariosProps) {
       setLoading(false);
       return;
     }
+    let stale = false;
     setLoading(true);
     startTransition(async () => {
       const { data } = await getDemoFeaturesForWizard(industry);
-      setFeatures(data ?? []);
-      setLoading(false);
+      if (!stale) {
+        setFeatures(data ?? []);
+        setLoading(false);
+      }
     });
+    return () => { stale = true; };
   }, [industry]);
 
   const { control, handleSubmit } = useForm<ScenariosFormData>({
@@ -55,6 +60,11 @@ export function StepScenarios({ onNext, onBack }: StepScenariosProps) {
   });
 
   function onValid(data: ScenariosFormData) {
+    trackEvent("Wizard Step Submitted", {
+      step: 3,
+      scenario_count: data.selectedScenarios.length,
+      industry: industry || "",
+    });
     updateContext({ selectedScenarios: data.selectedScenarios });
     // Auto-enable second-page personalization if that scenario's feature is selected
     const selectedSlugs = data.selectedScenarios

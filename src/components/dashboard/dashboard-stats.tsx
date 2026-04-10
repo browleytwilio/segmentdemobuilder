@@ -1,4 +1,8 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import type { PlaybookSummary } from "@/lib/compiler/types";
+import { trackEvent } from "@/lib/analytics/events";
 import {
   Card,
   CardDescription,
@@ -15,6 +19,17 @@ export function DashboardStats({ playbooks }: DashboardStatsProps) {
   const total = playbooks.length;
   const drafts = playbooks.filter((p) => p.status === "draft").length;
   const completed = playbooks.filter((p) => p.status === "completed").length;
+  const tracked = useRef(false);
+
+  useEffect(() => {
+    if (tracked.current) return;
+    tracked.current = true;
+    trackEvent("Dashboard Viewed", {
+      total_playbooks: total,
+      drafts,
+      completed,
+    });
+  }, [total, drafts, completed]);
 
   const stats = [
     { label: "Total Playbooks", value: total, icon: BookOpenIcon },

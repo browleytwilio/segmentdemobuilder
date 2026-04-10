@@ -12,12 +12,13 @@ import {
 import {
   createPlaybook,
   getDemoFeaturesForWizard,
-} from "@/app/builder/actions";
+} from "@/app/(app)/builder/actions";
 import { StepContext } from "./steps/step-context";
 import { StepArchitecture } from "./steps/step-architecture";
 import { StepScenarios } from "./steps/step-scenarios";
 import { StepCredentials } from "./steps/step-credentials";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics/events";
 
 export function BuilderWizard() {
   const router = useRouter();
@@ -37,6 +38,14 @@ export function BuilderWizard() {
     return unsub;
   }, []);
 
+  // Track wizard started once after hydration
+  useEffect(() => {
+    if (!hydrated) return;
+    const hasPersistedState = !!(customerName || industry || persona);
+    trackEvent("Wizard Started", { has_persisted_state: hasPersistedState });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated]);
+
   const { currentStep, direction, goNext, goBack } = useBuilderWizard();
 
   const { customerName, industry, persona, architecture, selectedScenarios } =
@@ -47,9 +56,15 @@ export function BuilderWizard() {
     setSubmitError(null);
 
     // Build scenarioSlugs map: { featureId → slug }
-    const { data: features } = await getDemoFeaturesForWizard(industry);
+    const featuresResult = await getDemoFeaturesForWizard(industry);
+    if (!featuresResult.data) {
+      trackEvent("Playbook Creation Failed", { error: "Failed to load features" });
+      setSubmitError("Failed to load scenario features. Please try again.");
+      setIsSubmitting(false);
+      return;
+    }
     const scenarioSlugs: Record<string, string> = {};
-    for (const f of features ?? []) {
+    for (const f of featuresResult.data) {
       if (selectedScenarios.includes(f.id)) {
         scenarioSlugs[f.id] = f.slug;
       }
@@ -67,11 +82,13 @@ export function BuilderWizard() {
     });
 
     if (result.error) {
+      trackEvent("Playbook Creation Failed", { error: result.error });
       setSubmitError(result.error);
       setIsSubmitting(false);
       return;
     }
 
+    trackEvent("Playbook Created", { playbook_id: result.id! });
     router.push(`/builder/compile/${result.id}`);
   }
 

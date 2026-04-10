@@ -6,9 +6,13 @@ const protectedPrefixes = ["/builder", "/dashboard", "/playbooks", "/admin"];
 export async function proxy(request: NextRequest) {
   const { supabase, response } = createClient(request);
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // Auth check failed — treat as unauthenticated
+  }
 
   const { pathname } = request.nextUrl;
 

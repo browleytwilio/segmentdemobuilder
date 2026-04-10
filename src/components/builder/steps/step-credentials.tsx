@@ -21,6 +21,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { InfoIcon } from "lucide-react";
+import { trackEvent } from "@/lib/analytics/events";
 
 interface StepCredentialsProps {
   onBack: () => void;
@@ -103,6 +104,11 @@ export function StepCredentials({
   const [infoOpen, setInfoOpen] = useState(false);
 
   function onValid(data: CredentialsFormData) {
+    const filledCount = Object.values(data).filter((v) => v && v.length > 0).length;
+    trackEvent("Wizard Step Submitted", {
+      step: 4,
+      fields_provided_count: filledCount,
+    });
     updateKeys(data);
     onSubmit();
   }
@@ -117,7 +123,10 @@ export function StepCredentials({
             in-memory only and never persisted to any database.
           </p>
         </div>
-        <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
+        <Dialog open={infoOpen} onOpenChange={(open) => {
+          setInfoOpen(open);
+          if (open) trackEvent("Credentials Help Opened", {});
+        }}>
           <DialogTrigger
             render={
               <Button type="button" variant="ghost" size="icon-sm" />

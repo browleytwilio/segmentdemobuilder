@@ -19,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { trackEvent } from "@/lib/analytics/events";
 
 type KeyField = keyof typeof SANITIZATION_MAP;
 
@@ -84,11 +85,18 @@ export function RehydrationModal({
   });
 
   function onValid(data: CredentialsFormData) {
+    const filledCount = Object.values(data).filter((v) => v && v.length > 0).length;
+    trackEvent("Keys Injected", { field_count: filledCount });
     onSubmit(data as Record<KeyField, string>);
   }
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onDismiss()}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      if (!isOpen) {
+        trackEvent("Rehydration Skipped", {});
+        onDismiss();
+      }
+    }}>
       <DialogContent showCloseButton={false} className="sm:max-w-lg">
         <form onSubmit={handleSubmit(onValid)}>
           <DialogHeader>
@@ -123,7 +131,10 @@ export function RehydrationModal({
             )}
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onDismiss}>
+            <Button type="button" variant="outline" onClick={() => {
+              trackEvent("Rehydration Skipped", {});
+              onDismiss();
+            }}>
               Skip (use placeholders)
             </Button>
             <Button type="submit">Inject Keys</Button>

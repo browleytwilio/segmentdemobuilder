@@ -50,7 +50,8 @@ export function buildTemplateContext(input: CompilerInput): TemplateContext {
 
   // Add NPM version variables
   for (const [pkg, ver] of Object.entries(input.versions)) {
-    const varName = `NPM_${pkg.replace(/[@/.-]/g, "_").toUpperCase()}_VERSION`;
+    const cleanPkg = pkg.replace(/^@[^/]+\//, ""); // strip @scope/ prefix
+    const varName = `NPM_${cleanPkg.replace(/[.-]/g, "_").toUpperCase()}_VERSION`;
     ctx[varName] = ver;
   }
 

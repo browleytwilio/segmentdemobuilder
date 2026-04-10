@@ -22,6 +22,7 @@ import {
   PrinterIcon,
   ShareIcon,
 } from "lucide-react";
+import { trackEvent } from "@/lib/analytics/events";
 
 interface PlaybookViewerProps {
   playbook: PlaybookRow;
@@ -37,11 +38,19 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
   const { copy } = useClipboard();
 
   // Check if rehydration is needed on mount
+  const requiresRehydration = needsRehydration(playbook.generated_prompts);
   useEffect(() => {
-    if (needsRehydration(playbook.generated_prompts)) {
+    trackEvent("Playbook Viewed", {
+      playbook_id: playbook.id,
+      industry: playbook.industry,
+      status: playbook.status,
+      prompt_count: playbook.generated_prompts.length,
+      needs_rehydration: requiresRehydration,
+    });
+    if (requiresRehydration) {
       setShowRehydration(true);
     }
-  }, [playbook.generated_prompts]);
+  }, [playbook, requiresRehydration]);
 
   // Auto-scroll to first incomplete step on mount
   useEffect(() => {
@@ -61,13 +70,17 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
 
   const handleRehydrate = useCallback(
     (keys: Record<string, string>) => {
-      const rehydrated = rehydratePrompts(
-        playbook.generated_prompts,
-        keys as Parameters<typeof rehydratePrompts>[1]
-      );
-      setPrompts(rehydrated);
-      setShowRehydration(false);
-      toast.success("Keys injected — prompts are ready to use");
+      try {
+        const rehydrated = rehydratePrompts(
+          playbook.generated_prompts,
+          keys as Parameters<typeof rehydratePrompts>[1]
+        );
+        setPrompts(rehydrated);
+        setShowRehydration(false);
+        toast.success("Keys injected — prompts are ready to use");
+      } catch {
+        toast.error("Failed to inject keys. Check your credentials and try again.");
+      }
     },
     [playbook.generated_prompts]
   );
@@ -106,6 +119,7 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
   });
 
   function handleExportPrompts() {
+    trackEvent("Prompts Exported", { playbook_id: playbook.id, format: "markdown" });
     const content = prompts
       .map(
         (p) =>
@@ -119,6 +133,7 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
   }
 
   function handleExportScript() {
+    trackEvent("Demo Script Exported", { playbook_id: playbook.id, format: "markdown" });
     downloadMarkdown(
       `${playbook.customer_name}-demo-script.md`,
       demoScript
@@ -126,12 +141,14 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
   }
 
   function handlePrint() {
+    trackEvent("Print Triggered", { playbook_id: playbook.id });
     window.print();
   }
 
   function handleShare() {
     const url = `${window.location.origin}/share/${playbook.id}`;
     copy(url);
+    trackEvent("Share Link Copied", { playbook_id: playbook.id });
     toast.success("Share link copied to clipboard");
   }
 
@@ -154,7 +171,7 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
               {playbook.industry} Playbook
             </p>
           </div>
-          <div className="flex gap-2 print:hidden" data-print-hide>
+          <div className="flex gap-2 print:hidden">
             <Button variant="outline" size="sm" onClick={handleShare}>
               <ShareIcon className="size-3.5" />
               Share
@@ -167,8 +184,10 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="prompts">
-          <div className="flex items-center justify-between gap-4 print:hidden" data-print-hide>
+        <Tabs defaultValue="prompts" onValueChange={(tab) => {
+          if (tab) trackEvent("Tab Switched", { playbook_id: playbook.id, tab: tab as "prompts" | "script" });
+        }}>
+          <div className="flex items-center justify-between gap-4 print:hidden">
             <TabsList>
               <TabsTrigger value="prompts">Build Prompts</TabsTrigger>
               <TabsTrigger value="script">SE Demo Script</TabsTrigger>
@@ -185,6 +204,7 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
                   activeStep={activeStep}
                   completedSteps={completedSteps}
                   onStepClick={(step) => {
+                    trackEvent("Step Clicked", { playbook_id: playbook.id, step_number: step });
                     setActiveStep(step);
                     document
                       .getElementById(`step-${step}`)
@@ -199,6 +219,7 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
                   <PromptCard
                     key={prompt.stepNumber}
                     prompt={prompt}
+                    playbookId={playbook.id}
                     isComplete={isComplete(prompt.stepNumber)}
                     onMarkComplete={() =>
                       handleMarkComplete(prompt.stepNumber)
@@ -206,7 +227,7 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
                   />
                 ))}
 
-                <div className="print:hidden" data-print-hide>
+                <div className="print:hidden">
                   <Button
                     variant="outline"
                     className="w-full"
@@ -224,7 +245,7 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
           <TabsContent value="script">
             <div className="mt-6 space-y-6">
               <DemoScriptView markdown={demoScript} />
-              <div className="print:hidden" data-print-hide>
+              <div className="print:hidden">
                 <Button
                   variant="outline"
                   className="w-full"

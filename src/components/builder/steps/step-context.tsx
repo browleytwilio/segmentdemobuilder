@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { trackEvent } from "@/lib/analytics/events";
 
 interface StepContextProps {
   onNext: () => void;
@@ -42,6 +43,12 @@ export function StepContext({ onNext }: StepContextProps) {
   });
 
   function onValid(data: ContextFormData) {
+    trackEvent("Wizard Step Submitted", {
+      step: 1,
+      customer_name_length: data.customerName.length,
+      persona: data.persona,
+      industry: data.industry,
+    });
     updateContext({
       customerName: data.customerName,
       persona: data.persona,

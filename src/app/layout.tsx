@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { AppNavbar } from "@/components/app-navbar";
+import { AnalyticsProvider } from "@/components/analytics-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,7 +17,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Segment Demo Builder",
-  description: "Intelligent Prompt Compiler",
+  description:
+    "Build personalized Segment CDP demo playbooks in minutes. AI-powered prompt compilation for Sales Engineers.",
 };
 
 export default function RootLayout({
@@ -38,9 +39,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AppNavbar />
-          <main className="flex-1">{children}</main>
-          <Toaster />
+          <AnalyticsProvider>
+            {children}
+            <Toaster />
+          </AnalyticsProvider>
         </ThemeProvider>
       </body>
     </html>

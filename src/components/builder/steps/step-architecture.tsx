@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { trackEvent } from "@/lib/analytics/events";
 
 interface StepArchitectureProps {
   onNext: () => void;
@@ -57,6 +58,13 @@ export function StepArchitecture({ onNext, onBack }: StepArchitectureProps) {
   });
 
   function onValid(data: ArchitectureFormData) {
+    trackEvent("Wizard Step Submitted", {
+      step: 2,
+      enable_se_sidebar: data.enableSESidebar,
+      enable_seeded_profiles: data.enableSeededProfiles,
+      enable_profile_api: data.enableProfileAPI,
+      enable_intent_predictions: data.enableIntentPredictions,
+    });
     updateArchitecture(data);
     onNext();
   }

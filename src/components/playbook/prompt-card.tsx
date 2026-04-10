@@ -19,6 +19,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { CheckIcon, CopyIcon } from "lucide-react";
+import { trackEvent } from "@/lib/analytics/events";
 
 const placeholderValues = Object.values(SANITIZATION_MAP);
 const placeholderRegex = new RegExp(
@@ -42,12 +43,14 @@ function highlightPlaceholders(text: string): React.ReactNode {
 
 interface PromptCardProps {
   prompt: CompiledPrompt;
+  playbookId: string;
   isComplete: boolean;
   onMarkComplete: () => void;
 }
 
 export function PromptCard({
   prompt,
+  playbookId,
   isComplete,
   onMarkComplete,
 }: PromptCardProps) {
@@ -87,7 +90,14 @@ export function PromptCard({
             <Button
               size="lg"
               className="mt-3 w-full"
-              onClick={() => copy(prompt.promptText)}
+              onClick={() => {
+                trackEvent("Prompt Copied", {
+                  playbook_id: playbookId,
+                  step_number: prompt.stepNumber,
+                  prompt_title: prompt.title,
+                });
+                copy(prompt.promptText);
+              }}
             >
               <CopyIcon className="size-4" />
               Copy Prompt to Clipboard
@@ -103,7 +113,9 @@ export function PromptCard({
           </div>
 
           {/* Troubleshooting Accordion */}
-          <Accordion>
+          <Accordion onValueChange={(val) => {
+            if (val) trackEvent("Troubleshooting Expanded", { playbook_id: playbookId, step_number: prompt.stepNumber });
+          }}>
             <AccordionItem value="troubleshoot">
               <AccordionTrigger>
                 Troubleshooting — What if the AI agent failed?
@@ -149,7 +161,10 @@ export function PromptCard({
             <Button
               variant="outline"
               className="w-full"
-              onClick={onMarkComplete}
+              onClick={() => {
+                trackEvent("Step Marked Complete", { playbook_id: playbookId, step_number: prompt.stepNumber });
+                onMarkComplete();
+              }}
             >
               <CheckIcon className="size-4" />
               Mark as Complete

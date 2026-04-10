@@ -7,6 +7,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-marketing-blue: var(--marketing-blue);
+  --color-marketing-purple: var(--marketing-purple);
+  --color-marketing-green: var(--marketing-green);
+  --color-marketing-cyan: var(--marketing-cyan);
   --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
   --font-heading: var(--font-sans);
@@ -49,6 +53,10 @@
 }
 
 :root {
+  --marketing-blue: oklch(0.7 0.18 260);
+  --marketing-purple: oklch(0.6 0.22 290);
+  --marketing-green: oklch(0.75 0.17 155);
+  --marketing-cyan: oklch(0.78 0.13 200);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -84,6 +92,10 @@
 }
 
 .dark {
+  --marketing-blue: oklch(0.7 0.18 260);
+  --marketing-purple: oklch(0.6 0.22 290);
+  --marketing-green: oklch(0.75 0.17 155);
+  --marketing-cyan: oklch(0.78 0.13 200);
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -126,6 +138,21 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
   }
 }
 

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { trackEvent, resetAnalytics } from "@/lib/analytics/events";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -22,6 +23,8 @@ export function UserMenu({ email }: UserMenuProps) {
   const initial = email.charAt(0).toUpperCase();
 
   async function handleLogout() {
+    trackEvent("Signed Out", {});
+    resetAnalytics();
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/login");

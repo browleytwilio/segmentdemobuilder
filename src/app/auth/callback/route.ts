@@ -11,7 +11,16 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      return NextResponse.redirect(new URL("/dashboard", origin));
+      const redirectUrl = new URL("/dashboard", origin);
+      const response = NextResponse.redirect(redirectUrl);
+      // Set short-lived cookie for client-side identify after OAuth redirect
+      response.cookies.set("x-analytics-identify", "1", {
+        maxAge: 30,
+        httpOnly: false,
+        path: "/",
+        sameSite: "lax",
+      });
+      return response;
     }
   }
 

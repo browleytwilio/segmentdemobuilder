@@ -9,6 +9,7 @@ export const FALLBACK_VERSIONS: VersionMap = {
   "@segment/analytics-next": "1.76.0",
   "@supabase/supabase-js": "2.103.0",
   "lucide-react": "1.8.0",
+  "@supabase/ssr": "0.10.2",
 };
 
 export const TARGET_PACKAGES = Object.keys(FALLBACK_VERSIONS);

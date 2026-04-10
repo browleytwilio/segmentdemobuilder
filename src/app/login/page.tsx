@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { trackEvent, identifyUser } from "@/lib/analytics/events";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,6 +50,7 @@ export default function LoginPage() {
       if (error) {
         setError(error.message);
       } else {
+        trackEvent("Signed Up", { method: "email" });
         setMessage("Check your email for a confirmation link.");
       }
     } else {
@@ -59,6 +61,11 @@ export default function LoginPage() {
       if (error) {
         setError(error.message);
       } else {
+        const { data: { user } } = await getSupabase().auth.getUser();
+        if (user) {
+          identifyUser(user.id, { email: user.email ?? "", created_at: user.created_at });
+        }
+        trackEvent("Signed In", { method: "email" });
         router.push("/dashboard");
       }
     }
@@ -71,6 +78,7 @@ export default function LoginPage() {
     setError(null);
     setMessage(null);
 
+    trackEvent("OAuth Started", { provider });
     const { error } = await getSupabase().auth.signInWithOAuth({
       provider,
       options: {
@@ -99,6 +107,7 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
     } else {
+      trackEvent("Magic Link Requested", {});
       setMessage("Check your email for a magic link.");
     }
 
