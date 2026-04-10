@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { createClient } from "@/lib/supabase/server";
 import { NavLink } from "./nav-link";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
@@ -9,7 +10,15 @@ export async function AppNavbar() {
   const { userId } = await auth();
   if (!userId) return null;
 
-  const user = await currentUser();
+  const [user, supabase] = await Promise.all([currentUser(), createClient()]);
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .single();
+
+  const isAdmin = profile?.role === "super_admin";
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 print:hidden">
@@ -36,7 +45,7 @@ export async function AppNavbar() {
 
         <div className="ml-auto flex items-center gap-1">
           <ThemeToggle />
-          <UserMenu email={user?.primaryEmailAddress?.emailAddress ?? ""} />
+          <UserMenu email={user?.primaryEmailAddress?.emailAddress ?? ""} isAdmin={isAdmin} />
         </div>
       </div>
     </header>

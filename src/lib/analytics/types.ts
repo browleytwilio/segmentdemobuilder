@@ -199,4 +199,6 @@ export interface SegmentEventMap {
   // Admin — new actions
   "Admin Playbook Deleted": { playbook_id: string; customer_name: string; owner_email: string };
   "Admin Playbook Visibility Changed": { playbook_id: string; visibility: string; owner_email: string };
+  "Admin Playbooks Filtered": { filter_type: "industry" | "status" | "q"; filter_value: string };
+  "Admin Playbook Opened": { playbook_id: string; industry: string; owner_email: string };
 }

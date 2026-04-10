@@ -12,13 +12,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOutIcon, LayoutDashboardIcon } from "lucide-react";
+import { LogOutIcon, LayoutDashboardIcon, ShieldIcon } from "lucide-react";
 
 interface UserMenuProps {
   email: string;
+  isAdmin?: boolean;
 }
 
-export function UserMenu({ email }: UserMenuProps) {
+export function UserMenu({ email, isAdmin }: UserMenuProps) {
   const router = useRouter();
   const { signOut } = useClerk();
   const initial = email.charAt(0).toUpperCase();
@@ -52,6 +53,15 @@ export function UserMenu({ email }: UserMenuProps) {
           <LayoutDashboardIcon className="size-4" />
           Dashboard
         </DropdownMenuItem>
+        {isAdmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => router.push("/admin")}>
+              <ShieldIcon className="size-4" />
+              Admin Panel
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
           <LogOutIcon className="size-4" />

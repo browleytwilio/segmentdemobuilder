@@ -24,10 +24,13 @@ export default async function AdminLayout({
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
       <PageHeader title="Admin" />
-      <nav className="flex gap-1 border-b">
+      <nav className="flex gap-1 border-b flex-wrap">
         <AdminNavLink href="/admin/users">Users</AdminNavLink>
         <AdminNavLink href="/admin/prompts">Prompts</AdminNavLink>
         <AdminNavLink href="/admin/config">Config</AdminNavLink>
+        <AdminNavLink href="/admin/analytics">Analytics</AdminNavLink>
+        <AdminNavLink href="/admin/playbooks">Playbooks</AdminNavLink>
+        <AdminNavLink href="/admin/audit">Audit Log</AdminNavLink>
       </nav>
       <div>{children}</div>
     </div>

@@ -26,16 +26,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { ExternalLinkIcon, Trash2Icon, EyeIcon, MoreHorizontalIcon } from "lucide-react";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Trash2Icon, EyeIcon, MoreHorizontalIcon, ExternalLinkIcon } from "lucide-react";
 import type { PlaybookVisibility } from "@/lib/compiler/types";
 
 interface Props {
@@ -49,6 +47,11 @@ const VISIBILITY_LABELS: Record<PlaybookVisibility, string> = {
   private: "Private",
   shared: "Shared",
   public: "Public",
+};
+const VISIBILITY_CYCLE: Record<PlaybookVisibility, PlaybookVisibility> = {
+  private: "shared",
+  shared: "public",
+  public: "private",
 };
 
 function formatDate(iso: string) {
@@ -72,7 +75,7 @@ export function PlaybooksTable({ playbooks, total, error }: Props) {
   const currentIndustry = searchParams.get("industry") ?? "";
   const currentStatus = searchParams.get("status") ?? "";
 
-  function applyFilter(key: string, value: string) {
+  function applyFilter(key: "industry" | "status" | "q", value: string) {
     const params = new URLSearchParams(searchParams.toString());
     if (value) {
       params.set(key, value);
@@ -80,6 +83,9 @@ export function PlaybooksTable({ playbooks, total, error }: Props) {
       params.delete(key);
     }
     params.delete("offset");
+    if (value) {
+      trackEvent("Admin Playbooks Filtered", { filter_type: key, filter_value: value });
+    }
     router.push(`${pathname}?${params.toString()}`);
   }
 
@@ -218,28 +224,31 @@ export function PlaybooksTable({ playbooks, total, error }: Props) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     {pb.status === "completed" && (
-                      <DropdownMenuItem asChild>
-                        <Link href={`/playbooks/${pb.id}`} target="_blank">
-                          <ExternalLinkIcon className="size-4" />
-                          View playbook
-                        </Link>
+                      <DropdownMenuItem
+                        render={
+                          <Link href={`/playbooks/${pb.id}`} target="_blank" />
+                        }
+                        onClick={() =>
+                          trackEvent("Admin Playbook Opened", {
+                            playbook_id: pb.id,
+                            industry: pb.industry,
+                            owner_email: pb.user_email,
+                          })
+                        }
+                      >
+                        <ExternalLinkIcon className="size-4" />
+                        View playbook
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       disabled={updatingVisibility === pb.id}
-                      onClick={() => {
-                        const next: PlaybookVisibility =
-                          pb.visibility === "private"
-                            ? "shared"
-                            : pb.visibility === "shared"
-                            ? "public"
-                            : "private";
-                        handleVisibilityChange(pb, next);
-                      }}
+                      onClick={() =>
+                        handleVisibilityChange(pb, VISIBILITY_CYCLE[pb.visibility])
+                      }
                     >
                       <EyeIcon className="size-4" />
-                      Set {pb.visibility === "private" ? "Shared" : pb.visibility === "shared" ? "Public" : "Private"}
+                      Set {VISIBILITY_LABELS[VISIBILITY_CYCLE[pb.visibility]]}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -265,28 +274,30 @@ export function PlaybooksTable({ playbooks, total, error }: Props) {
       </Table>
 
       {/* Delete confirmation dialog */}
-      <AlertDialog open={!!confirmTarget} onOpenChange={(open) => !open && setConfirmTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete playbook?</AlertDialogTitle>
-            <AlertDialogDescription>
+      <Dialog open={!!confirmTarget} onOpenChange={(open) => { if (!open) setConfirmTarget(null); }}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>Delete playbook?</DialogTitle>
+            <DialogDescription>
               This will permanently delete{" "}
               <strong>{confirmTarget?.customer_name}</strong> owned by{" "}
               <strong>{confirmTarget?.user_email}</strong>. This cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
               disabled={deleting === confirmTarget?.id}
               onClick={() => confirmTarget && handleDelete(confirmTarget)}
             >
               {deleting === confirmTarget?.id ? "Deleting…" : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
