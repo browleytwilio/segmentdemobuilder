@@ -27,45 +27,47 @@ const {
 });
 
 // --- Mocks ---
+// Use plain functions (not vi.fn()) in factories so vi.restoreAllMocks() from
+// vitest.setup.ts doesn't strip their implementations between tests.
 
-vi.mock("svix", () => ({
-  Webhook: vi.fn().mockImplementation(() => ({
-    verify: (..._args: unknown[]) => {
-      if (mockVerifyThrows.current) throw new Error("Invalid signature");
-      return mockVerifyResult.current;
-    },
-  })),
-}));
+vi.mock("svix", () => {
+  // Plain constructor function — not a vi.fn(), so restoreAllMocks can't reset it
+  function MockWebhook() {
+    return {
+      verify: (..._args: unknown[]) => {
+        if (mockVerifyThrows.current) throw new Error("Invalid signature");
+        return mockVerifyResult.current;
+      },
+    };
+  }
+  return { Webhook: MockWebhook };
+});
 
-// Override the global next/headers mock from vitest.setup.ts to include svix headers
 vi.mock("next/headers", () => ({
-  headers: vi.fn(() =>
+  headers: () =>
     Promise.resolve(
       new Headers({
         "svix-id": "msg_test",
         "svix-timestamp": "1234567890",
         "svix-signature": "v1,test-sig",
       })
-    )
-  ),
-  cookies: vi.fn(() =>
+    ),
+  cookies: () =>
     Promise.resolve({
-      getAll: vi.fn(() => []),
-      set: vi.fn(),
-      get: vi.fn(),
-      delete: vi.fn(),
-    })
-  ),
+      getAll: () => [],
+      set: () => {},
+      get: () => undefined,
+      delete: () => {},
+    }),
 }));
 
 vi.mock("@supabase/supabase-js", () => ({
-  createClient: vi.fn(() => mockSupaChain),
+  createClient: () => mockSupaChain,
 }));
 
 vi.mock("@clerk/nextjs/server", () => ({
-  clerkClient: vi.fn(() =>
-    Promise.resolve({ users: { deleteUser: mockDeleteUser } })
-  ),
+  clerkClient: () =>
+    Promise.resolve({ users: { deleteUser: mockDeleteUser } }),
 }));
 
 // --- Import after mocks ---
@@ -75,7 +77,6 @@ import { POST } from "./route";
 function makeWebhookRequest(body?: unknown): Request {
   return new Request("http://localhost/api/webhooks/clerk", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body ?? {}),
   });
 }

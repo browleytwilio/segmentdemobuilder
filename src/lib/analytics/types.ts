@@ -195,4 +195,8 @@ export interface SegmentEventMap {
   "Comment Added": { playbook_id: string; comment_length: number };
   "Comment Deleted": { playbook_id: string; comment_id: string };
   "Shared Playbooks Viewed": { count: number };
+
+  // Admin — new actions
+  "Admin Playbook Deleted": { playbook_id: string; customer_name: string; owner_email: string };
+  "Admin Playbook Visibility Changed": { playbook_id: string; visibility: string; owner_email: string };
 }

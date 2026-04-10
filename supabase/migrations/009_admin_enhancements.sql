@@ -29,13 +29,13 @@ ALTER TABLE public.admin_audit_log ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Super-admins can read audit log"
   ON public.admin_audit_log FOR SELECT
   USING (
-    (SELECT role FROM public.profiles WHERE id = (select auth.uid())) = 'super_admin'
+    (SELECT role FROM public.profiles WHERE id = (select auth.uid()::text)) = 'super_admin'
   );
 
 CREATE POLICY "Super-admins can insert audit entries"
   ON public.admin_audit_log FOR INSERT
   WITH CHECK (
-    (SELECT role FROM public.profiles WHERE id = (select auth.uid())) = 'super_admin'
+    (SELECT role FROM public.profiles WHERE id = (select auth.uid()::text)) = 'super_admin'
   );
 
 -- ============================================================
@@ -57,7 +57,7 @@ RETURNS TABLE (
 ) LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
 AS $$
 BEGIN
-  IF (SELECT p.role FROM public.profiles p WHERE p.id = (select auth.uid())) <> 'super_admin' THEN
+  IF (SELECT p.role FROM public.profiles p WHERE p.id = (select auth.uid()::text)) <> 'super_admin' THEN
     RAISE EXCEPTION 'Forbidden: super_admin role required';
   END IF;
 
@@ -172,7 +172,7 @@ RETURNS TABLE (
 ) LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
 AS $$
 BEGIN
-  IF (SELECT p.role FROM public.profiles p WHERE p.id = (select auth.uid())) <> 'super_admin' THEN
+  IF (SELECT p.role FROM public.profiles p WHERE p.id = (select auth.uid()::text)) <> 'super_admin' THEN
     RAISE EXCEPTION 'Forbidden: super_admin role required';
   END IF;
 
