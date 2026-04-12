@@ -33,6 +33,7 @@ import {
   BuildingIcon,
 } from "lucide-react";
 import { trackEvent } from "@/lib/analytics/events";
+import { StaggerContainer, StaggerItem } from "@/components/app/motion-wrappers";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -113,15 +114,15 @@ export function DashboardGrid({
 
   return (
     <>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <StaggerContainer className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {playbooks.map((pb) => {
           const industryColor =
             INDUSTRY_COLORS[pb.industry] ??
             "bg-muted text-muted-foreground";
 
           return (
+            <StaggerItem key={pb.id}>
             <Link
-              key={pb.id}
               href={`/playbooks/${pb.id}`}
               onClick={() =>
                 trackEvent("Playbook Opened", {
@@ -130,7 +131,7 @@ export function DashboardGrid({
                   status: pb.status,
                 })
               }
-              className="group relative flex flex-col rounded-xl border bg-card transition-all hover:shadow-md hover:border-primary/20 focus-visible:ring-2 focus-visible:ring-ring"
+              className="group relative flex flex-col rounded-xl border bg-card shadow-card transition-all hover:shadow-card-hover hover:border-app-accent/20 motion-safe:hover:scale-[1.01] motion-safe:active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-ring"
             >
               {/* Status strip */}
               <div
@@ -277,9 +278,10 @@ export function DashboardGrid({
                 </div>
               </div>
             </Link>
+            </StaggerItem>
           );
         })}
-      </div>
+      </StaggerContainer>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>

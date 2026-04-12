@@ -42,7 +42,7 @@ export function DashboardTabs({ activeTab }: DashboardTabsProps) {
           onClick={() => switchTab(key)}
           className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
             activeTab === key
-              ? "bg-background text-foreground shadow-sm"
+              ? "bg-background text-foreground shadow-sm ring-1 ring-app-accent/10"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >

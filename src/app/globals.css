@@ -43,6 +43,13 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-app-accent: var(--app-accent);
+  --color-app-accent-subtle: var(--app-accent-subtle);
+  --color-app-accent-muted: var(--app-accent-muted);
+  --color-app-accent-foreground: var(--app-accent-foreground);
+  --shadow-card: var(--shadow-card);
+  --shadow-card-hover: var(--shadow-card-hover);
+  --shadow-elevated: var(--shadow-elevated);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -80,6 +87,13 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
+  --app-accent: oklch(0.7 0.18 260);
+  --app-accent-subtle: oklch(0.7 0.18 260 / 8%);
+  --app-accent-muted: oklch(0.7 0.18 260 / 15%);
+  --app-accent-foreground: oklch(1 0 0);
+  --shadow-card: 0 1px 3px oklch(0 0 0 / 4%), 0 1px 2px oklch(0 0 0 / 3%);
+  --shadow-card-hover: 0 4px 12px oklch(0 0 0 / 8%), 0 2px 4px oklch(0 0 0 / 4%);
+  --shadow-elevated: 0 8px 24px oklch(0 0 0 / 12%), 0 2px 8px oklch(0 0 0 / 6%);
   --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
@@ -119,6 +133,13 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
+  --app-accent: oklch(0.75 0.16 260);
+  --app-accent-subtle: oklch(0.75 0.16 260 / 10%);
+  --app-accent-muted: oklch(0.75 0.16 260 / 20%);
+  --app-accent-foreground: oklch(1 0 0);
+  --shadow-card: 0 1px 3px oklch(0 0 0 / 20%), 0 1px 2px oklch(0 0 0 / 15%);
+  --shadow-card-hover: 0 4px 12px oklch(0 0 0 / 30%), 0 2px 4px oklch(0 0 0 / 20%);
+  --shadow-elevated: 0 8px 24px oklch(0 0 0 / 40%), 0 2px 8px oklch(0 0 0 / 25%);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -139,6 +160,14 @@
   html {
     @apply font-sans;
   }
+}
+
+.app-bg-pattern {
+  background-image: radial-gradient(circle at 1px 1px, oklch(0.5 0 0 / 4%) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+.dark .app-bg-pattern {
+  background-image: radial-gradient(circle at 1px 1px, oklch(1 0 0 / 3%) 1px, transparent 0);
 }
 
 @keyframes marquee {

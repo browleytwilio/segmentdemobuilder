@@ -23,7 +23,7 @@ export function NavLink({ href, children, icon }: NavLinkProps) {
       className={cn(
         "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors",
         isActive
-          ? "bg-accent text-foreground font-medium"
+          ? "bg-app-accent-subtle text-app-accent font-medium"
           : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
       )}
     >

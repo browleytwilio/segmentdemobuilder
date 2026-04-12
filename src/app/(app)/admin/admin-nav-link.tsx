@@ -25,7 +25,7 @@ export function AdminNavLink({ href, children, icon }: AdminNavLinkProps) {
       className={cn(
         "inline-flex items-center gap-1.5 px-3 py-2 text-sm transition-colors -mb-px whitespace-nowrap",
         isActive
-          ? "border-b-2 border-foreground text-foreground font-medium"
+          ? "border-b-2 border-app-accent text-app-accent font-medium"
           : "text-muted-foreground hover:text-foreground"
       )}
     >

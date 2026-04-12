@@ -1,4 +1,4 @@
-import type { DemoArchitecture, BuilderState } from "@/lib/stores/builder-store";
+import type { DemoArchitecture } from "@/lib/stores/builder-store";
 import type {
   CompilerInput,
   CompiledPrompt,
@@ -8,8 +8,8 @@ import type {
 } from "@/lib/compiler/types";
 
 export function mockKeys(
-  overrides?: Partial<BuilderState["keys"]>
-): BuilderState["keys"] {
+  overrides?: Partial<Record<string, string>>
+): Record<string, string> {
   return {
     segmentWriteFrontend: "wk_frontend_abc123xyz",
     segmentWriteBackend: "wk_backend_def456uvw",
@@ -63,6 +63,8 @@ export function mockCompilerInput(
     selectedScenarios: ["second-page-personalization"],
     keys: mockKeys(),
     versions: mockVersionMap(),
+    databaseProvider: "supabase",
+    authProvider: "none",
     ...overrides,
   };
 }

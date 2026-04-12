@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@/lib/supabase/server";
+import { FadeIn } from "@/components/app/motion-wrappers";
 import { AdminNavLink } from "./admin-nav-link";
 import {
   UsersIcon,
@@ -58,7 +59,9 @@ export default async function AdminLayout({
         ))}
       </nav>
 
-      <div>{children}</div>
+      <FadeIn>
+        <div>{children}</div>
+      </FadeIn>
     </div>
   );
 }

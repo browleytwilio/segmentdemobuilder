@@ -1,10 +1,9 @@
 import { z } from "zod";
+import type { DatabaseProvider } from "@/lib/compiler/providers";
 
-// ─── Credential Validation Schema ──────────────────────────────────
-// Shared between wizard Step 4 (onboarding) and Rehydration Modal (playbook viewer).
-// Extracted per PRD 9 §5 to ensure consistent validation across both entry points.
+// ─── Segment Credential Fields (shared across all providers) ───────
 
-export const baseCredentialsSchema = z.object({
+const segmentFields = {
   segmentWriteFrontend: z
     .string()
     .min(10, "Write key must be at least 10 characters"),
@@ -13,6 +12,11 @@ export const baseCredentialsSchema = z.object({
     .string()
     .min(10, "Workspace token must be at least 10 characters"),
   segmentProfileToken: z.string().optional().or(z.literal("")),
+};
+
+// ─── Database-Provider-Specific Fields ─────────────────────────────
+
+const supabaseFields = {
   supabaseUrl: z
     .string()
     .url("Must be a valid URL")
@@ -22,14 +26,49 @@ export const baseCredentialsSchema = z.object({
   supabaseAnon: z.string().refine((val) => val.startsWith("eyJ"), {
     message: "Must be a valid JWT (starts with eyJ)",
   }),
-});
+};
+
+const neonFields = {
+  databaseUrl: z
+    .string()
+    .min(10, "Connection string is required")
+    .refine(
+      (val) =>
+        val.includes("neon.tech") || val.startsWith("postgresql://") || val.startsWith("postgres://"),
+      { message: "Must be a Neon or PostgreSQL connection string" }
+    ),
+};
+
+const genericPostgresFields = {
+  databaseUrl: z
+    .string()
+    .min(10, "Connection string is required")
+    .refine(
+      (val) => val.startsWith("postgresql://") || val.startsWith("postgres://"),
+      { message: "Must be a PostgreSQL connection string (postgresql://...)" }
+    ),
+};
+
+const DB_FIELDS: Record<DatabaseProvider, Record<string, z.ZodTypeAny>> = {
+  supabase: supabaseFields,
+  neon: neonFields,
+  "generic-postgres": genericPostgresFields,
+};
+
+// ─── Provider-Aware Schema Factory ─────────────────────────────────
 
 /**
- * Creates a credentials schema with conditional validation.
- * When `enableProfileAPI` is true, `segmentProfileToken` becomes required (min 10 chars).
+ * Creates a credentials schema dynamically based on the selected database provider.
+ * Always includes the 4 Segment fields; database credential fields vary by provider.
  */
-export function createCredentialsSchema(enableProfileAPI: boolean) {
-  return baseCredentialsSchema.superRefine((data, ctx) => {
+export function createProviderCredentialsSchema(
+  databaseProvider: DatabaseProvider,
+  enableProfileAPI: boolean
+) {
+  const shape = { ...segmentFields, ...DB_FIELDS[databaseProvider] };
+  const schema = z.object(shape);
+
+  return schema.superRefine((data, ctx) => {
     if (
       enableProfileAPI &&
       (!data.segmentProfileToken || data.segmentProfileToken.length < 10)
@@ -42,6 +81,19 @@ export function createCredentialsSchema(enableProfileAPI: boolean) {
       });
     }
   });
+}
+
+// ─── Legacy Exports (backward compat) ──────────────────────────────
+
+/** @deprecated Use createProviderCredentialsSchema("supabase", ...) instead */
+export const baseCredentialsSchema = z.object({
+  ...segmentFields,
+  ...supabaseFields,
+});
+
+/** @deprecated Use createProviderCredentialsSchema instead */
+export function createCredentialsSchema(enableProfileAPI: boolean) {
+  return createProviderCredentialsSchema("supabase", enableProfileAPI);
 }
 
 export type CredentialsFormData = z.infer<typeof baseCredentialsSchema>;

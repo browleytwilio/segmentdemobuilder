@@ -89,11 +89,30 @@ describe("buildTemplateContext", () => {
     const npmKeys = Object.keys(ctx).filter((k) => k.startsWith("NPM_"));
     expect(npmKeys).toHaveLength(0);
   });
+
+  it("includes DATABASE_PROVIDER and AUTH_PROVIDER", () => {
+    const ctx = buildTemplateContext(mockCompilerInput({
+      databaseProvider: "neon",
+      authProvider: "clerk",
+    }));
+
+    expect(ctx.DATABASE_PROVIDER).toBe("neon");
+    expect(ctx.AUTH_PROVIDER).toBe("clerk");
+  });
+
+  it("maps neon credential to DATABASE_URL", () => {
+    const ctx = buildTemplateContext(mockCompilerInput({
+      databaseProvider: "neon",
+      keys: mockKeys({ databaseUrl: "postgresql://user:pass@neon.tech/db" }),
+    }));
+
+    expect(ctx.DATABASE_URL).toBe("postgresql://user:pass@neon.tech/db");
+  });
 });
 
 describe("substituteVariables", () => {
   it("replaces known variables in the template", () => {
-    const ctx = { CUSTOMER_NAME: "Acme", INDUSTRY: "Retail" } as ReturnType<typeof buildTemplateContext>;
+    const ctx = { CUSTOMER_NAME: "Acme", INDUSTRY: "Retail" } as unknown as ReturnType<typeof buildTemplateContext>;
     const result = substituteVariables(
       "Welcome to {{CUSTOMER_NAME}} in {{INDUSTRY}}!",
       ctx
@@ -103,42 +122,42 @@ describe("substituteVariables", () => {
   });
 
   it("leaves unknown variables untouched", () => {
-    const ctx = { CUSTOMER_NAME: "Acme" } as ReturnType<typeof buildTemplateContext>;
+    const ctx = { CUSTOMER_NAME: "Acme" } as unknown as ReturnType<typeof buildTemplateContext>;
     const result = substituteVariables("{{CUSTOMER_NAME}} {{UNKNOWN_VAR}}", ctx);
 
     expect(result).toBe("Acme {{UNKNOWN_VAR}}");
   });
 
   it("replaces multiple occurrences of the same variable", () => {
-    const ctx = { NAME: "Bob" } as ReturnType<typeof buildTemplateContext>;
+    const ctx = { NAME: "Bob" } as unknown as ReturnType<typeof buildTemplateContext>;
     const result = substituteVariables("{{NAME}} and {{NAME}}", ctx);
 
     expect(result).toBe("Bob and Bob");
   });
 
   it("returns template unchanged when no variables are present", () => {
-    const ctx = { CUSTOMER_NAME: "Acme" } as ReturnType<typeof buildTemplateContext>;
+    const ctx = { CUSTOMER_NAME: "Acme" } as unknown as ReturnType<typeof buildTemplateContext>;
     const result = substituteVariables("No placeholders here.", ctx);
 
     expect(result).toBe("No placeholders here.");
   });
 
   it("returns empty string when given empty string", () => {
-    const ctx = {} as ReturnType<typeof buildTemplateContext>;
+    const ctx = {} as unknown as ReturnType<typeof buildTemplateContext>;
     const result = substituteVariables("", ctx);
 
     expect(result).toBe("");
   });
 
   it("does not match single-brace patterns like {VAR}", () => {
-    const ctx = { VAR: "replaced" } as ReturnType<typeof buildTemplateContext>;
+    const ctx = { VAR: "replaced" } as unknown as ReturnType<typeof buildTemplateContext>;
     const result = substituteVariables("{VAR}", ctx);
 
     expect(result).toBe("{VAR}");
   });
 
   it("does not match triple-brace patterns like {{{VAR}}}", () => {
-    const ctx = { VAR: "replaced" } as ReturnType<typeof buildTemplateContext>;
+    const ctx = { VAR: "replaced" } as unknown as ReturnType<typeof buildTemplateContext>;
     const result = substituteVariables("{{{VAR}}}", ctx);
 
     // Inner {{VAR}} is matched and replaced; outer braces remain
@@ -146,7 +165,7 @@ describe("substituteVariables", () => {
   });
 
   it("handles context values that contain special regex characters", () => {
-    const ctx = { URL: "https://example.com?a=1&b=2" } as ReturnType<typeof buildTemplateContext>;
+    const ctx = { URL: "https://example.com?a=1&b=2" } as unknown as ReturnType<typeof buildTemplateContext>;
     const result = substituteVariables("Visit {{URL}}", ctx);
 
     expect(result).toBe("Visit https://example.com?a=1&b=2");

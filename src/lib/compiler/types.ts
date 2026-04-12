@@ -1,4 +1,5 @@
-import type { DemoArchitecture, BuilderState } from "@/lib/stores/builder-store";
+import type { DemoArchitecture } from "@/lib/stores/builder-store";
+import type { DatabaseProvider, AuthProvider } from "./providers";
 
 export interface CompiledPrompt {
   stepNumber: number;
@@ -15,8 +16,10 @@ export interface CompilerInput {
   persona: string;
   architecture: DemoArchitecture;
   selectedScenarios: string[];
-  keys: BuilderState["keys"];
+  keys: Record<string, string>;
   versions: VersionMap;
+  databaseProvider: DatabaseProvider;
+  authProvider: AuthProvider;
 }
 
 export interface DemoConfig {
@@ -24,6 +27,8 @@ export interface DemoConfig {
   architecture: DemoArchitecture;
   selectedScenarios: string[];
   scenarioSlugs?: Record<string, string>; // { [featureId]: slug } — new playbooks only
+  databaseProvider?: DatabaseProvider;
+  authProvider?: AuthProvider;
 }
 
 export interface PlaybookRow {

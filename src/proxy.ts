@@ -6,6 +6,7 @@ const isProtectedRoute = createRouteMatcher([
   "/builder(.*)",
   "/admin(.*)",
   "/playbooks(.*)",
+  "/profile(.*)",
 ]);
 
 const isAuthRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)"]);

@@ -3,6 +3,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   FALLBACK_VERSIONS,
   TARGET_PACKAGES,
+  getFallbackVersions,
+  getTargetPackages,
 } from "@/lib/compiler/fallback-versions";
 
 vi.mock("next/headers", () => ({
@@ -43,7 +45,7 @@ describe("GET /api/dependencies/versions", () => {
       })
     );
 
-    const response = await GET();
+    const response = await GET(new Request("http://localhost/api/dependencies/versions"));
     const json = await response.json();
 
     for (const pkg of TARGET_PACKAGES) {
@@ -60,7 +62,7 @@ describe("GET /api/dependencies/versions", () => {
       })
     );
 
-    const response = await GET();
+    const response = await GET(new Request("http://localhost/api/dependencies/versions"));
     const json = await response.json();
 
     expect(json.usedFallback).toBe(false);
@@ -82,7 +84,7 @@ describe("GET /api/dependencies/versions", () => {
       })
     );
 
-    const response = await GET();
+    const response = await GET(new Request("http://localhost/api/dependencies/versions"));
     const json = await response.json();
 
     expect(json.versions[failPkg]).toBe(FALLBACK_VERSIONS[failPkg]);
@@ -104,7 +106,7 @@ describe("GET /api/dependencies/versions", () => {
       })
     );
 
-    const response = await GET();
+    const response = await GET(new Request("http://localhost/api/dependencies/versions"));
     const json = await response.json();
 
     expect(json.usedFallback).toBe(true);
@@ -119,7 +121,7 @@ describe("GET /api/dependencies/versions", () => {
       })
     );
 
-    const response = await GET();
+    const response = await GET(new Request("http://localhost/api/dependencies/versions"));
     const json = await response.json();
 
     const keys = Object.keys(json.versions).sort();
@@ -132,7 +134,7 @@ describe("GET /api/dependencies/versions", () => {
       vi.fn().mockRejectedValue(new Error("total failure"))
     );
 
-    const response = await GET();
+    const response = await GET(new Request("http://localhost/api/dependencies/versions"));
     const json = await response.json();
 
     expect(json.usedFallback).toBe(true);
@@ -152,7 +154,7 @@ describe("GET /api/dependencies/versions", () => {
     });
     (ratelimitModule as Record<string, unknown>).ratelimit = { limit: mockLimit };
 
-    const response = await GET();
+    const response = await GET(new Request("http://localhost/api/dependencies/versions"));
 
     expect(response.status).toBe(429);
     const json = await response.json();
@@ -174,7 +176,7 @@ describe("GET /api/dependencies/versions", () => {
       })
     );
 
-    const response = await GET();
+    const response = await GET(new Request("http://localhost/api/dependencies/versions"));
 
     expect(response.status).toBe(200);
     const json = await response.json();

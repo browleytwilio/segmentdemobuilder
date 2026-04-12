@@ -16,6 +16,7 @@ export function NewPlaybookButton({
   return (
     <Button
       variant={variant}
+      className={variant === "default" ? "bg-app-accent hover:bg-app-accent/90 text-app-accent-foreground" : undefined}
       render={<Link href="/builder" />}
       onClick={() => trackEvent("New Playbook Clicked", { location })}
     >

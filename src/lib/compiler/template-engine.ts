@@ -1,23 +1,17 @@
 import type { CompilerInput } from "./types";
-import { SANITIZATION_MAP } from "./sanitizer";
+import { buildSanitizationMap } from "./sanitizer";
+import { DATABASE_PROVIDERS } from "./providers";
 
 export interface TemplateContext {
   CUSTOMER_NAME: string;
   INDUSTRY: string;
+  DATABASE_PROVIDER: string;
+  AUTH_PROVIDER: string;
   SEGMENT_WRITE_KEY: string;
   SEGMENT_BACKEND_WRITE_KEY: string;
   SEGMENT_WORKSPACE_TOKEN: string;
   SEGMENT_PROFILE_TOKEN: string;
-  SUPABASE_URL: string;
-  SUPABASE_ANON_KEY: string;
   [key: string]: string;
-}
-
-function keyOrPlaceholder(
-  value: string,
-  field: keyof typeof SANITIZATION_MAP
-): string {
-  return value || SANITIZATION_MAP[field];
 }
 
 /**
@@ -25,9 +19,17 @@ function keyOrPlaceholder(
  * Credentials use keyOrPlaceholder — empty values become YOUR_* placeholders.
  */
 export function buildTemplateContext(input: CompilerInput): TemplateContext {
+  const sanitizationMap = buildSanitizationMap(input.databaseProvider);
+
+  function keyOrPlaceholder(value: string | undefined, field: string): string {
+    return value || sanitizationMap[field] || "";
+  }
+
   const ctx: TemplateContext = {
     CUSTOMER_NAME: input.customerName,
     INDUSTRY: input.industry,
+    DATABASE_PROVIDER: input.databaseProvider,
+    AUTH_PROVIDER: input.authProvider,
     SEGMENT_WRITE_KEY: keyOrPlaceholder(
       input.keys.segmentWriteFrontend,
       "segmentWriteFrontend"
@@ -44,9 +46,15 @@ export function buildTemplateContext(input: CompilerInput): TemplateContext {
       input.keys.segmentProfileToken,
       "segmentProfileToken"
     ),
-    SUPABASE_URL: keyOrPlaceholder(input.keys.supabaseUrl, "supabaseUrl"),
-    SUPABASE_ANON_KEY: keyOrPlaceholder(input.keys.supabaseAnon, "supabaseAnon"),
   };
+
+  // Add provider-specific credential context variables
+  const providerConfig = DATABASE_PROVIDERS[input.databaseProvider];
+  for (const [storeKey, envVar] of Object.entries(providerConfig.envVarMap)) {
+    // Template variable name matches the env var name (e.g. SUPABASE_URL, DATABASE_URL)
+    const varName = envVar.replace(/^NEXT_PUBLIC_/, "");
+    ctx[varName] = keyOrPlaceholder(input.keys[storeKey], storeKey);
+  }
 
   // Add NPM version variables
   for (const [pkg, ver] of Object.entries(input.versions)) {

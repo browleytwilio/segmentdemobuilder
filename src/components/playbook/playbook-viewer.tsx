@@ -46,8 +46,10 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
   );
   const { copy } = useClipboard();
 
+  const dbProvider = playbook.demo_config.databaseProvider ?? "supabase";
+
   // Check if rehydration is needed on mount
-  const requiresRehydration = needsRehydration(playbook.generated_prompts);
+  const requiresRehydration = needsRehydration(playbook.generated_prompts, dbProvider);
   useEffect(() => {
     trackEvent("Playbook Viewed", {
       playbook_id: playbook.id,
@@ -82,7 +84,8 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
       try {
         const rehydrated = rehydratePrompts(
           playbook.generated_prompts,
-          keys as Parameters<typeof rehydratePrompts>[1]
+          keys,
+          dbProvider
         );
         setPrompts(rehydrated);
         setShowRehydration(false);
@@ -91,7 +94,7 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
         toast.error("Failed to inject keys. Check your credentials and try again.");
       }
     },
-    [playbook.generated_prompts]
+    [playbook.generated_prompts, dbProvider]
   );
 
   const handleDismissRehydration = useCallback(() => {
@@ -165,6 +168,7 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
     <>
       <RehydrationModal
         open={showRehydration}
+        databaseProvider={dbProvider}
         onSubmit={handleRehydrate}
         onDismiss={handleDismissRehydration}
       />

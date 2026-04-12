@@ -108,9 +108,11 @@ export interface SegmentEventMap {
         enable_seeded_profiles: boolean;
         enable_profile_api: boolean;
         enable_intent_predictions: boolean;
+        database_provider: string;
+        auth_provider: string;
       }
     | { step: 3; scenario_count: number; industry: string }
-    | { step: 4; fields_provided_count: number };
+    | { step: 4; fields_provided_count: number; database_provider: string };
   "Credentials Help Opened": Record<string, never>;
   "Playbook Created": { playbook_id: string };
   "Playbook Creation Failed": { error: string };

@@ -4,6 +4,7 @@ import { DashboardGrid } from "./dashboard-grid";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { DashboardFilters } from "@/components/dashboard/dashboard-filters";
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
+import { FadeIn } from "@/components/app/motion-wrappers";
 import { BookOpenIcon } from "lucide-react";
 import { NewPlaybookButton } from "./new-playbook-button";
 import type { PlaybookFilters } from "./actions";
@@ -47,38 +48,47 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
       {/* Header */}
-      <div className="flex items-end justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            {playbooks.length > 0
-              ? `${playbooks.length} playbook${playbooks.length !== 1 ? "s" : ""}`
-              : "Manage your demo playbooks"}
-          </p>
+      <FadeIn>
+        <div className="flex items-end justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+            <p className="text-sm text-muted-foreground">
+              {playbooks.length > 0
+                ? `${playbooks.length} playbook${playbooks.length !== 1 ? "s" : ""}`
+                : "Manage your demo playbooks"}
+            </p>
+          </div>
+          <NewPlaybookButton location="header" />
         </div>
-        <NewPlaybookButton location="header" />
-      </div>
+      </FadeIn>
 
       {/* Stats */}
-      {activeTab === "mine" && <DashboardStats playbooks={playbooks} />}
+      {activeTab === "mine" && (
+        <FadeIn delay={0.05}>
+          <DashboardStats playbooks={playbooks} />
+        </FadeIn>
+      )}
 
       {/* Tabs + Filters */}
-      <Suspense>
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <DashboardTabs activeTab={activeTab} />
-            <div className="flex-1 min-w-0">
-              <DashboardFilters />
+      <FadeIn delay={0.1}>
+        <Suspense>
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <DashboardTabs activeTab={activeTab} />
+              <div className="flex-1 min-w-0">
+                <DashboardFilters />
+              </div>
             </div>
           </div>
-        </div>
-      </Suspense>
+        </Suspense>
+      </FadeIn>
 
       {/* Content */}
+      <FadeIn delay={0.15}>
       {playbooks.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed py-20 text-center space-y-4">
-          <div className="rounded-full bg-muted p-4">
-            <BookOpenIcon className="size-8 text-muted-foreground/60" />
+          <div className="rounded-full bg-app-accent-subtle p-5 ring-1 ring-app-accent/10">
+            <BookOpenIcon className="size-10 text-app-accent/60" />
           </div>
           <div className="space-y-1.5 max-w-sm">
             <p className="font-semibold text-lg">
@@ -107,6 +117,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           isSharedView={activeTab === "shared"}
         />
       )}
+      </FadeIn>
     </div>
   );
 }

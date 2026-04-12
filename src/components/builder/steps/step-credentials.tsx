@@ -1,13 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useBuilderStore } from "@/lib/stores/builder-store";
-import {
-  createCredentialsSchema,
-  type CredentialsFormData,
-} from "@/lib/validations/builderSchemas";
+import { createProviderCredentialsSchema } from "@/lib/validations/credentialsSchema";
+import { DATABASE_PROVIDERS } from "@/lib/compiler/providers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,13 +27,15 @@ interface StepCredentialsProps {
   isSubmitting: boolean;
 }
 
-const FIELDS: {
-  name: keyof CredentialsFormData;
+interface FieldDef {
+  name: string;
   label: string;
   placeholder: string;
   help: string;
   optional?: boolean;
-}[] = [
+}
+
+const SEGMENT_FIELDS: FieldDef[] = [
   {
     name: "segmentWriteFrontend",
     label: "Frontend Write Key",
@@ -61,18 +61,6 @@ const FIELDS: {
     placeholder: "profile token",
     help: "Required when Profile API is enabled. Found in Unify > Profile API",
   },
-  {
-    name: "supabaseUrl",
-    label: "Supabase URL",
-    placeholder: "https://xyz.supabase.co",
-    help: "Found in Supabase > Project Settings > API > Project URL",
-  },
-  {
-    name: "supabaseAnon",
-    label: "Supabase Anon Key",
-    placeholder: "eyJ...",
-    help: "Found in Supabase > Project Settings > API > anon public key",
-  },
 ];
 
 export function StepCredentials({
@@ -80,34 +68,43 @@ export function StepCredentials({
   onSubmit,
   isSubmitting,
 }: StepCredentialsProps) {
-  const { keys, architecture, updateKeys } = useBuilderStore();
+  const { keys, architecture, databaseProvider, updateKeys } = useBuilderStore();
   const enableProfileAPI = architecture.enableProfileAPI;
+  const providerConfig = DATABASE_PROVIDERS[databaseProvider];
 
-  const schema = createCredentialsSchema(enableProfileAPI);
+  const allFields = useMemo<FieldDef[]>(
+    () => [...SEGMENT_FIELDS, ...providerConfig.credentialFields],
+    [providerConfig]
+  );
+
+  const schema = createProviderCredentialsSchema(databaseProvider, enableProfileAPI);
+
+  const defaultValues = useMemo(() => {
+    const vals: Record<string, string> = {};
+    for (const field of allFields) {
+      vals[field.name] = keys[field.name] || "";
+    }
+    return vals;
+  }, [allFields, keys]);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<CredentialsFormData>({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      segmentWriteFrontend: keys.segmentWriteFrontend || "",
-      segmentWriteBackend: keys.segmentWriteBackend || "",
-      segmentWorkspace: keys.segmentWorkspace || "",
-      segmentProfileToken: keys.segmentProfileToken || "",
-      supabaseUrl: keys.supabaseUrl || "",
-      supabaseAnon: keys.supabaseAnon || "",
-    },
+  } = useForm<Record<string, string>>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(schema) as any,
+    defaultValues,
   });
 
   const [infoOpen, setInfoOpen] = useState(false);
 
-  function onValid(data: CredentialsFormData) {
+  function onValid(data: Record<string, string>) {
     const filledCount = Object.values(data).filter((v) => v && v.length > 0).length;
     trackEvent("Wizard Step Submitted", {
       step: 4,
       fields_provided_count: filledCount,
+      database_provider: databaseProvider,
     });
     updateKeys(data);
     onSubmit();
@@ -119,8 +116,8 @@ export function StepCredentials({
         <div className="space-y-1.5">
           <h2 className="text-xl font-semibold">Credentials</h2>
           <p className="text-sm text-muted-foreground">
-            Provide your Segment and Supabase credentials. These are stored
-            in-memory only and never persisted to any database.
+            Provide your Segment and {providerConfig.label} credentials. These
+            are stored in-memory only and never persisted to any database.
           </p>
         </div>
         <Dialog open={infoOpen} onOpenChange={(open) => {
@@ -139,11 +136,11 @@ export function StepCredentials({
               <DialogTitle>Where to find your credentials</DialogTitle>
               <DialogDescription>
                 All credentials are scoped to your specific Segment workspace
-                and Supabase project.
+                and {providerConfig.label} project.
               </DialogDescription>
             </DialogHeader>
             <dl className="space-y-3 text-sm">
-              {FIELDS.map((f) => (
+              {allFields.map((f) => (
                 <div key={f.name}>
                   <dt className="font-medium">{f.label}</dt>
                   <dd className="text-muted-foreground">{f.help}</dd>
@@ -156,7 +153,7 @@ export function StepCredentials({
       </div>
 
       <div className="space-y-4">
-        {FIELDS.map((field) => {
+        {allFields.map((field) => {
           const isProfileToken = field.name === "segmentProfileToken";
           const isHidden = isProfileToken && !enableProfileAPI;
           if (isHidden) return null;
@@ -179,7 +176,7 @@ export function StepCredentials({
               />
               {errors[field.name] && (
                 <p className="text-sm text-destructive">
-                  {errors[field.name]?.message}
+                  {String(errors[field.name]?.message)}
                 </p>
               )}
             </div>

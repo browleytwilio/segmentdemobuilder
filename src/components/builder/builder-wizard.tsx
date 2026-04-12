@@ -48,8 +48,15 @@ export function BuilderWizard() {
 
   const { currentStep, direction, goNext, goBack } = useBuilderWizard();
 
-  const { customerName, industry, persona, architecture, selectedScenarios } =
-    useBuilderStore();
+  const {
+    customerName,
+    industry,
+    persona,
+    architecture,
+    selectedScenarios,
+    databaseProvider,
+    authProvider,
+  } = useBuilderStore();
 
   async function handleSubmit() {
     setIsSubmitting(true);
@@ -78,6 +85,8 @@ export function BuilderWizard() {
         architecture,
         selectedScenarios,
         scenarioSlugs,
+        databaseProvider,
+        authProvider,
       },
     });
 

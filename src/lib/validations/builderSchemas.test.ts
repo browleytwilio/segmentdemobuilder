@@ -94,22 +94,24 @@ describe("contextSchema", () => {
 });
 
 describe("architectureSchema", () => {
+  const baseArch = {
+    enableSESidebar: true,
+    enableSeededProfiles: false,
+    enableProfileAPI: true,
+    enableIntentPredictions: false,
+    databaseProvider: "supabase" as const,
+    authProvider: "none" as const,
+  };
+
   it("accepts all boolean fields", () => {
-    const result = architectureSchema.safeParse({
-      enableSESidebar: true,
-      enableSeededProfiles: false,
-      enableProfileAPI: true,
-      enableIntentPredictions: false,
-    });
+    const result = architectureSchema.safeParse(baseArch);
     expect(result.success).toBe(true);
   });
 
   it("rejects non-boolean values", () => {
     const result = architectureSchema.safeParse({
+      ...baseArch,
       enableSESidebar: "yes",
-      enableSeededProfiles: false,
-      enableProfileAPI: true,
-      enableIntentPredictions: false,
     });
     expect(result.success).toBe(false);
   });
@@ -123,6 +125,7 @@ describe("architectureSchema", () => {
 
   it("accepts all-false configuration", () => {
     const result = architectureSchema.safeParse({
+      ...baseArch,
       enableSESidebar: false,
       enableSeededProfiles: false,
       enableProfileAPI: false,
@@ -133,10 +136,35 @@ describe("architectureSchema", () => {
 
   it("accepts all-true configuration", () => {
     const result = architectureSchema.safeParse({
+      ...baseArch,
       enableSESidebar: true,
       enableSeededProfiles: true,
       enableProfileAPI: true,
       enableIntentPredictions: true,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts neon as databaseProvider", () => {
+    const result = architectureSchema.safeParse({
+      ...baseArch,
+      databaseProvider: "neon",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects invalid databaseProvider", () => {
+    const result = architectureSchema.safeParse({
+      ...baseArch,
+      databaseProvider: "mongodb",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts clerk as authProvider", () => {
+    const result = architectureSchema.safeParse({
+      ...baseArch,
+      authProvider: "clerk",
     });
     expect(result.success).toBe(true);
   });

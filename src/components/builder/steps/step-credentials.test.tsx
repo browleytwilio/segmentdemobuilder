@@ -21,6 +21,7 @@ vi.mock("@/lib/stores/builder-store", () => ({
       enableProfileAPI: false,
       enableIntentPredictions: false,
     },
+    databaseProvider: "supabase" as const,
     updateKeys: mockUpdateKeys,
   }),
 }));

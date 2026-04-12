@@ -1,11 +1,14 @@
 import { headers } from "next/headers";
 import {
-  FALLBACK_VERSIONS,
-  TARGET_PACKAGES,
+  getFallbackVersions,
+  getTargetPackages,
 } from "@/lib/compiler/fallback-versions";
+import type { DatabaseProvider } from "@/lib/compiler/providers";
 import { ratelimit } from "@/lib/rate-limit";
 
 export const revalidate = 3600; // 1-hour ISR caching
+
+const VALID_PROVIDERS = new Set<DatabaseProvider>(["supabase", "neon", "generic-postgres"]);
 
 async function fetchLatestVersion(
   pkg: string,
@@ -19,7 +22,7 @@ async function fetchLatestVersion(
   return latest;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   // Rate limiting — 100 requests per 10 min per IP (skipped if Redis not configured)
   if (ratelimit) {
     const headersList = await headers();
@@ -40,11 +43,22 @@ export async function GET() {
       );
     }
   }
+
+  // Determine which provider's packages to resolve
+  const { searchParams } = new URL(request.url);
+  const providerParam = searchParams.get("provider") ?? "supabase";
+  const provider: DatabaseProvider = VALID_PROVIDERS.has(providerParam as DatabaseProvider)
+    ? (providerParam as DatabaseProvider)
+    : "supabase";
+
+  const fallbackVersions = getFallbackVersions(provider);
+  const targetPackages = getTargetPackages(provider);
+
   const versions: Record<string, string> = {};
   let usedFallback = false;
 
   const results = await Promise.allSettled(
-    TARGET_PACKAGES.map(async (pkg) => {
+    targetPackages.map(async (pkg) => {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
       try {
@@ -65,9 +79,9 @@ export async function GET() {
   }
 
   // Fill in any missing packages from fallback
-  for (const pkg of TARGET_PACKAGES) {
+  for (const pkg of targetPackages) {
     if (!versions[pkg]) {
-      versions[pkg] = FALLBACK_VERSIONS[pkg];
+      versions[pkg] = fallbackVersions[pkg];
     }
   }
 

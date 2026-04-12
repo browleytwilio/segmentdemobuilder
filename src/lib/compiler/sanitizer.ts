@@ -1,14 +1,29 @@
-import type { BuilderState } from "@/lib/stores/builder-store";
 import type { CompiledPrompt } from "./types";
+import type { DatabaseProvider } from "./providers";
+import { DATABASE_PROVIDERS } from "./providers";
 
-export const SANITIZATION_MAP: Record<keyof BuilderState["keys"], string> = {
+const SEGMENT_SANITIZATION: Record<string, string> = {
   segmentWriteFrontend: "YOUR_SEGMENT_WRITE_KEY",
   segmentWriteBackend: "YOUR_SEGMENT_BACKEND_WRITE_KEY",
   segmentWorkspace: "YOUR_SEGMENT_WORKSPACE_TOKEN",
   segmentProfileToken: "YOUR_SEGMENT_PROFILE_TOKEN",
-  supabaseUrl: "YOUR_SUPABASE_URL",
-  supabaseAnon: "YOUR_SUPABASE_ANON_KEY",
 };
+
+/**
+ * Builds a sanitization map for the given database provider.
+ * Merges the 4 fixed Segment entries with the provider's credential placeholders.
+ */
+export function buildSanitizationMap(
+  databaseProvider: DatabaseProvider
+): Record<string, string> {
+  return {
+    ...SEGMENT_SANITIZATION,
+    ...DATABASE_PROVIDERS[databaseProvider].sanitizationEntries,
+  };
+}
+
+/** @deprecated Backward-compat alias — equivalent to buildSanitizationMap("supabase") */
+export const SANITIZATION_MAP = buildSanitizationMap("supabase");
 
 /**
  * Replaces real credential values in promptText with placeholders.
@@ -16,12 +31,14 @@ export const SANITIZATION_MAP: Record<keyof BuilderState["keys"], string> = {
  */
 export function sanitizePrompts(
   prompts: CompiledPrompt[],
-  keys: BuilderState["keys"]
+  keys: Record<string, string>,
+  databaseProvider: DatabaseProvider = "supabase"
 ): CompiledPrompt[] {
+  const map = buildSanitizationMap(databaseProvider);
   return prompts.map((prompt) => {
     let sanitized = prompt.promptText;
-    for (const [keyField, placeholder] of Object.entries(SANITIZATION_MAP)) {
-      const realValue = keys[keyField as keyof BuilderState["keys"]];
+    for (const [keyField, placeholder] of Object.entries(map)) {
+      const realValue = keys[keyField];
       if (realValue) {
         sanitized = sanitized.replaceAll(realValue, placeholder);
       }

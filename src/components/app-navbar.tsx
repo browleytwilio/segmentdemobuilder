@@ -23,7 +23,7 @@ export async function AppNavbar() {
   const isAdmin = profile?.role === "super_admin";
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 print:hidden">
+    <header className="sticky top-0 z-40 relative bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 print:hidden">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
         {/* Mobile menu */}
         <MobileNav isAdmin={isAdmin} />
@@ -58,6 +58,7 @@ export async function AppNavbar() {
           <UserMenu email={user?.primaryEmailAddress?.emailAddress ?? ""} isAdmin={isAdmin} />
         </div>
       </div>
+      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-app-accent/20 to-transparent" />
     </header>
   );
 }

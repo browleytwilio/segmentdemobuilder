@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import type { DatabaseProvider, AuthProvider } from "@/lib/compiler/providers";
+import { buildInitialKeys } from "@/lib/compiler/providers";
 
 export interface DemoArchitecture {
   enableSESidebar: boolean;
@@ -22,15 +24,12 @@ export interface BuilderState {
   architecture: DemoArchitecture;
   selectedScenarios: string[];
 
+  // Provider Selection (Persisted)
+  databaseProvider: DatabaseProvider;
+  authProvider: AuthProvider;
+
   // Credentials (IN-MEMORY ONLY — NEVER PERSISTED)
-  keys: {
-    segmentWriteFrontend: string;
-    segmentWriteBackend: string;
-    segmentWorkspace: string;
-    segmentProfileToken: string;
-    supabaseUrl: string;
-    supabaseAnon: string;
-  };
+  keys: Record<string, string>;
 
   // State Setters
   setStep: (step: number) => void;
@@ -40,27 +39,27 @@ export interface BuilderState {
         BuilderState,
         | "architecture"
         | "keys"
+        | "databaseProvider"
+        | "authProvider"
         | "setStep"
         | "updateContext"
         | "updateArchitecture"
         | "updateKeys"
+        | "updateProviders"
         | "resetStore"
       >
     >
   ) => void;
   updateArchitecture: (config: Partial<DemoArchitecture>) => void;
-  updateKeys: (keys: Partial<BuilderState["keys"]>) => void;
+  updateKeys: (keys: Record<string, string>) => void;
+  updateProviders: (providers: {
+    databaseProvider?: DatabaseProvider;
+    authProvider?: AuthProvider;
+  }) => void;
   resetStore: () => void;
 }
 
-const initialKeys: BuilderState["keys"] = {
-  segmentWriteFrontend: "",
-  segmentWriteBackend: "",
-  segmentWorkspace: "",
-  segmentProfileToken: "",
-  supabaseUrl: "",
-  supabaseAnon: "",
-};
+const initialKeys = buildInitialKeys("supabase");
 
 const initialArchitecture: DemoArchitecture = {
   enableSESidebar: true,
@@ -77,6 +76,8 @@ const initialState = {
   persona: "",
   architecture: initialArchitecture,
   selectedScenarios: [] as string[],
+  databaseProvider: "supabase" as DatabaseProvider,
+  authProvider: "none" as AuthProvider,
   keys: initialKeys,
 };
 
@@ -99,11 +100,25 @@ export const useBuilderStore = create<BuilderState>()(
           keys: { ...state.keys, ...keys },
         })),
 
+      updateProviders: (providers) =>
+        set((state) => {
+          const next: Partial<BuilderState> = {};
+          if (providers.databaseProvider !== undefined) {
+            next.databaseProvider = providers.databaseProvider;
+            // Reset keys to match the new provider's credential fields
+            next.keys = buildInitialKeys(providers.databaseProvider);
+          }
+          if (providers.authProvider !== undefined) {
+            next.authProvider = providers.authProvider;
+          }
+          return { ...state, ...next };
+        }),
+
       resetStore: () => set({ ...initialState, keys: { ...initialKeys } }),
     }),
     {
       name: "builder-store",
-      version: 2,
+      version: 3,
       partialize: (state) => ({
         currentStep: state.currentStep,
         customerName: state.customerName,
@@ -111,6 +126,8 @@ export const useBuilderStore = create<BuilderState>()(
         persona: state.persona,
         architecture: state.architecture,
         selectedScenarios: state.selectedScenarios,
+        databaseProvider: state.databaseProvider,
+        authProvider: state.authProvider,
         // keys is intentionally excluded — credentials stay in-memory only
       }),
       migrate: (persisted, version) => {
@@ -118,8 +135,16 @@ export const useBuilderStore = create<BuilderState>()(
           const prev = persisted as Record<string, unknown>;
           if (version === 0 || version === 1) {
             // v1→v2: selectedScenarios changed from slugs to demo_feature UUIDs.
-            // Clear them so the user re-selects on Step 3.
             return { ...initialState, ...prev, selectedScenarios: [] };
+          }
+          if (version === 2) {
+            // v2→v3: added databaseProvider + authProvider.
+            return {
+              ...initialState,
+              ...prev,
+              databaseProvider: "supabase" as DatabaseProvider,
+              authProvider: "none" as AuthProvider,
+            };
           }
           return persisted as BuilderState;
         } catch {

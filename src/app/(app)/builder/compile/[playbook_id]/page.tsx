@@ -46,8 +46,8 @@ export default function CompilePage({
 
     async function run() {
       try {
-        // 1. Fetch NPM versions
-        const res = await fetch("/api/dependencies/versions");
+        // 1. Fetch NPM versions (provider-aware)
+        const res = await fetch(`/api/dependencies/versions?provider=${store.databaseProvider}`);
         if (!res.ok) throw new Error("Failed to fetch dependency versions");
         const { versions }: { versions: VersionMap } = await res.json();
 
@@ -74,6 +74,8 @@ export default function CompilePage({
           selectedScenarios: store.selectedScenarios,
           keys: store.keys,
           versions,
+          databaseProvider: store.databaseProvider,
+          authProvider: store.authProvider,
         };
         let variantA = compilePromptsWithTemplates(input, dbTemplates);
 
@@ -107,7 +109,7 @@ export default function CompilePage({
 
         // 4. Sanitize to Variant B (placeholders)
         setTrackedPhase("saving");
-        const variantB = sanitizePrompts(variantA, store.keys);
+        const variantB = sanitizePrompts(variantA, store.keys, store.databaseProvider);
 
         // 5. PATCH database with Variant B only
         const patchRes = await fetch(`/api/playbooks/${playbook_id}`, {

@@ -1,13 +1,13 @@
 "use client";
 
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SANITIZATION_MAP } from "@/lib/compiler/sanitizer";
+import { buildSanitizationMap, SANITIZATION_MAP } from "@/lib/compiler/sanitizer";
+import { DATABASE_PROVIDERS } from "@/lib/compiler/providers";
+import type { DatabaseProvider } from "@/lib/compiler/providers";
 import type { CompiledPrompt } from "@/lib/compiler/types";
-import {
-  baseCredentialsSchema,
-  type CredentialsFormData,
-} from "@/lib/validations/credentialsSchema";
+import { createProviderCredentialsSchema } from "@/lib/validations/credentialsSchema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,20 +21,28 @@ import {
 } from "@/components/ui/dialog";
 import { trackEvent } from "@/lib/analytics/events";
 
-type KeyField = keyof typeof SANITIZATION_MAP;
-
-const KEY_LABELS: Record<KeyField, string> = {
+const SEGMENT_LABELS: Record<string, string> = {
   segmentWriteFrontend: "Frontend Write Key",
   segmentWriteBackend: "Backend Write Key (optional)",
   segmentWorkspace: "Workspace API Token",
   segmentProfileToken: "Profile API Token (optional)",
-  supabaseUrl: "Supabase URL",
-  supabaseAnon: "Supabase Anon Key",
 };
 
+function buildKeyLabels(databaseProvider: DatabaseProvider): Record<string, string> {
+  const labels = { ...SEGMENT_LABELS };
+  for (const field of DATABASE_PROVIDERS[databaseProvider].credentialFields) {
+    labels[field.name] = field.label;
+  }
+  return labels;
+}
+
 /** Check if any prompt contains placeholder strings */
-export function needsRehydration(prompts: CompiledPrompt[]): boolean {
-  const placeholders = Object.values(SANITIZATION_MAP);
+export function needsRehydration(
+  prompts: CompiledPrompt[],
+  databaseProvider: DatabaseProvider = "supabase"
+): boolean {
+  const map = buildSanitizationMap(databaseProvider);
+  const placeholders = Object.values(map);
   return prompts.some((p) =>
     placeholders.some((ph) => p.promptText.includes(ph))
   );
@@ -43,12 +51,14 @@ export function needsRehydration(prompts: CompiledPrompt[]): boolean {
 /** Replace placeholders with real keys in all prompts */
 export function rehydratePrompts(
   prompts: CompiledPrompt[],
-  keys: Record<KeyField, string>
+  keys: Record<string, string>,
+  databaseProvider: DatabaseProvider = "supabase"
 ): CompiledPrompt[] {
+  const map = buildSanitizationMap(databaseProvider);
   return prompts.map((p) => {
     let text = p.promptText;
-    for (const [field, placeholder] of Object.entries(SANITIZATION_MAP)) {
-      const realValue = keys[field as KeyField];
+    for (const [field, placeholder] of Object.entries(map)) {
+      const realValue = keys[field];
       if (realValue) {
         text = text.replaceAll(placeholder, realValue);
       }
@@ -59,35 +69,46 @@ export function rehydratePrompts(
 
 interface RehydrationModalProps {
   open: boolean;
-  onSubmit: (keys: Record<KeyField, string>) => void;
+  databaseProvider?: DatabaseProvider;
+  onSubmit: (keys: Record<string, string>) => void;
   onDismiss: () => void;
 }
 
 export function RehydrationModal({
   open,
+  databaseProvider = "supabase",
   onSubmit,
   onDismiss,
 }: RehydrationModalProps) {
+  const keyLabels = useMemo(() => buildKeyLabels(databaseProvider), [databaseProvider]);
+  const sanitizationMap = useMemo(() => buildSanitizationMap(databaseProvider), [databaseProvider]);
+  const schema = useMemo(
+    () => createProviderCredentialsSchema(databaseProvider, false),
+    [databaseProvider]
+  );
+
+  const defaultValues = useMemo(() => {
+    const vals: Record<string, string> = {};
+    for (const field of Object.keys(keyLabels)) {
+      vals[field] = "";
+    }
+    return vals;
+  }, [keyLabels]);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<CredentialsFormData>({
-    resolver: zodResolver(baseCredentialsSchema),
-    defaultValues: {
-      segmentWriteFrontend: "",
-      segmentWriteBackend: "",
-      segmentWorkspace: "",
-      segmentProfileToken: "",
-      supabaseUrl: "",
-      supabaseAnon: "",
-    },
+  } = useForm<Record<string, string>>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(schema) as any,
+    defaultValues,
   });
 
-  function onValid(data: CredentialsFormData) {
+  function onValid(data: Record<string, string>) {
     const filledCount = Object.values(data).filter((v) => v && v.length > 0).length;
     trackEvent("Keys Injected", { field_count: filledCount });
-    onSubmit(data as Record<KeyField, string>);
+    onSubmit(data);
   }
 
   return (
@@ -108,27 +129,25 @@ export function RehydrationModal({
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-4">
-            {(Object.entries(KEY_LABELS) as [KeyField, string][]).map(
-              ([field, label]) => (
-                <div key={field} className="space-y-1">
-                  <Label htmlFor={`rehydrate-${field}`} className="text-xs">
-                    {label}
-                  </Label>
-                  <Input
-                    id={`rehydrate-${field}`}
-                    type="password"
-                    placeholder={SANITIZATION_MAP[field]}
-                    className={errors[field] ? "border-destructive" : ""}
-                    {...register(field)}
-                  />
-                  {errors[field] && (
-                    <p className="text-xs text-destructive">
-                      {errors[field]?.message}
-                    </p>
-                  )}
-                </div>
-              )
-            )}
+            {Object.entries(keyLabels).map(([field, label]) => (
+              <div key={field} className="space-y-1">
+                <Label htmlFor={`rehydrate-${field}`} className="text-xs">
+                  {label}
+                </Label>
+                <Input
+                  id={`rehydrate-${field}`}
+                  type="password"
+                  placeholder={sanitizationMap[field] ?? ""}
+                  className={errors[field] ? "border-destructive" : ""}
+                  {...register(field)}
+                />
+                {errors[field] && (
+                  <p className="text-xs text-destructive">
+                    {String(errors[field]?.message)}
+                  </p>
+                )}
+              </div>
+            ))}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => {

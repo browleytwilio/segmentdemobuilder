@@ -6,6 +6,8 @@ import userEvent from "@testing-library/user-event";
 
 const mockUpdateArchitecture = vi.fn();
 
+const mockUpdateProviders = vi.fn();
+
 vi.mock("@/lib/stores/builder-store", () => ({
   useBuilderStore: () => ({
     architecture: {
@@ -14,7 +16,10 @@ vi.mock("@/lib/stores/builder-store", () => ({
       enableProfileAPI: false,
       enableIntentPredictions: false,
     },
+    databaseProvider: "supabase" as const,
+    authProvider: "none" as const,
     updateArchitecture: mockUpdateArchitecture,
+    updateProviders: mockUpdateProviders,
   }),
 }));
 
@@ -54,7 +59,20 @@ vi.mock("@/components/ui/switch", () => ({
   ),
 }));
 
-vi.mock("lucide-react", () => new Proxy({}, { get: () => () => null }));
+vi.mock("@/components/ui/select", () => ({
+  Select: ({ children, value, onValueChange }: { children: React.ReactNode; value?: string; onValueChange?: (v: string) => void }) => (
+    <div data-testid="select">{children}</div>
+  ),
+  SelectTrigger: ({ children }: { children: React.ReactNode }) => <button>{children}</button>,
+  SelectValue: ({ placeholder }: { placeholder?: string }) => <span>{placeholder}</span>,
+  SelectContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  SelectItem: ({ children, value }: { children: React.ReactNode; value: string }) => <div>{children}</div>,
+}));
+
+vi.mock("lucide-react", () => {
+  const handler = { get: () => () => null };
+  return new Proxy({} as Record<string, unknown>, handler);
+});
 
 // ── Import under test ──────────────────────────────────────────────────
 

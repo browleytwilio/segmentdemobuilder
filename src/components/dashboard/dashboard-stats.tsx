@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import type { PlaybookSummary } from "@/lib/compiler/types";
 import { trackEvent } from "@/lib/analytics/events";
 import { BookOpenIcon, PencilLineIcon, CircleCheckIcon, StarIcon } from "lucide-react";
+import { StaggerContainer, StaggerItem } from "@/components/app/motion-wrappers";
 
 interface DashboardStatsProps {
   playbooks: PlaybookSummary[];
@@ -36,6 +37,7 @@ export function DashboardStats({ playbooks }: DashboardStatsProps) {
       accent: "text-foreground",
       bgAccent: "bg-primary/5 dark:bg-primary/10",
       iconColor: "text-primary/70",
+      borderColor: "border-l-app-accent",
     },
     {
       label: "In Progress",
@@ -44,6 +46,7 @@ export function DashboardStats({ playbooks }: DashboardStatsProps) {
       accent: "text-amber-600 dark:text-amber-400",
       bgAccent: "bg-amber-500/5 dark:bg-amber-500/10",
       iconColor: "text-amber-500/70",
+      borderColor: "border-l-amber-400",
     },
     {
       label: "Completed",
@@ -53,6 +56,7 @@ export function DashboardStats({ playbooks }: DashboardStatsProps) {
       bgAccent: "bg-emerald-500/5 dark:bg-emerald-500/10",
       iconColor: "text-emerald-500/70",
       subtitle: total > 0 ? `${completionRate}% rate` : undefined,
+      borderColor: "border-l-emerald-500",
     },
     {
       label: "Favorites",
@@ -61,30 +65,31 @@ export function DashboardStats({ playbooks }: DashboardStatsProps) {
       accent: "text-yellow-600 dark:text-yellow-400",
       bgAccent: "bg-yellow-500/5 dark:bg-yellow-500/10",
       iconColor: "text-yellow-500/70",
+      borderColor: "border-l-yellow-400",
     },
   ];
 
   return (
-    <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
-      {stats.map(({ label, value, icon: Icon, accent, bgAccent, iconColor, subtitle }) => (
-        <div
+    <StaggerContainer className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+      {stats.map(({ label, value, icon: Icon, accent, bgAccent, iconColor, subtitle, borderColor }) => (
+        <StaggerItem
           key={label}
-          className={`relative overflow-hidden rounded-xl border p-4 ${bgAccent}`}
+          className={`relative overflow-hidden rounded-xl border border-l-2 ${borderColor} p-4 ${bgAccent}`}
         >
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-muted-foreground">{label}</span>
-            <div className={`rounded-lg p-1.5 ${bgAccent}`}>
-              <Icon className={`size-3.5 ${iconColor}`} />
+            <div className={`rounded-lg p-2 ${bgAccent}`}>
+              <Icon className={`size-4 ${iconColor}`} />
             </div>
           </div>
-          <p className={`text-2xl font-bold tabular-nums tracking-tight ${accent}`}>
+          <p className={`text-3xl font-bold tabular-nums tracking-tight ${accent}`}>
             {value}
           </p>
           {subtitle && (
             <p className="text-[0.65rem] text-muted-foreground mt-0.5">{subtitle}</p>
           )}
-        </div>
+        </StaggerItem>
       ))}
-    </div>
+    </StaggerContainer>
   );
 }

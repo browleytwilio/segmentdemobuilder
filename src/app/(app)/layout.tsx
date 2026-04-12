@@ -9,7 +9,7 @@ export default function AppLayout({
   return (
     <>
       <AppNavbar />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 app-bg-pattern">{children}</main>
       <CopilotWrapper />
     </>
   );
