@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@/lib/supabase/server";
+import { createNotification } from "@/app/(app)/notifications/actions";
 import type { PlaybookVisibility } from "@/lib/compiler/types";
 
 const PROTECTED_EMAIL = "browley@twilio.com";
@@ -89,6 +90,15 @@ export async function updateUserRole(
     old_role: target?.role,
     new_role: newRole,
   });
+
+  // Notify the affected user about their role change
+  createNotification(
+    userId,
+    "role_change",
+    `Your role has been updated`,
+    `Your role has been changed to ${newRole === "super_admin" ? "Super Admin" : "User"}.`,
+    { new_role: newRole, old_role: target?.role }
+  );
 
   revalidatePath("/admin/users");
   return { error: null };

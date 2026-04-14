@@ -6,6 +6,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
 import { MobileNav } from "./mobile-nav";
 import { LogoMark } from "./logo";
+import { NotificationBell } from "./layout/notification-bell";
 import { LayoutDashboardIcon, PlusCircleIcon, ShieldIcon } from "lucide-react";
 
 export async function AppNavbar() {
@@ -54,6 +55,7 @@ export async function AppNavbar() {
 
         {/* Right side actions */}
         <div className="ml-auto flex items-center gap-1">
+          <NotificationBell />
           <ThemeToggle />
           <UserMenu email={user?.primaryEmailAddress?.emailAddress ?? ""} isAdmin={isAdmin} />
         </div>

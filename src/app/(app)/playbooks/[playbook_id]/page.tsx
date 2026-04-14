@@ -5,6 +5,7 @@ import { getPlaybookComments } from "@/app/(app)/playbooks/actions";
 import { PlaybookViewer } from "@/components/playbook/playbook-viewer";
 import { CommentThread } from "@/components/playbook/comment-thread";
 import { VisibilitySelector } from "@/components/playbook/visibility-selector";
+import { ProfileInspector } from "@/components/playbook/profile-inspector";
 
 export default async function PlaybookPage({
   params,
@@ -33,6 +34,13 @@ export default async function PlaybookPage({
       </div>
 
       <PlaybookViewer playbook={playbook} />
+
+      {/* Profile Inspector — shown when Profile API is enabled */}
+      {playbook.demo_config?.architecture?.enableProfileAPI && (
+        <div className="mx-auto max-w-4xl px-4 print:hidden">
+          <ProfileInspector playbookId={playbook_id} />
+        </div>
+      )}
 
       {/* Comments section */}
       <div className="mx-auto max-w-4xl px-4 pb-10 print:hidden">

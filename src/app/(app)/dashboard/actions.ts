@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 import { createClient, ensureProfile } from "@/lib/supabase/server";
+import { createNotification } from "@/app/(app)/notifications/actions";
 import type { PlaybookSummary, PlaybookRow, Tag, DemoConfig, PlaybookVisibility } from "@/lib/compiler/types";
 
 // ---------------------------------------------------------------------------
@@ -271,7 +272,7 @@ export async function clonePlaybook(
   // Fetch source playbook — allow own playbooks or completed (shared/public) ones
   const { data: source, error: fetchError } = await supabase
     .from("playbooks")
-    .select("customer_name, industry, demo_config")
+    .select("user_id, customer_name, industry, demo_config")
     .eq("id", playbookId)
     .single();
 
@@ -292,6 +293,17 @@ export async function clonePlaybook(
     .single();
 
   if (error) return { error: error.message };
+
+  // Notify source playbook owner (unless cloning own playbook)
+  if (source.user_id && source.user_id !== userId) {
+    createNotification(
+      source.user_id,
+      "clone",
+      "Your playbook was cloned",
+      `Someone cloned "${source.customer_name}"`,
+      { playbook_id: playbookId, new_playbook_id: data.id }
+    );
+  }
 
   revalidatePath("/dashboard");
   return { id: data.id };

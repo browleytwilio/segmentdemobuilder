@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@/lib/supabase/server";
+import { createNotification } from "@/app/(app)/notifications/actions";
 import type { PlaybookComment } from "@/lib/compiler/types";
 
 export async function getPlaybookComments(
@@ -53,6 +54,23 @@ export async function addComment(
     });
 
   if (error) return { error: error.message };
+
+  // Notify playbook owner (unless they're the commenter)
+  const { data: playbook } = await supabase
+    .from("playbooks")
+    .select("user_id, customer_name")
+    .eq("id", playbookId)
+    .single();
+
+  if (playbook && playbook.user_id !== userId) {
+    createNotification(
+      playbook.user_id,
+      "comment",
+      "New comment on your playbook",
+      `Someone commented on "${playbook.customer_name}"`,
+      { playbook_id: playbookId }
+    );
+  }
 
   revalidatePath(`/playbooks/${playbookId}`);
   return {};

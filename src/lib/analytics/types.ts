@@ -211,6 +211,14 @@ export interface SegmentEventMap {
   "Admin Playbooks Filtered": { filter_type: "industry" | "status" | "q"; filter_value: string };
   "Admin Playbook Opened": { playbook_id: string; industry: string; owner_email: string };
 
+  // Notifications
+  "Notification Viewed": { notification_id: string; type: string };
+  "All Notifications Marked Read": { count: number };
+
+  // Profile Inspector
+  "Profile Lookup": { identifier_type: "user_id" | "email" | "anonymous_id"; playbook_id: string };
+  "Profile Lookup Failed": { error: string; playbook_id: string };
+
   // UX Interactions
   "Mobile Nav Toggled": { action: "open" | "close" };
   "Quick Action Used": { action: string; playbook_id: string };
