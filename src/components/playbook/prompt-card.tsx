@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { SANITIZATION_MAP } from "@/lib/compiler/sanitizer";
 import type { CompiledPrompt } from "@/lib/compiler/types";
 import { useClipboard } from "@/hooks/use-clipboard";
@@ -18,7 +19,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, PencilIcon, RefreshCwIcon, LoaderIcon } from "lucide-react";
 import { trackEvent } from "@/lib/analytics/events";
 
 const placeholderValues = Object.values(SANITIZATION_MAP);
@@ -46,6 +47,9 @@ interface PromptCardProps {
   playbookId: string;
   isComplete: boolean;
   onMarkComplete: () => void;
+  onRegenerate?: (updated: CompiledPrompt) => void;
+  onEdit?: (updated: CompiledPrompt) => void;
+  context?: { persona: string; industry: string; customerName: string };
 }
 
 export function PromptCard({
@@ -53,9 +57,15 @@ export function PromptCard({
   playbookId,
   isComplete,
   onMarkComplete,
+  onRegenerate,
+  onEdit,
+  context,
 }: PromptCardProps) {
   const { copy } = useClipboard();
   const cardRef = useRef<HTMLDivElement>(null);
+  const [regenerating, setRegenerating] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState(prompt.promptText);
 
   const hasPlaceholders = placeholderRegex.test(prompt.promptText);
   // Reset regex lastIndex after test
@@ -98,26 +108,107 @@ export function PromptCard({
         <CardContent className="space-y-4">
           {/* Prompt block */}
           <div className="relative">
-            <pre className="max-h-[32rem] overflow-auto rounded-xl bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-200 whitespace-pre-wrap dark:bg-zinc-900 border border-zinc-800">
-              {hasPlaceholders
-                ? highlightPlaceholders(prompt.promptText)
-                : prompt.promptText}
-            </pre>
-            <Button
-              size="lg"
-              className="mt-3 w-full"
-              onClick={() => {
-                trackEvent("Prompt Copied", {
-                  playbook_id: playbookId,
-                  step_number: prompt.stepNumber,
-                  prompt_title: prompt.title,
-                });
-                copy(prompt.promptText);
-              }}
-            >
-              <CopyIcon className="size-4" />
-              Copy Prompt to Clipboard
-            </Button>
+            {editing ? (
+              <div className="space-y-2">
+                <textarea
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  className="min-h-[20rem] w-full rounded-xl bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-200 whitespace-pre-wrap dark:bg-zinc-900 border border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-y font-mono"
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditText(prompt.promptText);
+                      setEditing(false);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const updated = { ...prompt, promptText: editText };
+                      onEdit?.(updated);
+                      setEditing(false);
+                    }}
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <pre className="max-h-[32rem] overflow-auto rounded-xl bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-200 whitespace-pre-wrap dark:bg-zinc-900 border border-zinc-800">
+                {hasPlaceholders
+                  ? highlightPlaceholders(prompt.promptText)
+                  : prompt.promptText}
+              </pre>
+            )}
+            <div className="mt-3 flex gap-2">
+              <Button
+                size="lg"
+                className="flex-1"
+                onClick={() => {
+                  trackEvent("Prompt Copied", {
+                    playbook_id: playbookId,
+                    step_number: prompt.stepNumber,
+                    prompt_title: prompt.title,
+                  });
+                  copy(prompt.promptText);
+                }}
+              >
+                <CopyIcon className="size-4" />
+                Copy Prompt to Clipboard
+              </Button>
+              {onEdit && !editing && (
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => {
+                    setEditText(prompt.promptText);
+                    setEditing(true);
+                  }}
+                >
+                  <PencilIcon className="size-4" />
+                </Button>
+              )}
+              {onRegenerate && context && (
+                <Button
+                  size="lg"
+                  variant="outline"
+                  disabled={regenerating}
+                  onClick={async () => {
+                    setRegenerating(true);
+                    try {
+                      const res = await fetch("/api/ai/regenerate-prompt", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ prompt, context }),
+                      });
+                      if (!res.ok) throw new Error("Regeneration failed");
+                      const { prompt: updated } = await res.json();
+                      onRegenerate(updated);
+                      trackEvent("Prompt Regenerated", {
+                        playbook_id: playbookId,
+                        step_number: prompt.stepNumber,
+                      });
+                      toast.success("Prompt regenerated");
+                    } catch {
+                      toast.error("Failed to regenerate prompt");
+                    } finally {
+                      setRegenerating(false);
+                    }
+                  }}
+                >
+                  {regenerating ? (
+                    <LoaderIcon className="size-4 animate-spin" />
+                  ) : (
+                    <RefreshCwIcon className="size-4" />
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Expected Output */}

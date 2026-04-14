@@ -133,7 +133,7 @@ export interface SegmentEventMap {
     error: string;
     failed_phase: string;
   };
-  "Compilation Retried": { playbook_id: string };
+  "Compilation Retried": { playbook_id: string; resume_from?: string };
 
   // Playbook Viewer
   "Playbook Viewed": {
@@ -180,6 +180,7 @@ export interface SegmentEventMap {
   "AI Scenarios Recommended": { industry: string; persona: string; count: number };
   "NL Builder Used": { description_length: number };
   "AI Template Refined": { template_id: string };
+  "Prompt Regenerated": { playbook_id: string; step_number: number };
 
   // Signup restriction
   "Signup Rejected": { email_domain: string };

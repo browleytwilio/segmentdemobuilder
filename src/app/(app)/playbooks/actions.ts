@@ -58,6 +58,61 @@ export async function addComment(
   return {};
 }
 
+export async function updatePlaybookPrompt(
+  playbookId: string,
+  stepNumber: number,
+  updatedPrompt: { stepNumber: number; title: string; promptText: string; expectedOutput: string }
+): Promise<{ error?: string }> {
+  const { userId } = await auth();
+  if (!userId) return { error: "Not authenticated" };
+
+  const supabase = await createClient();
+
+  // Fetch current prompts
+  const { data, error: fetchError } = await supabase
+    .from("playbooks")
+    .select("generated_prompts")
+    .eq("id", playbookId)
+    .eq("user_id", userId)
+    .single();
+
+  if (fetchError || !data) return { error: "Playbook not found" };
+
+  const prompts = data.generated_prompts as Array<Record<string, unknown>>;
+  const updated = prompts.map((p) =>
+    (p.stepNumber as number) === stepNumber ? updatedPrompt : p
+  );
+
+  const { error } = await supabase
+    .from("playbooks")
+    .update({ generated_prompts: updated })
+    .eq("id", playbookId)
+    .eq("user_id", userId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/playbooks/${playbookId}`);
+  return {};
+}
+
+export async function updatePlaybookProgress(
+  playbookId: string,
+  completedSteps: number[]
+): Promise<{ error?: string }> {
+  const { userId } = await auth();
+  if (!userId) return { error: "Not authenticated" };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("playbooks")
+    .update({ progress: completedSteps })
+    .eq("id", playbookId)
+    .eq("user_id", userId);
+
+  if (error) return { error: error.message };
+  return {};
+}
+
 export async function deleteComment(
   commentId: string,
   playbookId: string

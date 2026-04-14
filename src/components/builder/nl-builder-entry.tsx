@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useBuilderStore } from "@/lib/stores/builder-store";
+import { getDemoFeaturesForWizard } from "@/app/(app)/builder/actions";
 import { trackEvent } from "@/lib/analytics/events";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -36,6 +37,19 @@ export function NLBuilderEntry({ onSwitchToWizard }: { onSwitchToWizard: () => v
         persona: data.persona || "",
       });
       updateArchitecture(data.architecture || {});
+
+      // Pre-select scenarios suggested by the AI
+      if (data.suggestedScenarios?.length && data.industry) {
+        const { data: features } = await getDemoFeaturesForWizard(data.industry);
+        if (features) {
+          const matchedIds = features
+            .filter((f: { slug: string }) => data.suggestedScenarios.includes(f.slug))
+            .map((f: { id: string }) => f.id);
+          if (matchedIds.length > 0) {
+            updateContext({ selectedScenarios: matchedIds });
+          }
+        }
+      }
 
       // Switch to wizard at step 3 (scenarios) with context pre-filled
       setStep(2);

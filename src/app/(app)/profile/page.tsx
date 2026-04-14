@@ -1,6 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, ensureProfile } from "@/lib/supabase/server";
 import { FadeIn } from "@/components/app/motion-wrappers";
 import { ProfileCard } from "./profile-card";
 
@@ -15,11 +15,13 @@ export default async function ProfilePage() {
   const [user, supabase] = await Promise.all([currentUser(), createClient()]);
   if (!user) redirect("/sign-in");
 
+  await ensureProfile(userId);
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", userId)
-    .single();
+    .maybeSingle();
 
   const { count: playbookCount } = await supabase
     .from("playbooks")

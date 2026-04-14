@@ -66,6 +66,10 @@ vi.mock("./ai-script-generator", () => ({
   AIScriptGenerator: () => null,
 }));
 
+vi.mock("./presentation-mode", () => ({
+  PresentationMode: () => null,
+}));
+
 vi.mock("@/components/ui/tabs", () => ({
   Tabs: ({
     children,
@@ -99,8 +103,16 @@ vi.mock("@/components/ui/button", () => ({
   ),
 }));
 
+vi.mock("@/app/(app)/playbooks/actions", () => ({
+  updatePlaybookPrompt: vi.fn(),
+  updatePlaybookProgress: vi.fn(),
+}));
+
 vi.mock("lucide-react", () => ({
+  CheckIcon: () => null,
   DownloadIcon: () => null,
+  KeyIcon: () => null,
+  PlayIcon: () => null,
   PrinterIcon: () => null,
   ShareIcon: () => null,
 }));
@@ -121,9 +133,7 @@ describe("PlaybookViewer", () => {
     render(<PlaybookViewer playbook={playbook} />);
 
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
-    expect(
-      screen.getByText("E-commerce / Retail Playbook")
-    ).toBeInTheDocument();
+    expect(screen.getByText("E-commerce / Retail")).toBeInTheDocument();
   });
 
   it("renders prompt cards for each prompt", () => {
@@ -135,7 +145,7 @@ describe("PlaybookViewer", () => {
     expect(screen.getByTestId("prompt-3")).toBeInTheDocument();
   });
 
-  it("shows rehydration modal when prompts contain placeholders", () => {
+  it("shows Inject Keys button when prompts contain placeholders", () => {
     const playbook = mockPlaybookRow({
       generated_prompts: [
         mockCompiledPrompt({
@@ -148,7 +158,7 @@ describe("PlaybookViewer", () => {
     });
     render(<PlaybookViewer playbook={playbook} />);
 
-    expect(screen.getByTestId("rehydration-modal")).toBeInTheDocument();
+    expect(screen.getByText("Inject Keys")).toBeInTheDocument();
   });
 
   it("does not show rehydration modal when no placeholders", () => {

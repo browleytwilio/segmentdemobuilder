@@ -1,18 +1,24 @@
 "use client";
 
-import { use, useEffect, useState, useRef } from "react";
+import { use, useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useBuilderStore } from "@/lib/stores/builder-store";
 import { compilePromptsWithTemplates } from "@/lib/compiler/compile";
 import { sanitizePrompts } from "@/lib/compiler/sanitizer";
 import { fetchScenarioTemplates } from "@/app/(app)/builder/actions";
-import type { VersionMap } from "@/lib/compiler/types";
+import type { CompiledPrompt, VersionMap } from "@/lib/compiler/types";
 import { Button } from "@/components/ui/button";
 import { AlertTriangleIcon } from "lucide-react";
 import { trackEvent } from "@/lib/analytics/events";
 
 type CompilePhase = "loading" | "compiling" | "enriching" | "saving" | "redirecting" | "error";
+
+interface Checkpoint {
+  versions?: VersionMap;
+  compiledPrompts?: CompiledPrompt[];
+  enrichedPrompts?: CompiledPrompt[];
+}
 
 export default function CompilePage({
   params,
@@ -28,30 +34,36 @@ export default function CompilePage({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const startTime = useRef(Date.now());
   const phaseRef = useRef<CompilePhase>("loading");
+  const checkpoint = useRef<Checkpoint>({});
 
-  useEffect(() => {
-    if (hasRun.current) return;
-    hasRun.current = true;
+  const setTrackedPhase = useCallback((p: CompilePhase) => {
+    phaseRef.current = p;
+    setPhase(p);
+    trackEvent("Compilation Phase Changed", {
+      playbook_id,
+      phase: p,
+      elapsed_ms: Date.now() - startTime.current,
+    });
+  }, [playbook_id]);
+
+  const run = useCallback(async () => {
+    setErrorMessage(null);
     startTime.current = Date.now();
 
-    function setTrackedPhase(p: CompilePhase) {
-      phaseRef.current = p;
-      setPhase(p);
-      trackEvent("Compilation Phase Changed", {
-        playbook_id,
-        phase: p,
-        elapsed_ms: Date.now() - startTime.current,
-      });
-    }
-
-    async function run() {
-      try {
-        // 1. Fetch NPM versions (provider-aware)
+    try {
+      // 1. Fetch NPM versions (skip if checkpointed)
+      let versions = checkpoint.current.versions;
+      if (!versions) {
+        setTrackedPhase("loading");
         const res = await fetch(`/api/dependencies/versions?provider=${store.databaseProvider}`);
         if (!res.ok) throw new Error("Failed to fetch dependency versions");
-        const { versions }: { versions: VersionMap } = await res.json();
+        ({ versions } = await res.json() as { versions: VersionMap });
+        checkpoint.current.versions = versions;
+      }
 
-        // 2. Fetch scenario templates from DB
+      // 2. Compile prompts (skip if checkpointed)
+      let variantA: CompiledPrompt[] | undefined = checkpoint.current.compiledPrompts;
+      if (!variantA) {
         setTrackedPhase("compiling");
         const { templates: dbTemplates, invalidIds } =
           await fetchScenarioTemplates(store.selectedScenarios);
@@ -65,7 +77,6 @@ export default function CompilePage({
           });
         }
 
-        // 3. Compile Variant A (real keys) using DB-driven templates
         const input = {
           customerName: store.customerName,
           industry: store.industry,
@@ -77,9 +88,12 @@ export default function CompilePage({
           databaseProvider: store.databaseProvider,
           authProvider: store.authProvider,
         };
-        let variantA = compilePromptsWithTemplates(input, dbTemplates);
+        variantA = compilePromptsWithTemplates(input, dbTemplates);
+        checkpoint.current.compiledPrompts = variantA;
+      }
 
-        // 3b. AI Enrichment (best-effort — falls back to original on failure)
+      // 3. AI Enrichment (skip if checkpointed, best-effort)
+      if (!checkpoint.current.enrichedPrompts) {
         setTrackedPhase("enriching");
         try {
           const enrichRes = await fetch("/api/ai/enrich", {
@@ -106,51 +120,61 @@ export default function CompilePage({
         } catch {
           toast.info("AI enrichment skipped — using standard prompts");
         }
-
-        // 4. Sanitize to Variant B (placeholders)
-        setTrackedPhase("saving");
-        const variantB = sanitizePrompts(variantA, store.keys, store.databaseProvider);
-
-        // 5. PATCH database with Variant B only
-        const patchRes = await fetch(`/api/playbooks/${playbook_id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ generated_prompts: variantB }),
-        });
-
-        if (!patchRes.ok) {
-          let errorMsg = "Failed to save playbook";
-          try {
-            const data = await patchRes.json();
-            errorMsg = data.error || errorMsg;
-          } catch {
-            // Response wasn't JSON — use default message
-          }
-          throw new Error(errorMsg);
-        }
-
-        // 6. Redirect to playbook viewer
-        setTrackedPhase("redirecting");
-        trackEvent("Compilation Completed", {
-          playbook_id,
-          total_ms: Date.now() - startTime.current,
-          prompt_count: variantB.length,
-        });
-        router.push(`/playbooks/${playbook_id}`);
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "An unexpected error occurred";
-        trackEvent("Compilation Failed", {
-          playbook_id,
-          error: msg,
-          failed_phase: phaseRef.current,
-        });
-        setErrorMessage(msg);
-        setPhase("error");
+        checkpoint.current.enrichedPrompts = variantA;
+      } else {
+        variantA = checkpoint.current.enrichedPrompts;
       }
-    }
 
+      // 4. Sanitize to Variant B (placeholders)
+      // variantA is guaranteed assigned: either from checkpoint.compiledPrompts or compilePromptsWithTemplates
+      if (!variantA) throw new Error("No compiled prompts available");
+      setTrackedPhase("saving");
+      const variantB = sanitizePrompts(variantA, store.keys, store.databaseProvider);
+
+      // 5. PATCH database with Variant B only
+      const patchRes = await fetch(`/api/playbooks/${playbook_id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ generated_prompts: variantB }),
+      });
+
+      if (!patchRes.ok) {
+        let errorMsg = "Failed to save playbook";
+        try {
+          const data = await patchRes.json();
+          errorMsg = data.error || errorMsg;
+        } catch {
+          // Response wasn't JSON — use default message
+        }
+        throw new Error(errorMsg);
+      }
+
+      // 6. Redirect to playbook viewer
+      setTrackedPhase("redirecting");
+      trackEvent("Compilation Completed", {
+        playbook_id,
+        total_ms: Date.now() - startTime.current,
+        prompt_count: variantB.length,
+      });
+      checkpoint.current = {};
+      router.push(`/playbooks/${playbook_id}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "An unexpected error occurred";
+      trackEvent("Compilation Failed", {
+        playbook_id,
+        error: msg,
+        failed_phase: phaseRef.current,
+      });
+      setErrorMessage(msg);
+      setPhase("error");
+    }
+  }, [playbook_id, store, router, setTrackedPhase]);
+
+  useEffect(() => {
+    if (hasRun.current) return;
+    hasRun.current = true;
     run();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [run]);
 
   if (phase === "error") {
     return (
@@ -158,9 +182,13 @@ export default function CompilePage({
         <AlertTriangleIcon className="mx-auto size-10 text-destructive" />
         <h2 className="text-xl font-semibold">Compilation Failed</h2>
         <p className="text-sm text-muted-foreground">{errorMessage}</p>
+        <p className="text-xs text-muted-foreground">
+          Failed during: {phaseRef.current}
+        </p>
         <Button variant="outline" onClick={() => {
-          trackEvent("Compilation Retried", { playbook_id });
-          window.location.reload();
+          trackEvent("Compilation Retried", { playbook_id, resume_from: phaseRef.current });
+          hasRun.current = false;
+          run();
         }}>
           Retry
         </Button>

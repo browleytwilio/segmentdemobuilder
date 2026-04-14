@@ -115,7 +115,7 @@ export type ArchitectureFormData = z.infer<typeof architectureSchema>;
 // ─── Step 3: Actionable Personalization Scenarios ───────────────────
 
 export const scenariosSchema = z.object({
-  selectedScenarios: z.array(z.string()),
+  selectedScenarios: z.array(z.string()).min(1, "Select at least one scenario"),
 });
 
 export type ScenariosFormData = z.infer<typeof scenariosSchema>;

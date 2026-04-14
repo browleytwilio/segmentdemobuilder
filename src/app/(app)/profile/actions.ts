@@ -15,7 +15,7 @@ export async function getMyRole(): Promise<"user" | "super_admin" | null> {
     .from("profiles")
     .select("role")
     .eq("id", userId)
-    .single();
+    .maybeSingle();
 
   return (data?.role as "user" | "super_admin") ?? null;
 }

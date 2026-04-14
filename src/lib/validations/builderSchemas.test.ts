@@ -178,11 +178,11 @@ describe("scenariosSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("accepts an empty array", () => {
+  it("rejects an empty array", () => {
     const result = scenariosSchema.safeParse({
       selectedScenarios: [],
     });
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
   });
 
   it("rejects non-array value", () => {

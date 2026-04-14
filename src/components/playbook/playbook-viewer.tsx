@@ -8,6 +8,8 @@ import { downloadMarkdown } from "@/lib/export/download";
 import { useClipboard } from "@/hooks/use-clipboard";
 import { usePlaybookProgress } from "@/hooks/use-playbook-progress";
 import dynamic from "next/dynamic";
+import { updatePlaybookPrompt } from "@/app/(app)/playbooks/actions";
+import type { CompiledPrompt } from "@/lib/compiler/types";
 import {
   RehydrationModal,
   needsRehydration,
@@ -17,6 +19,10 @@ import { StepStepper } from "./step-stepper";
 import { PromptCard } from "./prompt-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+const PresentationMode = dynamic(
+  () => import("./presentation-mode").then((m) => m.PresentationMode),
+  { ssr: false }
+);
 const DemoScriptView = dynamic(
   () => import("./demo-script-view").then((m) => m.DemoScriptView),
   { ssr: false }
@@ -27,7 +33,10 @@ const AIScriptGenerator = dynamic(
 );
 import { Button } from "@/components/ui/button";
 import {
+  CheckIcon,
   DownloadIcon,
+  KeyIcon,
+  PlayIcon,
   PrinterIcon,
   ShareIcon,
 } from "lucide-react";
@@ -40,16 +49,18 @@ interface PlaybookViewerProps {
 export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
   const [prompts, setPrompts] = useState(playbook.generated_prompts);
   const [showRehydration, setShowRehydration] = useState(false);
+  const [showPresentation, setShowPresentation] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
   const { completedSteps, markComplete, isComplete } = usePlaybookProgress(
-    playbook.id
+    playbook.id,
+    playbook.progress
   );
   const { copy } = useClipboard();
 
   const dbProvider = playbook.demo_config.databaseProvider ?? "supabase";
 
   // Check if rehydration is needed on mount
-  const requiresRehydration = needsRehydration(playbook.generated_prompts, dbProvider);
+  const requiresRehydration = needsRehydration(prompts, dbProvider);
   useEffect(() => {
     trackEvent("Playbook Viewed", {
       playbook_id: playbook.id,
@@ -58,9 +69,6 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
       prompt_count: playbook.generated_prompts.length,
       needs_rehydration: requiresRehydration,
     });
-    if (requiresRehydration) {
-      setShowRehydration(true);
-    }
   }, [playbook, requiresRehydration]);
 
   // Auto-scroll to first incomplete step on mount
@@ -100,6 +108,33 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
   const handleDismissRehydration = useCallback(() => {
     setShowRehydration(false);
   }, []);
+
+  const handleRegenerate = useCallback(
+    (updated: CompiledPrompt) => {
+      setPrompts((prev) =>
+        prev.map((p) => (p.stepNumber === updated.stepNumber ? updated : p))
+      );
+      // Fire-and-forget DB save
+      updatePlaybookPrompt(playbook.id, updated.stepNumber, updated);
+    },
+    [playbook.id]
+  );
+
+  const handleEdit = useCallback(
+    (updated: CompiledPrompt) => {
+      setPrompts((prev) =>
+        prev.map((p) => (p.stepNumber === updated.stepNumber ? updated : p))
+      );
+      updatePlaybookPrompt(playbook.id, updated.stepNumber, updated);
+    },
+    [playbook.id]
+  );
+
+  const regenerateContext = {
+    persona: playbook.demo_config.persona,
+    industry: playbook.industry,
+    customerName: playbook.customer_name,
+  };
 
   const handleMarkComplete = useCallback(
     (step: number) => {
@@ -166,6 +201,15 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
 
   return (
     <>
+      {showPresentation && (
+        <PresentationMode
+          prompts={prompts}
+          playbookId={playbook.id}
+          customerName={playbook.customer_name}
+          onClose={() => setShowPresentation(false)}
+        />
+      )}
+
       <RehydrationModal
         open={showRehydration}
         databaseProvider={dbProvider}
@@ -197,6 +241,16 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
             </div>
           </div>
           <div className="flex gap-1.5 print:hidden">
+            {requiresRehydration && (
+              <Button variant="default" size="sm" onClick={() => setShowRehydration(true)}>
+                <KeyIcon className="size-3.5" />
+                <span className="hidden sm:inline">Inject Keys</span>
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={() => setShowPresentation(true)}>
+              <PlayIcon className="size-3.5" />
+              <span className="hidden sm:inline">Present</span>
+            </Button>
             <Button variant="outline" size="sm" onClick={handleShare}>
               <ShareIcon className="size-3.5" />
               <span className="hidden sm:inline">Share</span>
@@ -221,6 +275,35 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
 
           {/* Build Prompts Tab */}
           <TabsContent value="prompts">
+            {/* Mobile step nav */}
+            <div className="mt-4 flex gap-1.5 overflow-x-auto pb-2 lg:hidden print:hidden">
+              {prompts.map((p) => {
+                const done = completedSteps.includes(p.stepNumber);
+                const active = p.stepNumber === activeStep;
+                return (
+                  <button
+                    key={p.stepNumber}
+                    onClick={() => {
+                      setActiveStep(p.stepNumber);
+                      document
+                        .getElementById(`step-${p.stepNumber}`)
+                        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                    className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                      done
+                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                        : active
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-muted-foreground/20 text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {done ? <CheckIcon className="size-3" /> : <span>{p.stepNumber}</span>}
+                    <span className="max-w-[8rem] truncate">{p.title}</span>
+                  </button>
+                );
+              })}
+            </div>
+
             <div className="mt-6 grid gap-6 lg:grid-cols-[220px_1fr]">
               {/* Left: Stepper */}
               <div className="hidden lg:block">
@@ -249,6 +332,9 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
                     onMarkComplete={() =>
                       handleMarkComplete(prompt.stepNumber)
                     }
+                    onRegenerate={handleRegenerate}
+                    onEdit={handleEdit}
+                    context={regenerateContext}
                   />
                 ))}
 

@@ -60,7 +60,7 @@ export function StepScenarios({ onNext, onBack }: StepScenariosProps) {
     return () => { stale = true; };
   }, [industry]);
 
-  const { control, handleSubmit } = useForm<ScenariosFormData>({
+  const { control, handleSubmit, formState: { errors } } = useForm<ScenariosFormData>({
     resolver: zodResolver(scenariosSchema),
     defaultValues: {
       selectedScenarios: selectedScenarios || [],
@@ -161,6 +161,12 @@ export function StepScenarios({ onNext, onBack }: StepScenariosProps) {
             </div>
           )}
         />
+      )}
+
+      {errors.selectedScenarios && (
+        <p className="text-sm text-destructive">
+          {errors.selectedScenarios.message}
+        </p>
       )}
 
       <div className="flex justify-between pt-2">

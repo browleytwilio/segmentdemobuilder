@@ -41,9 +41,16 @@ vi.mock("@/components/ui/accordion", () => ({
   AccordionContent: ({ children }: any) => <div>{children}</div>,
 }));
 
+vi.mock("sonner", () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
+}));
+
 vi.mock("lucide-react", () => ({
   CheckIcon: () => null,
   CopyIcon: () => null,
+  LoaderIcon: () => null,
+  PencilIcon: () => null,
+  RefreshCwIcon: () => null,
 }));
 
 // ── Imports ────────────────────────────────────────────────────────
@@ -78,7 +85,8 @@ describe("PromptCard", () => {
 
   it("renders step number and title", () => {
     render(<PromptCard prompt={makePrompt()} {...defaultProps} />);
-    expect(screen.getByText(/Step 1: Test Prompt/)).toBeInTheDocument();
+    expect(screen.getByText("1")).toBeInTheDocument();
+    expect(screen.getByText("Test Prompt")).toBeInTheDocument();
   });
 
   it("renders expected output text", () => {

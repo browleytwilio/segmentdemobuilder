@@ -40,6 +40,7 @@ export interface PlaybookRow {
   demo_config: DemoConfig;
   generated_prompts: CompiledPrompt[];
   cloned_from?: string | null;
+  progress?: number[];
   created_at: string;
   updated_at: string;
 }

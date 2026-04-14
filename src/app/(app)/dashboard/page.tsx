@@ -4,6 +4,7 @@ import { DashboardGrid } from "./dashboard-grid";
 import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { DashboardFilters } from "@/components/dashboard/dashboard-filters";
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
+import { WelcomeDialog } from "@/components/dashboard/welcome-dialog";
 import { FadeIn } from "@/components/app/motion-wrappers";
 import { BookOpenIcon } from "lucide-react";
 import { NewPlaybookButton } from "./new-playbook-button";
@@ -47,6 +48,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
+      <WelcomeDialog hasPlaybooks={playbooks.length > 0} />
+
       {/* Header */}
       <FadeIn>
         <div className="flex items-end justify-between gap-4">

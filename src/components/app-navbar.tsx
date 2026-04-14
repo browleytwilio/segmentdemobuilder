@@ -18,7 +18,7 @@ export async function AppNavbar() {
     .from("profiles")
     .select("role")
     .eq("id", userId)
-    .single();
+    .maybeSingle();
 
   const isAdmin = profile?.role === "super_admin";
 
