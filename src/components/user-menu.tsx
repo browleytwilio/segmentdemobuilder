@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
 import { trackEvent, resetAnalytics } from "@/lib/analytics/events";
@@ -49,18 +50,18 @@ export function UserMenu({ email, isAdmin }: UserMenuProps) {
           <p className="text-sm font-medium">{email}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push("/dashboard")}>
+        <DropdownMenuItem render={<Link href="/dashboard" />}>
           <LayoutDashboardIcon className="size-4" />
           Dashboard
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push("/profile")}>
+        <DropdownMenuItem render={<Link href="/profile" />}>
           <UserIcon className="size-4" />
           Profile
         </DropdownMenuItem>
         {isAdmin && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push("/admin")}>
+            <DropdownMenuItem render={<Link href="/admin" />}>
               <ShieldIcon className="size-4" />
               Admin Panel
             </DropdownMenuItem>
