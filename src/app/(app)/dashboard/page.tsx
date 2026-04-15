@@ -5,6 +5,7 @@ import { DashboardStats } from "@/components/dashboard/dashboard-stats";
 import { DashboardFilters } from "@/components/dashboard/dashboard-filters";
 import { DashboardTabs } from "@/components/dashboard/dashboard-tabs";
 import { WelcomeDialog } from "@/components/dashboard/welcome-dialog";
+import { PageHeader } from "@/components/page-header";
 import { FadeIn } from "@/components/app/motion-wrappers";
 import { BookOpenIcon } from "lucide-react";
 import { NewPlaybookButton } from "./new-playbook-button";
@@ -47,22 +48,20 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   );
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
+    <div className="p-6 space-y-6 max-w-6xl">
       <WelcomeDialog hasPlaybooks={playbooks.length > 0} />
 
       {/* Header */}
       <FadeIn>
-        <div className="flex items-end justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-sm text-muted-foreground">
-              {playbooks.length > 0
-                ? `${playbooks.length} playbook${playbooks.length !== 1 ? "s" : ""}`
-                : "Manage your demo playbooks"}
-            </p>
-          </div>
-          <NewPlaybookButton location="header" />
-        </div>
+        <PageHeader
+          title="Dashboard"
+          description={
+            playbooks.length > 0
+              ? `${playbooks.length} playbook${playbooks.length !== 1 ? "s" : ""}`
+              : "Manage your demo playbooks"
+          }
+          action={<NewPlaybookButton location="header" />}
+        />
       </FadeIn>
 
       {/* Stats */}

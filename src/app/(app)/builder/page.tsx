@@ -6,6 +6,7 @@ import { BuilderWizard } from "@/components/builder/builder-wizard";
 import { TemplatePicker } from "@/components/builder/template-picker";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ListOrderedIcon, SparklesIcon, LayoutTemplateIcon } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
 import { getPlaybookTemplates } from "./actions";
 import { trackEvent } from "@/lib/analytics/events";
 import type { PlaybookTemplateRow } from "@/lib/compiler/types";
@@ -52,21 +53,21 @@ export default function BuilderPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
+    <div className="max-w-4xl">
       {/* Page header */}
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">Create a Playbook</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Choose how you want to build your demo playbook
-        </p>
+      <div className="mb-8">
+        <PageHeader
+          title="Create a Playbook"
+          description="Choose how you want to build your demo playbook"
+        />
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         {/* Mode selector */}
         <div className="flex justify-center mb-8 print:hidden">
-          <TabsList className="h-auto p-1 gap-1">
+          <TabsList className="group-data-horizontal/tabs:h-auto p-1 gap-1">
             {BUILDER_MODES.map(({ value, label, icon: Icon, description }) => (
-              <TabsTrigger key={value} value={value} className="flex-col gap-0.5 px-5 py-2.5">
+              <TabsTrigger key={value} value={value} className="h-auto flex-col gap-0.5 px-5 py-2.5 whitespace-normal">
                 <div className="flex items-center gap-1.5">
                   <Icon className="size-3.5" />
                   <span className="text-sm font-medium">{label}</span>

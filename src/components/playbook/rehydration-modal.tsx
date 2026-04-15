@@ -4,8 +4,8 @@ import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { buildSanitizationMap, SANITIZATION_MAP } from "@/lib/compiler/sanitizer";
-import { DATABASE_PROVIDERS } from "@/lib/compiler/providers";
-import type { DatabaseProvider } from "@/lib/compiler/providers";
+import { DATABASE_PROVIDERS, AUTH_PROVIDERS } from "@/lib/compiler/providers";
+import type { DatabaseProvider, AuthProvider } from "@/lib/compiler/providers";
 import type { CompiledPrompt } from "@/lib/compiler/types";
 import { createProviderCredentialsSchema } from "@/lib/validations/credentialsSchema";
 import { Button } from "@/components/ui/button";
@@ -28,9 +28,15 @@ const SEGMENT_LABELS: Record<string, string> = {
   segmentProfileToken: "Profile API Token (optional)",
 };
 
-function buildKeyLabels(databaseProvider: DatabaseProvider): Record<string, string> {
+function buildKeyLabels(
+  databaseProvider: DatabaseProvider,
+  authProvider: AuthProvider = "none"
+): Record<string, string> {
   const labels = { ...SEGMENT_LABELS };
   for (const field of DATABASE_PROVIDERS[databaseProvider].credentialFields) {
+    labels[field.name] = field.label;
+  }
+  for (const field of AUTH_PROVIDERS[authProvider].credentialFields) {
     labels[field.name] = field.label;
   }
   return labels;
@@ -39,9 +45,10 @@ function buildKeyLabels(databaseProvider: DatabaseProvider): Record<string, stri
 /** Check if any prompt contains placeholder strings */
 export function needsRehydration(
   prompts: CompiledPrompt[],
-  databaseProvider: DatabaseProvider = "supabase"
+  databaseProvider: DatabaseProvider = "supabase",
+  authProvider: AuthProvider = "none"
 ): boolean {
-  const map = buildSanitizationMap(databaseProvider);
+  const map = buildSanitizationMap(databaseProvider, authProvider);
   const placeholders = Object.values(map);
   return prompts.some((p) =>
     placeholders.some((ph) => p.promptText.includes(ph))
@@ -52,9 +59,10 @@ export function needsRehydration(
 export function rehydratePrompts(
   prompts: CompiledPrompt[],
   keys: Record<string, string>,
-  databaseProvider: DatabaseProvider = "supabase"
+  databaseProvider: DatabaseProvider = "supabase",
+  authProvider: AuthProvider = "none"
 ): CompiledPrompt[] {
-  const map = buildSanitizationMap(databaseProvider);
+  const map = buildSanitizationMap(databaseProvider, authProvider);
   return prompts.map((p) => {
     let text = p.promptText;
     for (const [field, placeholder] of Object.entries(map)) {
@@ -70,6 +78,7 @@ export function rehydratePrompts(
 interface RehydrationModalProps {
   open: boolean;
   databaseProvider?: DatabaseProvider;
+  authProvider?: AuthProvider;
   onSubmit: (keys: Record<string, string>) => void;
   onDismiss: () => void;
 }
@@ -77,14 +86,15 @@ interface RehydrationModalProps {
 export function RehydrationModal({
   open,
   databaseProvider = "supabase",
+  authProvider = "none",
   onSubmit,
   onDismiss,
 }: RehydrationModalProps) {
-  const keyLabels = useMemo(() => buildKeyLabels(databaseProvider), [databaseProvider]);
-  const sanitizationMap = useMemo(() => buildSanitizationMap(databaseProvider), [databaseProvider]);
+  const keyLabels = useMemo(() => buildKeyLabels(databaseProvider, authProvider), [databaseProvider, authProvider]);
+  const sanitizationMap = useMemo(() => buildSanitizationMap(databaseProvider, authProvider), [databaseProvider, authProvider]);
   const schema = useMemo(
-    () => createProviderCredentialsSchema(databaseProvider, false),
-    [databaseProvider]
+    () => createProviderCredentialsSchema(databaseProvider, false, authProvider),
+    [databaseProvider, authProvider]
   );
 
   const defaultValues = useMemo(() => {

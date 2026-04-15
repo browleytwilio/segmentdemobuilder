@@ -55,7 +55,7 @@ export default function CompilePage({
       let versions = checkpoint.current.versions;
       if (!versions) {
         setTrackedPhase("loading");
-        const res = await fetch(`/api/dependencies/versions?provider=${store.databaseProvider}`);
+        const res = await fetch(`/api/dependencies/versions?provider=${store.databaseProvider}&authProvider=${store.authProvider}`);
         if (!res.ok) throw new Error("Failed to fetch dependency versions");
         ({ versions } = await res.json() as { versions: VersionMap });
         checkpoint.current.versions = versions;
@@ -129,7 +129,7 @@ export default function CompilePage({
       // variantA is guaranteed assigned: either from checkpoint.compiledPrompts or compilePromptsWithTemplates
       if (!variantA) throw new Error("No compiled prompts available");
       setTrackedPhase("saving");
-      const variantB = sanitizePrompts(variantA, store.keys, store.databaseProvider);
+      const variantB = sanitizePrompts(variantA, store.keys, store.databaseProvider, store.authProvider);
 
       // 5. PATCH database with Variant B only
       const patchRes = await fetch(`/api/playbooks/${playbook_id}`, {

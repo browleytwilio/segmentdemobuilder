@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useBuilderStore } from "@/lib/stores/builder-store";
 import { createProviderCredentialsSchema } from "@/lib/validations/credentialsSchema";
-import { DATABASE_PROVIDERS } from "@/lib/compiler/providers";
+import { DATABASE_PROVIDERS, AUTH_PROVIDERS } from "@/lib/compiler/providers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,16 +68,21 @@ export function StepCredentials({
   onSubmit,
   isSubmitting,
 }: StepCredentialsProps) {
-  const { keys, architecture, databaseProvider, updateKeys } = useBuilderStore();
+  const { keys, architecture, databaseProvider, authProvider, updateKeys } = useBuilderStore();
   const enableProfileAPI = architecture.enableProfileAPI;
   const providerConfig = DATABASE_PROVIDERS[databaseProvider];
+  const authProviderConfig = AUTH_PROVIDERS[authProvider];
 
   const allFields = useMemo<FieldDef[]>(
-    () => [...SEGMENT_FIELDS, ...providerConfig.credentialFields],
-    [providerConfig]
+    () => [
+      ...SEGMENT_FIELDS,
+      ...providerConfig.credentialFields,
+      ...authProviderConfig.credentialFields,
+    ],
+    [providerConfig, authProviderConfig]
   );
 
-  const schema = createProviderCredentialsSchema(databaseProvider, enableProfileAPI);
+  const schema = createProviderCredentialsSchema(databaseProvider, enableProfileAPI, authProvider);
 
   const defaultValues = useMemo(() => {
     const vals: Record<string, string> = {};
@@ -116,7 +121,7 @@ export function StepCredentials({
         <div className="space-y-1.5">
           <h2 className="text-xl font-semibold">Credentials</h2>
           <p className="text-sm text-muted-foreground">
-            Provide your Segment and {providerConfig.label} credentials. These
+            Provide your Segment{authProvider !== "none" ? `, ${authProviderConfig.label},` : ""} and {providerConfig.label} credentials. These
             are stored in-memory only and never persisted to any database.
           </p>
         </div>

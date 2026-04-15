@@ -26,7 +26,7 @@ export default async function PlaybookPage({
   return (
     <div className="space-y-8">
       {/* Visibility control for owner */}
-      <div className="mx-auto max-w-4xl px-4 flex justify-end print:hidden">
+      <div className="max-w-4xl flex justify-end print:hidden">
         <VisibilitySelector
           playbookId={playbook_id}
           currentVisibility={playbook.visibility ?? "private"}
@@ -37,13 +37,13 @@ export default async function PlaybookPage({
 
       {/* Profile Inspector — shown when Profile API is enabled */}
       {playbook.demo_config?.architecture?.enableProfileAPI && (
-        <div className="mx-auto max-w-4xl px-4 print:hidden">
+        <div className="max-w-4xl print:hidden">
           <ProfileInspector playbookId={playbook_id} />
         </div>
       )}
 
       {/* Comments section */}
-      <div className="mx-auto max-w-4xl px-4 pb-10 print:hidden">
+      <div className="max-w-4xl pb-10 print:hidden">
         <CommentThread
           playbookId={playbook_id}
           comments={comments}

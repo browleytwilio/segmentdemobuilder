@@ -2,18 +2,22 @@ interface PageHeaderProps {
   title: string;
   description?: string;
   action?: React.ReactNode;
+  breadcrumbs?: React.ReactNode;
 }
 
-export function PageHeader({ title, description, action }: PageHeaderProps) {
+export function PageHeader({ title, description, action, breadcrumbs }: PageHeaderProps) {
   return (
-    <div className="flex items-center justify-between gap-4">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-        {description && (
-          <p className="text-sm text-muted-foreground">{description}</p>
-        )}
+    <div className="space-y-1">
+      {breadcrumbs && <div className="mb-2">{breadcrumbs}</div>}
+      <div className="flex items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+          {description && (
+            <p className="text-sm text-muted-foreground">{description}</p>
+          )}
+        </div>
+        {action && <div className="shrink-0">{action}</div>}
       </div>
-      {action && <div className="shrink-0">{action}</div>}
     </div>
   );
 }

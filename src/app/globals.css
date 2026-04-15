@@ -160,6 +160,10 @@
   html {
     @apply font-sans;
   }
+  [data-slot="button"]:active:not(:disabled) {
+    transform: scale(0.97);
+    transition: transform 100ms;
+  }
 }
 
 .app-bg-pattern {

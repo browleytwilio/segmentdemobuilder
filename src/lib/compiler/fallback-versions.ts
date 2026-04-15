@@ -1,6 +1,6 @@
 import type { VersionMap } from "./types";
-import type { DatabaseProvider } from "./providers";
-import { DATABASE_PROVIDERS } from "./providers";
+import type { DatabaseProvider, AuthProvider } from "./providers";
+import { DATABASE_PROVIDERS, AUTH_PROVIDERS } from "./providers";
 
 /** Base packages shared across all database providers */
 const BASE_VERSIONS: VersionMap = {
@@ -15,6 +15,7 @@ const BASE_VERSIONS: VersionMap = {
 
 /** Fallback versions for provider-specific packages */
 const PROVIDER_VERSIONS: Record<string, string> = {
+  // Database providers
   "@supabase/supabase-js": "2.103.0",
   "@supabase/ssr": "0.10.2",
   "@neondatabase/serverless": "1.0.0",
@@ -22,26 +23,37 @@ const PROVIDER_VERSIONS: Record<string, string> = {
   "drizzle-kit": "0.31.0",
   pg: "8.16.0",
   "@types/pg": "8.11.0",
+  // Auth providers
+  "@clerk/nextjs": "6.12.0",
+  "next-auth@beta": "5.0.0-beta.25",
+  "better-auth": "1.2.7",
 };
 
 /**
  * Returns the fallback version map for a given database provider.
  * Merges base packages with provider-specific packages.
  */
-export function getFallbackVersions(databaseProvider: DatabaseProvider): VersionMap {
-  const providerPackages = DATABASE_PROVIDERS[databaseProvider].packages;
+export function getFallbackVersions(
+  databaseProvider: DatabaseProvider,
+  authProvider: AuthProvider = "none"
+): VersionMap {
+  const dbPackages = DATABASE_PROVIDERS[databaseProvider].packages;
+  const authPackages = AUTH_PROVIDERS[authProvider].packages;
   const versions: VersionMap = { ...BASE_VERSIONS };
-  for (const pkg of providerPackages) {
+  for (const pkg of [...dbPackages, ...authPackages]) {
     versions[pkg] = PROVIDER_VERSIONS[pkg] ?? "latest";
   }
   return versions;
 }
 
 /**
- * Returns the list of packages to resolve for a given database provider.
+ * Returns the list of packages to resolve for a given provider combination.
  */
-export function getTargetPackages(databaseProvider: DatabaseProvider): string[] {
-  return Object.keys(getFallbackVersions(databaseProvider));
+export function getTargetPackages(
+  databaseProvider: DatabaseProvider,
+  authProvider: AuthProvider = "none"
+): string[] {
+  return Object.keys(getFallbackVersions(databaseProvider, authProvider));
 }
 
 /** @deprecated Backward-compat alias — equivalent to getFallbackVersions("supabase") */

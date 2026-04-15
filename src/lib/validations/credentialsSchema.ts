@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { DatabaseProvider } from "@/lib/compiler/providers";
+import type { DatabaseProvider, AuthProvider } from "@/lib/compiler/providers";
 
 // ─── Segment Credential Fields (shared across all providers) ───────
 
@@ -55,6 +55,39 @@ const DB_FIELDS: Record<DatabaseProvider, Record<string, z.ZodTypeAny>> = {
   "generic-postgres": genericPostgresFields,
 };
 
+// ─── Auth-Provider-Specific Fields ────────────────────────────────
+
+const clerkFields = {
+  clerkPublishableKey: z
+    .string()
+    .min(5, "Publishable key is required")
+    .refine((val) => val.startsWith("pk_"), {
+      message: "Must be a Clerk publishable key (starts with pk_)",
+    }),
+  clerkSecretKey: z
+    .string()
+    .min(5, "Secret key is required")
+    .refine((val) => val.startsWith("sk_"), {
+      message: "Must be a Clerk secret key (starts with sk_)",
+    }),
+};
+
+const nextauthFields = {
+  authSecret: z.string().min(10, "Auth secret must be at least 10 characters"),
+};
+
+const betterAuthFields = {
+  betterAuthSecret: z.string().min(10, "Better Auth secret must be at least 10 characters"),
+};
+
+const AUTH_FIELDS: Record<AuthProvider, Record<string, z.ZodTypeAny>> = {
+  none: {},
+  clerk: clerkFields,
+  nextauth: nextauthFields,
+  "supabase-auth": {},
+  "better-auth": betterAuthFields,
+};
+
 // ─── Provider-Aware Schema Factory ─────────────────────────────────
 
 /**
@@ -63,9 +96,10 @@ const DB_FIELDS: Record<DatabaseProvider, Record<string, z.ZodTypeAny>> = {
  */
 export function createProviderCredentialsSchema(
   databaseProvider: DatabaseProvider,
-  enableProfileAPI: boolean
+  enableProfileAPI: boolean,
+  authProvider: AuthProvider = "none"
 ) {
-  const shape = { ...segmentFields, ...DB_FIELDS[databaseProvider] };
+  const shape = { ...segmentFields, ...DB_FIELDS[databaseProvider], ...AUTH_FIELDS[authProvider] };
   const schema = z.object(shape);
 
   return schema.superRefine((data, ctx) => {

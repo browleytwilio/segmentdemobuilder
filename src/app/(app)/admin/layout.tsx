@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@/lib/supabase/server";
+import { PageHeader } from "@/components/page-header";
 import { FadeIn } from "@/components/app/motion-wrappers";
 import { AdminNavLink } from "./admin-nav-link";
 import {
@@ -41,14 +42,12 @@ export default async function AdminLayout({
   if (profile?.role !== "super_admin") notFound();
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 space-y-6">
+    <div className="p-6 space-y-6 max-w-6xl">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Admin Panel</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Manage users, templates, and platform configuration
-        </p>
-      </div>
+      <PageHeader
+        title="Admin Panel"
+        description="Manage users, templates, and platform configuration"
+      />
 
       {/* Tab navigation with icons */}
       <nav className="flex gap-0.5 border-b flex-wrap overflow-x-auto scrollbar-none -mb-px">

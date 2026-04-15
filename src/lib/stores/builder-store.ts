@@ -59,7 +59,7 @@ export interface BuilderState {
   resetStore: () => void;
 }
 
-const initialKeys = buildInitialKeys("supabase");
+const initialKeys = buildInitialKeys("supabase", "none");
 
 const initialArchitecture: DemoArchitecture = {
   enableSESidebar: true,
@@ -102,23 +102,21 @@ export const useBuilderStore = create<BuilderState>()(
 
       updateProviders: (providers) =>
         set((state) => {
-          const next: Partial<BuilderState> = {};
-          if (providers.databaseProvider !== undefined) {
-            next.databaseProvider = providers.databaseProvider;
-            // Reset keys to match the new provider's credential fields
-            next.keys = buildInitialKeys(providers.databaseProvider);
-          }
-          if (providers.authProvider !== undefined) {
-            next.authProvider = providers.authProvider;
-          }
-          return { ...state, ...next };
+          const nextDb = providers.databaseProvider ?? state.databaseProvider;
+          const nextAuth = providers.authProvider ?? state.authProvider;
+          return {
+            ...state,
+            databaseProvider: nextDb,
+            authProvider: nextAuth,
+            keys: buildInitialKeys(nextDb, nextAuth),
+          };
         }),
 
       resetStore: () => set({ ...initialState, keys: { ...initialKeys } }),
     }),
     {
       name: "builder-store",
-      version: 3,
+      version: 4,
       partialize: (state) => ({
         currentStep: state.currentStep,
         customerName: state.customerName,
@@ -145,6 +143,10 @@ export const useBuilderStore = create<BuilderState>()(
               databaseProvider: "supabase" as DatabaseProvider,
               authProvider: "none" as AuthProvider,
             };
+          }
+          if (version === 3) {
+            // v3→v4: auth providers now have credential fields. No structural change needed.
+            return { ...initialState, ...prev };
           }
           return persisted as BuilderState;
         } catch {

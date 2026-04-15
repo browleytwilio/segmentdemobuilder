@@ -1,6 +1,6 @@
 export default function ShareLoading() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 space-y-6">
+    <div className="p-6 max-w-3xl space-y-6">
       <div className="space-y-2">
         <div className="h-8 w-48 animate-pulse rounded bg-muted" />
         <div className="h-4 w-32 animate-pulse rounded bg-muted" />

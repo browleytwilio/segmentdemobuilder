@@ -29,7 +29,7 @@ export default async function SharePage({
   >;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
+    <div className="p-6 max-w-3xl">
       <ShareScriptView playbook={playbook} />
     </div>
   );

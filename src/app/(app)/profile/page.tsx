@@ -1,6 +1,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { createClient, ensureProfile } from "@/lib/supabase/server";
+import { PageHeader } from "@/components/page-header";
 import { FadeIn } from "@/components/app/motion-wrappers";
 import { ProfileCard } from "./profile-card";
 
@@ -35,12 +36,12 @@ export default async function ProfilePage() {
     .eq("status", "completed");
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
+    <div className="p-6 max-w-2xl">
       <FadeIn>
-        <h1 className="text-2xl font-bold tracking-tight">Profile</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Your account details and usage.
-        </p>
+        <PageHeader
+          title="Profile"
+          description="Your account details and usage."
+        />
       </FadeIn>
 
       <FadeIn delay={0.1}>

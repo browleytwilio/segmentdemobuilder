@@ -225,4 +225,8 @@ export interface SegmentEventMap {
   "Playbook Card Hovered": { playbook_id: string; duration_ms: number };
   "Builder Mode Selected": { mode: "wizard" | "describe" | "templates" };
   "Admin Tab Navigated": { tab: string };
+
+  // Command Palette
+  "Command Palette Opened": { trigger: "keyboard" | "sidebar" };
+  "Command Palette Action": { action: string };
 }

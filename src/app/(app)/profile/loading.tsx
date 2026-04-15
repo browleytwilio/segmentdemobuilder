@@ -1,6 +1,6 @@
 export default function ProfileLoading() {
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10 space-y-6">
+    <div className="p-6 max-w-2xl space-y-6">
       {/* Header skeleton */}
       <div className="space-y-2">
         <div className="h-7 w-32 animate-pulse rounded-lg bg-muted" />

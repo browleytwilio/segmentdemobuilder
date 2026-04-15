@@ -1,6 +1,6 @@
 import type { CompilerInput } from "./types";
 import { buildSanitizationMap } from "./sanitizer";
-import { DATABASE_PROVIDERS } from "./providers";
+import { DATABASE_PROVIDERS, AUTH_PROVIDERS } from "./providers";
 
 export interface TemplateContext {
   CUSTOMER_NAME: string;
@@ -19,7 +19,7 @@ export interface TemplateContext {
  * Credentials use keyOrPlaceholder — empty values become YOUR_* placeholders.
  */
 export function buildTemplateContext(input: CompilerInput): TemplateContext {
-  const sanitizationMap = buildSanitizationMap(input.databaseProvider);
+  const sanitizationMap = buildSanitizationMap(input.databaseProvider, input.authProvider);
 
   function keyOrPlaceholder(value: string | undefined, field: string): string {
     return value || sanitizationMap[field] || "";
@@ -52,6 +52,13 @@ export function buildTemplateContext(input: CompilerInput): TemplateContext {
   const providerConfig = DATABASE_PROVIDERS[input.databaseProvider];
   for (const [storeKey, envVar] of Object.entries(providerConfig.envVarMap)) {
     // Template variable name matches the env var name (e.g. SUPABASE_URL, DATABASE_URL)
+    const varName = envVar.replace(/^NEXT_PUBLIC_/, "");
+    ctx[varName] = keyOrPlaceholder(input.keys[storeKey], storeKey);
+  }
+
+  // Add auth provider credential context variables
+  const authConfig = AUTH_PROVIDERS[input.authProvider];
+  for (const [storeKey, envVar] of Object.entries(authConfig.envVarMap)) {
     const varName = envVar.replace(/^NEXT_PUBLIC_/, "");
     ctx[varName] = keyOrPlaceholder(input.keys[storeKey], storeKey);
   }

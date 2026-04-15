@@ -107,7 +107,7 @@ export const architectureSchema = z.object({
   enableProfileAPI: z.boolean(),
   enableIntentPredictions: z.boolean(),
   databaseProvider: z.enum(["supabase", "neon", "generic-postgres"]),
-  authProvider: z.enum(["none", "clerk", "nextauth", "supabase-auth"]),
+  authProvider: z.enum(["none", "clerk", "nextauth", "supabase-auth", "better-auth"]),
 });
 
 export type ArchitectureFormData = z.infer<typeof architectureSchema>;

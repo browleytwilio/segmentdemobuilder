@@ -3,12 +3,13 @@ import {
   getFallbackVersions,
   getTargetPackages,
 } from "@/lib/compiler/fallback-versions";
-import type { DatabaseProvider } from "@/lib/compiler/providers";
+import type { DatabaseProvider, AuthProvider } from "@/lib/compiler/providers";
 import { ratelimit } from "@/lib/rate-limit";
 
 export const revalidate = 3600; // 1-hour ISR caching
 
 const VALID_PROVIDERS = new Set<DatabaseProvider>(["supabase", "neon", "generic-postgres"]);
+const VALID_AUTH_PROVIDERS = new Set<AuthProvider>(["none", "clerk", "nextauth", "supabase-auth", "better-auth"]);
 
 async function fetchLatestVersion(
   pkg: string,
@@ -50,9 +51,13 @@ export async function GET(request: Request) {
   const provider: DatabaseProvider = VALID_PROVIDERS.has(providerParam as DatabaseProvider)
     ? (providerParam as DatabaseProvider)
     : "supabase";
+  const authParam = searchParams.get("authProvider") ?? "none";
+  const authProvider: AuthProvider = VALID_AUTH_PROVIDERS.has(authParam as AuthProvider)
+    ? (authParam as AuthProvider)
+    : "none";
 
-  const fallbackVersions = getFallbackVersions(provider);
-  const targetPackages = getTargetPackages(provider);
+  const fallbackVersions = getFallbackVersions(provider, authProvider);
+  const targetPackages = getTargetPackages(provider, authProvider);
 
   const versions: Record<string, string> = {};
   let usedFallback = false;

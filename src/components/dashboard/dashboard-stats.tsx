@@ -82,7 +82,7 @@ export function DashboardStats({ playbooks }: DashboardStatsProps) {
               <Icon className={`size-4 ${iconColor}`} />
             </div>
           </div>
-          <p className={`text-3xl font-bold tabular-nums tracking-tight ${accent}`}>
+          <p className={`text-3xl font-semibold tabular-nums tracking-tight ${accent}`}>
             {value}
           </p>
           {subtitle && (
