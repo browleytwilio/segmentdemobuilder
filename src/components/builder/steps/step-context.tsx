@@ -84,7 +84,7 @@ export function StepContext({ onNext }: StepContextProps) {
           name="persona"
           control={control}
           render={({ field }) => (
-            <Select value={field.value ?? null} onValueChange={field.onChange}>
+            <Select value={field.value ?? ""} onValueChange={field.onChange}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a persona" />
               </SelectTrigger>
@@ -109,7 +109,7 @@ export function StepContext({ onNext }: StepContextProps) {
           name="industry"
           control={control}
           render={({ field }) => (
-            <Select value={field.value ?? null} onValueChange={field.onChange}>
+            <Select value={field.value ?? ""} onValueChange={field.onChange}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select an industry" />
               </SelectTrigger>

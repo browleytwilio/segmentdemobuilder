@@ -42,7 +42,7 @@ export default async function AdminLayout({
   if (profile?.role !== "super_admin") notFound();
 
   return (
-    <div className="p-6 space-y-6 max-w-6xl">
+    <div className="p-4 sm:p-6 space-y-6 max-w-7xl">
       {/* Header */}
       <PageHeader
         title="Admin Panel"

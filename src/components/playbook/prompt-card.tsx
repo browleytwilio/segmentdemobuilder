@@ -24,8 +24,7 @@ import { trackEvent } from "@/lib/analytics/events";
 
 const placeholderValues = Object.values(SANITIZATION_MAP);
 const placeholderRegex = new RegExp(
-  `(${placeholderValues.map((v) => v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`,
-  "g"
+  `(${placeholderValues.map((v) => v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`
 );
 
 /** Highlight placeholder strings in red */
@@ -68,8 +67,6 @@ export function PromptCard({
   const [editText, setEditText] = useState(prompt.promptText);
 
   const hasPlaceholders = placeholderRegex.test(prompt.promptText);
-  // Reset regex lastIndex after test
-  placeholderRegex.lastIndex = 0;
 
   return (
     <div ref={cardRef} id={`step-${prompt.stepNumber}`}>

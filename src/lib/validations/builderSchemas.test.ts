@@ -99,6 +99,7 @@ describe("architectureSchema", () => {
     enableSeededProfiles: false,
     enableProfileAPI: true,
     enableIntentPredictions: false,
+    enableSecondPagePers: false,
     databaseProvider: "supabase" as const,
     authProvider: "none" as const,
   };

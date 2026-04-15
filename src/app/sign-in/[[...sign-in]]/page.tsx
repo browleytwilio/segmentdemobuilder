@@ -137,7 +137,7 @@ export default function SignInPage() {
       </div>
 
       {/* Header */}
-      <div className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6">
+      <div className="relative z-10 mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 py-6">
         <Link href="/" className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-marketing-blue to-marketing-purple">
             <span className="text-sm font-bold text-white">S</span>

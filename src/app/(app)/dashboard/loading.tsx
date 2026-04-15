@@ -1,6 +1,6 @@
 export default function DashboardLoading() {
   return (
-    <div className="p-6 space-y-6 max-w-6xl">
+    <div className="p-4 sm:p-6 space-y-6 max-w-7xl">
       {/* Header skeleton */}
       <div className="flex items-end justify-between gap-4">
         <div className="space-y-2">

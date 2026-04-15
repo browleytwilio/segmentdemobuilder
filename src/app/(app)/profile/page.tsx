@@ -36,7 +36,7 @@ export default async function ProfilePage() {
     .eq("status", "completed");
 
   return (
-    <div className="p-6 max-w-2xl">
+    <div className="p-4 sm:p-6 max-w-3xl">
       <FadeIn>
         <PageHeader
           title="Profile"

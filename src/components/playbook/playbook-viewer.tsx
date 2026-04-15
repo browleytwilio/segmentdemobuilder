@@ -164,7 +164,7 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
     industry: playbook.industry,
     selectedScenarios: playbook.demo_config.selectedScenarios,
     architecture: playbook.demo_config.architecture,
-    scenarioSlugs: playbook.demo_config.scenarioSlugs,
+    scenarioSlugs: playbook.demo_config.scenarioSlugs ?? {},
   });
 
   function handleExportPrompts() {

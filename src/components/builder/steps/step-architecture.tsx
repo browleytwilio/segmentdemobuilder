@@ -76,6 +76,7 @@ export function StepArchitecture({ onNext, onBack }: StepArchitectureProps) {
       enableSeededProfiles: architecture.enableSeededProfiles,
       enableProfileAPI: architecture.enableProfileAPI,
       enableIntentPredictions: architecture.enableIntentPredictions,
+      enableSecondPagePers: architecture.enableSecondPagePers,
       databaseProvider,
       authProvider,
     },

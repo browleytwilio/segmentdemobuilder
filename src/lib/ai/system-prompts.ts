@@ -58,7 +58,7 @@ export function buildScriptSystemPrompt(playbook: {
     .filter(([, v]) => v)
     .map(([k]) => k.replace("enable", "").replace(/([A-Z])/g, " $1").trim());
 
-  const scenarios = Object.values(playbook.scenarioSlugs)
+  const scenarios = Object.values(playbook.scenarioSlugs ?? {})
     .map((s) => s.replace(/-/g, " "))
     .join(", ");
 
@@ -152,10 +152,14 @@ Parse a natural language description from a Solutions Engineer into structured p
 - Industry: "E-commerce / Retail", "B2B SaaS", "FinTech", "Media & Entertainment"
 - Persona: "CMO", "CTO / Engineering", "Product Manager", "Data Team"
 - Architecture flags: enableSESidebar, enableSeededProfiles, enableProfileAPI, enableIntentPredictions, enableSecondPagePers
+- Database provider: "supabase", "neon", "generic-postgres"
+- Auth provider: "none", "clerk", "nextauth", "supabase-auth", "better-auth"
 
 Infer the best configuration from the description. If something isn't mentioned, use sensible defaults:
 - enableSESidebar: true (always useful)
 - enableSeededProfiles: true (always useful)
+- databaseProvider: "supabase" (default)
+- authProvider: "none" (default unless auth is mentioned — use "clerk" for SSO/auth mentions)
 - Others: infer from context
 
 For suggestedScenarios, return scenario slugs from the available list that best match the description.`;

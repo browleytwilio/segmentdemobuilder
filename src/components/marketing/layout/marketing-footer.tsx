@@ -12,7 +12,7 @@ const columns = [
 export function MarketingFooter() {
   return (
     <footer className="border-t border-white/[0.06]">
-      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
+      <div className="mx-auto max-w-[1440px] px-6 py-16 lg:px-8">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
           {columns.map((col) => (
             <div key={col.title}>

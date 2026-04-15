@@ -14,9 +14,10 @@ export default async function SharePage({
   // Public access — no auth check. RLS policy allows reading completed playbooks.
   const { data, error } = await supabase
     .from("playbooks")
-    .select("id, customer_name, industry, status, demo_config")
+    .select("id, customer_name, industry, status, demo_config, visibility")
     .eq("id", playbook_id)
     .eq("status", "completed")
+    .in("visibility", ["shared", "public"])
     .single();
 
   if (error || !data) {
@@ -29,7 +30,7 @@ export default async function SharePage({
   >;
 
   return (
-    <div className="p-6 max-w-3xl">
+    <div className="p-4 sm:p-6 max-w-4xl">
       <ShareScriptView playbook={playbook} />
     </div>
   );

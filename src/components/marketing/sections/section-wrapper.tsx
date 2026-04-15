@@ -38,7 +38,7 @@ export function SectionWrapper({
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
         </>
       )}
-      <div className="relative mx-auto max-w-7xl px-6 lg:px-8">{children}</div>
+      <div className="relative mx-auto max-w-[1440px] px-6 lg:px-8">{children}</div>
     </section>
   );
 }

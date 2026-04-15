@@ -106,6 +106,7 @@ export const architectureSchema = z.object({
   enableSeededProfiles: z.boolean(),
   enableProfileAPI: z.boolean(),
   enableIntentPredictions: z.boolean(),
+  enableSecondPagePers: z.boolean(),
   databaseProvider: z.enum(["supabase", "neon", "generic-postgres"]),
   authProvider: z.enum(["none", "clerk", "nextauth", "supabase-auth", "better-auth"]),
 });

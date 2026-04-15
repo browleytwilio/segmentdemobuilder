@@ -53,7 +53,7 @@ export default function BuilderPage() {
   }
 
   return (
-    <div className="max-w-4xl">
+    <div className="max-w-5xl">
       {/* Page header */}
       <div className="mb-8">
         <PageHeader

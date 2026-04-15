@@ -16,7 +16,7 @@ export default function ProfileError({
   }, [error]);
 
   return (
-    <div className="p-6 max-w-2xl">
+    <div className="p-4 sm:p-6 max-w-3xl">
       <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center space-y-4">
         <div className="rounded-full bg-destructive/10 p-4">
           <AlertCircle className="size-8 text-destructive" />

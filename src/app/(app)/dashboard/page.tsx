@@ -48,7 +48,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   );
 
   return (
-    <div className="p-6 space-y-6 max-w-6xl">
+    <div className="p-4 sm:p-6 space-y-6 max-w-7xl">
       <WelcomeDialog hasPlaybooks={playbooks.length > 0} />
 
       {/* Header */}

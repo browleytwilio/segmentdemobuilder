@@ -72,7 +72,7 @@ export function HomeHero() {
         <div className="animate-aurora absolute bottom-0 left-1/2 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-marketing-cyan/[0.06] blur-[100px]" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
+      <div className="relative mx-auto max-w-[1440px] px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

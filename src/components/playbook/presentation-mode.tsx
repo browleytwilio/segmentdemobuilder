@@ -32,12 +32,12 @@ export function PresentationMode({
   const total = prompts.length;
 
   const goNext = useCallback(() => {
-    if (currentIndex < total - 1) setCurrentIndex((i) => i + 1);
-  }, [currentIndex, total]);
+    setCurrentIndex((i) => (i < total - 1 ? i + 1 : i));
+  }, [total]);
 
   const goPrev = useCallback(() => {
-    if (currentIndex > 0) setCurrentIndex((i) => i - 1);
-  }, [currentIndex]);
+    setCurrentIndex((i) => (i > 0 ? i - 1 : i));
+  }, []);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {

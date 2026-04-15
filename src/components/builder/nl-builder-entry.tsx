@@ -12,7 +12,7 @@ export function NLBuilderEntry({ onSwitchToWizard }: { onSwitchToWizard: () => v
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { updateContext, updateArchitecture, setStep } = useBuilderStore();
+  const { updateContext, updateArchitecture, updateProviders, setStep } = useBuilderStore();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,6 +37,10 @@ export function NLBuilderEntry({ onSwitchToWizard }: { onSwitchToWizard: () => v
         persona: data.persona || "",
       });
       updateArchitecture(data.architecture || {});
+      updateProviders({
+        databaseProvider: data.databaseProvider || "supabase",
+        authProvider: data.authProvider || "none",
+      });
 
       // Pre-select scenarios suggested by the AI
       if (data.suggestedScenarios?.length && data.industry) {

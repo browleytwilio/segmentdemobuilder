@@ -29,7 +29,7 @@ export function MarketingNavbar() {
           : "bg-transparent"
       )}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center text-foreground hover:opacity-80 transition-opacity">
           <LogoMark size={26} />

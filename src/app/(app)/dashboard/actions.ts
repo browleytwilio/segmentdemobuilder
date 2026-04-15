@@ -272,11 +272,18 @@ export async function clonePlaybook(
   // Fetch source playbook — allow own playbooks or completed (shared/public) ones
   const { data: source, error: fetchError } = await supabase
     .from("playbooks")
-    .select("user_id, customer_name, industry, demo_config")
+    .select("user_id, customer_name, industry, demo_config, visibility, status, generated_prompts")
     .eq("id", playbookId)
     .single();
 
   if (fetchError || !source) return { error: "Playbook not found" };
+
+  // Enforce access: non-owners can only clone shared/public completed playbooks
+  if (source.user_id !== userId) {
+    if (source.visibility === "private" || source.status !== "completed") {
+      return { error: "Playbook not found" };
+    }
+  }
 
   const { data, error } = await supabase
     .from("playbooks")
@@ -286,7 +293,7 @@ export async function clonePlaybook(
       industry: source.industry,
       status: "draft",
       demo_config: source.demo_config as DemoConfig,
-      generated_prompts: [],
+      generated_prompts: source.generated_prompts || [],
       cloned_from: playbookId,
     })
     .select("id")

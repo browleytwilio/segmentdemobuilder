@@ -128,6 +128,12 @@ export async function createPlaybookFromTemplate(
   if (!demoConfig.persona) {
     demoConfig.persona = template.persona;
   }
+  if (!demoConfig.databaseProvider) {
+    demoConfig.databaseProvider = "supabase";
+  }
+  if (!demoConfig.authProvider) {
+    demoConfig.authProvider = "none";
+  }
 
   const { data, error } = await supabase
     .from("playbooks")
