@@ -127,7 +127,7 @@ export function StepArchitecture({ onNext, onBack }: StepArchitectureProps) {
             <div className="space-y-2">
               <Label className="text-sm font-medium">Database Provider</Label>
               <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select database..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -152,7 +152,7 @@ export function StepArchitecture({ onNext, onBack }: StepArchitectureProps) {
             <div className="space-y-2">
               <Label className="text-sm font-medium">Auth Provider</Label>
               <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select auth..." />
                 </SelectTrigger>
                 <SelectContent>
