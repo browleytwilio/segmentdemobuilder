@@ -26,6 +26,13 @@ const intentSchema = z.object({
   databaseProvider: z.enum(["supabase", "neon", "generic-postgres"]),
   authProvider: z.enum(["none", "clerk", "nextauth", "supabase-auth", "better-auth"]),
   suggestedScenarios: z.array(z.string()),
+  productName: z.string().optional(),
+  tagline: z.string().optional(),
+  primaryColor: z.string().optional(),
+  accentColor: z.string().optional(),
+  voiceTone: z
+    .enum(["Professional", "Friendly & Casual", "Technical", "Bold & Energetic"])
+    .optional(),
 });
 
 const parseIntentBodySchema = z.object({

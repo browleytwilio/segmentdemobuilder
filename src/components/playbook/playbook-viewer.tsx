@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
+import { useBuilderStore } from "@/lib/stores/builder-store";
 import type { PlaybookRow } from "@/lib/compiler/types";
 import { generateDemoScript } from "@/lib/compiler/demo-script";
 import { downloadMarkdown } from "@/lib/export/download";
@@ -60,8 +61,10 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
   const dbProvider = playbook.demo_config.databaseProvider ?? "supabase";
   const authProv = playbook.demo_config.authProvider ?? "none";
 
-  // Check if rehydration is needed on mount
+  // Check if rehydration is needed
   const requiresRehydration = needsRehydration(prompts, dbProvider, authProv);
+  const autoRehydratedRef = useRef(false);
+
   useEffect(() => {
     trackEvent("Playbook Viewed", {
       playbook_id: playbook.id,
@@ -71,6 +74,19 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
       needs_rehydration: requiresRehydration,
     });
   }, [playbook, requiresRehydration]);
+
+  // Auto-inject keys from builder store if available (SPA navigation from compile page)
+  useEffect(() => {
+    if (autoRehydratedRef.current) return;
+    const storeKeys = useBuilderStore.getState().keys;
+    const hasKeys = Object.values(storeKeys).some((v) => v.length > 0);
+    if (hasKeys && needsRehydration(playbook.generated_prompts, dbProvider, authProv)) {
+      autoRehydratedRef.current = true;
+      const rehydrated = rehydratePrompts(playbook.generated_prompts, storeKeys, dbProvider, authProv);
+      setPrompts(rehydrated);
+      trackEvent("Auto-Rehydrated", { playbook_id: playbook.id });
+    }
+  }, [playbook, dbProvider, authProv]);
 
   // Auto-scroll to first incomplete step on mount
   useEffect(() => {
@@ -136,6 +152,11 @@ export function PlaybookViewer({ playbook }: PlaybookViewerProps) {
     persona: playbook.demo_config.persona,
     industry: playbook.industry,
     customerName: playbook.customer_name,
+    productName: playbook.demo_config.productName,
+    tagline: playbook.demo_config.tagline,
+    primaryColor: playbook.demo_config.primaryColor,
+    accentColor: playbook.demo_config.accentColor,
+    voiceTone: playbook.demo_config.voiceTone,
   };
 
   const handleMarkComplete = useCallback(

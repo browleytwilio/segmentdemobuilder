@@ -56,6 +56,11 @@ export function BuilderWizard() {
     selectedScenarios,
     databaseProvider,
     authProvider,
+    productName,
+    tagline,
+    primaryColor,
+    accentColor,
+    voiceTone,
   } = useBuilderStore();
 
   async function handleSubmit() {
@@ -87,6 +92,11 @@ export function BuilderWizard() {
         scenarioSlugs,
         databaseProvider,
         authProvider,
+        productName,
+        tagline,
+        primaryColor,
+        accentColor,
+        voiceTone,
       },
     });
 

@@ -1,11 +1,35 @@
 import type { DemoArchitecture } from "@/lib/stores/builder-store";
 
+interface BrandContext {
+  productName?: string;
+  tagline?: string;
+  primaryColor?: string;
+  accentColor?: string;
+  voiceTone?: string;
+}
+
 interface PlaybookContext {
   customerName?: string;
   industry?: string;
   persona?: string;
   architecture?: DemoArchitecture;
   selectedScenarios?: string[];
+  productName?: string;
+  tagline?: string;
+  primaryColor?: string;
+  accentColor?: string;
+  voiceTone?: string;
+}
+
+function buildBrandSection(brand: BrandContext): string {
+  const lines: string[] = [];
+  if (brand.productName) lines.push(`- Product Name: ${brand.productName}`);
+  if (brand.tagline) lines.push(`- Tagline: "${brand.tagline}"`);
+  if (brand.primaryColor) lines.push(`- Primary Brand Color: ${brand.primaryColor}`);
+  if (brand.accentColor) lines.push(`- Accent Color: ${brand.accentColor}`);
+  if (brand.voiceTone) lines.push(`- Voice & Tone: ${brand.voiceTone}`);
+  if (lines.length === 0) return "";
+  return `\n\n## Brand Context\n${lines.join("\n")}\n\nUse these brand details to make the demo feel authentic:\n- Reference the product by its actual name instead of generic placeholders\n- Incorporate brand colors in Tailwind classes or CSS variables where appropriate\n- Match the voice/tone in UI copy, button labels, and placeholder text`;
 }
 
 const SEGMENT_DOMAIN_KNOWLEDGE = `You are an expert on Segment, the Customer Data Platform (CDP) by Twilio.
@@ -42,6 +66,7 @@ export function buildCopilotSystemPrompt(context?: PlaybookContext): string {
         prompt += `Enabled demo features: ${features.join(", ")}.\n`;
       }
     }
+    prompt += buildBrandSection(context);
   }
 
   return prompt;
@@ -53,6 +78,9 @@ export function buildScriptSystemPrompt(playbook: {
   industry: string;
   scenarioSlugs: Record<string, string>;
   architecture: DemoArchitecture;
+  productName?: string;
+  tagline?: string;
+  voiceTone?: string;
 }): string {
   const features = Object.entries(playbook.architecture)
     .filter(([, v]) => v)
@@ -70,8 +98,9 @@ Generate a compelling SE Demo Script for presenting a Segment CDP demo.
 
 **Demo Details:**
 - Customer: ${playbook.customerName}
+- Product: ${playbook.productName || playbook.customerName}${playbook.tagline ? `\n- Tagline: "${playbook.tagline}"` : ""}
 - Industry: ${playbook.industry}
-- Target Persona: ${playbook.persona}
+- Target Persona: ${playbook.persona}${playbook.voiceTone ? `\n- Voice & Tone: ${playbook.voiceTone}` : ""}
 - Enabled Features: ${features.join(", ") || "None"}
 - Demo Scenarios: ${scenarios || "None"}
 
@@ -96,8 +125,10 @@ Write in Markdown format. Be specific and actionable — avoid generic filler.`;
 
 export function buildEnrichmentSystemPrompt(
   persona: string,
-  industry: string
+  industry: string,
+  brand?: BrandContext
 ): string {
+  const brandSection = brand ? buildBrandSection(brand) : "";
   return `${SEGMENT_DOMAIN_KNOWLEDGE}
 
 ## Your Task
@@ -106,7 +137,7 @@ You are enriching a prompt that will be fed to an AI coding assistant (Claude Co
 
 **Context:**
 - Industry: ${industry}
-- Target Persona: ${persona}
+- Target Persona: ${persona}${brandSection}
 
 ## Enrichment Guidelines
 
@@ -114,7 +145,7 @@ You are enriching a prompt that will be fed to an AI coding assistant (Claude Co
 2. Adapt technical depth to the persona — a CTO demo should show more architectural sophistication, a CMO demo should emphasize visual polish and business metrics.
 3. Add specific Segment event names and trait examples relevant to the industry.
 4. Keep all existing code, commands, and structure intact — you are enhancing, not rewriting.
-5. Preserve all {{PLACEHOLDER}} template variables exactly as they appear.
+5. Preserve all {{PLACEHOLDER}} template variables exactly as they appear.${brand?.primaryColor || brand?.accentColor ? "\n6. When generating Tailwind classes or CSS, incorporate the brand colors provided above." : ""}
 
 Return the enriched prompt as a single string. Do not wrap in code fences or add metadata.`;
 }

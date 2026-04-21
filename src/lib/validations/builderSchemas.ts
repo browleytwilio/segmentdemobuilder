@@ -16,6 +16,13 @@ export const INDUSTRY_OPTIONS = [
   "Media & Entertainment",
 ] as const;
 
+export const VOICE_TONE_OPTIONS = [
+  "Professional",
+  "Friendly & Casual",
+  "Technical",
+  "Bold & Energetic",
+] as const;
+
 export type Industry = (typeof INDUSTRY_OPTIONS)[number];
 
 /** @deprecated Scenarios now fetched from `demo_features` table. Kept for Zod schema reference. */
@@ -95,6 +102,23 @@ export const contextSchema = z.object({
     .min(2, "Customer name must be at least 2 characters"),
   persona: z.enum(PERSONA_OPTIONS),
   industry: z.enum(INDUSTRY_OPTIONS),
+  productName: z.string().optional().default(""),
+  tagline: z
+    .string()
+    .max(120, "Tagline must be under 120 characters")
+    .optional()
+    .default(""),
+  primaryColor: z
+    .string()
+    .regex(/^$|^#[0-9a-fA-F]{6}$/, "Must be a valid hex color")
+    .optional()
+    .default(""),
+  accentColor: z
+    .string()
+    .regex(/^$|^#[0-9a-fA-F]{6}$/, "Must be a valid hex color")
+    .optional()
+    .default(""),
+  voiceTone: z.enum(VOICE_TONE_OPTIONS).optional(),
 });
 
 export type ContextFormData = z.infer<typeof contextSchema>;

@@ -20,6 +20,11 @@ export interface CompilerInput {
   versions: VersionMap;
   databaseProvider: DatabaseProvider;
   authProvider: AuthProvider;
+  productName?: string;
+  tagline?: string;
+  primaryColor?: string;
+  accentColor?: string;
+  voiceTone?: string;
 }
 
 export interface DemoConfig {
@@ -29,6 +34,11 @@ export interface DemoConfig {
   scenarioSlugs?: Record<string, string>; // { [featureId]: slug } — new playbooks only
   databaseProvider?: DatabaseProvider;
   authProvider?: AuthProvider;
+  productName?: string;
+  tagline?: string;
+  primaryColor?: string;
+  accentColor?: string;
+  voiceTone?: string;
 }
 
 export interface PlaybookRow {

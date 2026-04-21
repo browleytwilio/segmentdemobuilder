@@ -28,6 +28,13 @@ export interface BuilderState {
   databaseProvider: DatabaseProvider;
   authProvider: AuthProvider;
 
+  // Brand & Style (Persisted, all optional)
+  productName: string;
+  tagline: string;
+  primaryColor: string;
+  accentColor: string;
+  voiceTone: string;
+
   // Credentials (IN-MEMORY ONLY — NEVER PERSISTED)
   keys: Record<string, string>;
 
@@ -78,6 +85,11 @@ const initialState = {
   selectedScenarios: [] as string[],
   databaseProvider: "supabase" as DatabaseProvider,
   authProvider: "none" as AuthProvider,
+  productName: "",
+  tagline: "",
+  primaryColor: "",
+  accentColor: "",
+  voiceTone: "",
   keys: initialKeys,
 };
 
@@ -116,7 +128,7 @@ export const useBuilderStore = create<BuilderState>()(
     }),
     {
       name: "builder-store",
-      version: 4,
+      version: 5,
       partialize: (state) => ({
         currentStep: state.currentStep,
         customerName: state.customerName,
@@ -126,6 +138,11 @@ export const useBuilderStore = create<BuilderState>()(
         selectedScenarios: state.selectedScenarios,
         databaseProvider: state.databaseProvider,
         authProvider: state.authProvider,
+        productName: state.productName,
+        tagline: state.tagline,
+        primaryColor: state.primaryColor,
+        accentColor: state.accentColor,
+        voiceTone: state.voiceTone,
         // keys is intentionally excluded — credentials stay in-memory only
       }),
       migrate: (persisted, version) => {
@@ -147,6 +164,18 @@ export const useBuilderStore = create<BuilderState>()(
           if (version === 3) {
             // v3→v4: auth providers now have credential fields. No structural change needed.
             return { ...initialState, ...prev };
+          }
+          if (version === 4) {
+            // v4→v5: added brand & style fields.
+            return {
+              ...initialState,
+              ...prev,
+              productName: "",
+              tagline: "",
+              primaryColor: "",
+              accentColor: "",
+              voiceTone: "",
+            };
           }
           return persisted as BuilderState;
         } catch {

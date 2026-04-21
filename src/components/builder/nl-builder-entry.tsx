@@ -35,6 +35,11 @@ export function NLBuilderEntry({ onSwitchToWizard }: { onSwitchToWizard: () => v
         customerName: data.customerName || "",
         industry: data.industry || "",
         persona: data.persona || "",
+        productName: data.productName || "",
+        tagline: data.tagline || "",
+        primaryColor: data.primaryColor || "",
+        accentColor: data.accentColor || "",
+        voiceTone: data.voiceTone || "",
       });
       updateArchitecture(data.architecture || {});
       updateProviders({

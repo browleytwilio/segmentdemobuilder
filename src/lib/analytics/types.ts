@@ -101,7 +101,7 @@ export interface SegmentEventMap {
     time_on_step_ms?: number;
   };
   "Wizard Step Submitted":
-    | { step: 1; customer_name_length: number; persona: string; industry: string }
+    | { step: 1; customer_name_length: number; persona: string; industry: string; has_brand_details?: boolean }
     | {
         step: 2;
         enable_se_sidebar: boolean;
@@ -153,6 +153,7 @@ export interface SegmentEventMap {
   "Step Marked Complete": { playbook_id: string; step_number: number };
   "Troubleshooting Expanded": { playbook_id: string; step_number: number };
   "Keys Injected": { field_count: number };
+  "Auto-Rehydrated": { playbook_id: string };
   "Rehydration Skipped": Record<string, never>;
   "Prompts Exported": { playbook_id: string; format: "markdown" };
   "Demo Script Exported": { playbook_id: string; format: "markdown" };

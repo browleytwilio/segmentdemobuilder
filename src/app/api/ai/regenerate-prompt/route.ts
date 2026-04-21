@@ -17,6 +17,11 @@ const bodySchema = z.object({
     persona: z.string(),
     industry: z.string(),
     customerName: z.string(),
+    productName: z.string().optional(),
+    tagline: z.string().optional(),
+    primaryColor: z.string().optional(),
+    accentColor: z.string().optional(),
+    voiceTone: z.string().optional(),
   }),
 });
 
@@ -44,7 +49,7 @@ export async function POST(req: Request) {
     const { text } = await generateText({
       model: MODELS.fast,
       system: `You are an expert Segment CDP Solutions Engineer. You write step-by-step build prompts for AI coding agents. The prompt must be technically precise, include exact code, and follow the same format as the original.`,
-      prompt: `Regenerate the following build prompt for a ${context.industry} demo targeting a ${context.persona}. Customer: ${context.customerName}.
+      prompt: `Regenerate the following build prompt for a ${context.industry} demo targeting a ${context.persona}. Customer: ${context.customerName}.${context.productName ? ` Product: ${context.productName}.` : ""}${context.tagline ? ` Tagline: "${context.tagline}".` : ""}
 
 Step ${prompt.stepNumber}: ${prompt.title}
 Expected output: ${prompt.expectedOutput}

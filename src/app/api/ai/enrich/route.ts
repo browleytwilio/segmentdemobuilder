@@ -19,6 +19,11 @@ const enrichBodySchema = z.object({
     industry: z.string(),
     customerName: z.string(),
     architecture: z.record(z.string(), z.unknown()),
+    productName: z.string().optional(),
+    tagline: z.string().optional(),
+    primaryColor: z.string().optional(),
+    accentColor: z.string().optional(),
+    voiceTone: z.string().optional(),
   }),
 });
 
@@ -40,7 +45,13 @@ export async function POST(req: Request) {
     return Response.json({ error: "Invalid request body" }, { status: 400 });
   }
   const { prompts, context } = body.data;
-  const systemPrompt = buildEnrichmentSystemPrompt(context.persona, context.industry);
+  const systemPrompt = buildEnrichmentSystemPrompt(context.persona, context.industry, {
+    productName: context.productName,
+    tagline: context.tagline,
+    primaryColor: context.primaryColor,
+    accentColor: context.accentColor,
+    voiceTone: context.voiceTone,
+  });
 
   try {
     const results = await Promise.allSettled(
@@ -48,7 +59,7 @@ export async function POST(req: Request) {
         const { text } = await generateText({
           model: MODELS.fast,
           system: systemPrompt,
-          prompt: `Enrich the following prompt for a ${context.industry} demo targeting a ${context.persona}. Customer: ${context.customerName}.\n\n---\n\n${prompt.promptText}`,
+          prompt: `Enrich the following prompt for a ${context.industry} demo targeting a ${context.persona}. Customer: ${context.customerName}.${context.productName ? ` Product: ${context.productName}.` : ""}${context.tagline ? ` Tagline: "${context.tagline}".` : ""}\n\n---\n\n${prompt.promptText}`,
           providerOptions: {
             gateway: { user: auth.userId!, tags: ["enrichment"] },
           },

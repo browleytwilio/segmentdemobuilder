@@ -17,6 +17,9 @@ const scriptBodySchema = z.object({
     industry: z.string(),
     scenarioSlugs: z.record(z.string(), z.string()),
     architecture: z.record(z.string(), z.boolean()) as unknown as z.ZodType<DemoArchitecture>,
+    productName: z.string().optional(),
+    tagline: z.string().optional(),
+    voiceTone: z.string().optional(),
   }),
 });
 

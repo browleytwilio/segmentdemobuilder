@@ -7,6 +7,11 @@ export interface TemplateContext {
   INDUSTRY: string;
   DATABASE_PROVIDER: string;
   AUTH_PROVIDER: string;
+  PRODUCT_NAME: string;
+  TAGLINE: string;
+  PRIMARY_COLOR: string;
+  ACCENT_COLOR: string;
+  VOICE_TONE: string;
   SEGMENT_WRITE_KEY: string;
   SEGMENT_BACKEND_WRITE_KEY: string;
   SEGMENT_WORKSPACE_TOKEN: string;
@@ -30,6 +35,11 @@ export function buildTemplateContext(input: CompilerInput): TemplateContext {
     INDUSTRY: input.industry,
     DATABASE_PROVIDER: input.databaseProvider,
     AUTH_PROVIDER: input.authProvider,
+    PRODUCT_NAME: input.productName || input.customerName,
+    TAGLINE: input.tagline || "",
+    PRIMARY_COLOR: input.primaryColor || "",
+    ACCENT_COLOR: input.accentColor || "",
+    VOICE_TONE: input.voiceTone || "",
     SEGMENT_WRITE_KEY: keyOrPlaceholder(
       input.keys.segmentWriteFrontend,
       "segmentWriteFrontend"

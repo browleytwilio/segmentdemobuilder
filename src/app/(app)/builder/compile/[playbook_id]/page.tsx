@@ -87,6 +87,11 @@ export default function CompilePage({
           versions,
           databaseProvider: store.databaseProvider,
           authProvider: store.authProvider,
+          productName: store.productName,
+          tagline: store.tagline,
+          primaryColor: store.primaryColor,
+          accentColor: store.accentColor,
+          voiceTone: store.voiceTone,
         };
         variantA = compilePromptsWithTemplates(input, dbTemplates);
         checkpoint.current.compiledPrompts = variantA;
@@ -106,6 +111,11 @@ export default function CompilePage({
                 industry: store.industry,
                 customerName: store.customerName,
                 architecture: store.architecture,
+                productName: store.productName,
+                tagline: store.tagline,
+                primaryColor: store.primaryColor,
+                accentColor: store.accentColor,
+                voiceTone: store.voiceTone,
               },
             }),
           });

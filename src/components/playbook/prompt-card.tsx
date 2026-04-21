@@ -48,7 +48,16 @@ interface PromptCardProps {
   onMarkComplete: () => void;
   onRegenerate?: (updated: CompiledPrompt) => void;
   onEdit?: (updated: CompiledPrompt) => void;
-  context?: { persona: string; industry: string; customerName: string };
+  context?: {
+    persona: string;
+    industry: string;
+    customerName: string;
+    productName?: string;
+    tagline?: string;
+    primaryColor?: string;
+    accentColor?: string;
+    voiceTone?: string;
+  };
 }
 
 export function PromptCard({

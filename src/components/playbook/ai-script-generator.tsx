@@ -57,6 +57,9 @@ export function AIScriptGenerator({ playbook }: AIScriptGeneratorProps) {
             industry: playbook.industry,
             scenarioSlugs: playbook.demo_config.scenarioSlugs ?? {},
             architecture: playbook.demo_config.architecture,
+            productName: playbook.demo_config.productName,
+            tagline: playbook.demo_config.tagline,
+            voiceTone: playbook.demo_config.voiceTone,
           },
         },
       }
